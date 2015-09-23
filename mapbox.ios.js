@@ -36,21 +36,21 @@ mapbox.show = function (arg) {
     try {
       //   _mapView = [[MGLMapView alloc] initWithFrame:mapFrame styleURL:[NSURL URLWithString:@"asset://styles/mapbox-streets-v7.json"]];
 
-      var bounds = UIScreen.mainScreen().bounds;
-
-      // TODO pass in position in JS API
-      var left = 0;
-      var right = 0;
-      var top = 320;
-      var bottom = 0;
+      var settings = mapbox.merge(arg, mapbox.defaults);
 
       var view = UIApplication.sharedApplication().keyWindow.rootViewController.view;
       var frameRect = view.frame;
 
-      var mapFrame = CGRectMake(left, top, frameRect.size.width - left - right, frameRect.size.height - top - bottom);
-//      var style = "asset://styles/mapbox-streets-v7.json";
+      var mapFrame = CGRectMake(
+          settings.margins.left,
+          settings.margins.top,
+          frameRect.size.width - settings.margins.left - settings.margins.right,
+          frameRect.size.height - settings.margins.top - settings.margins.bottom);
 
-      //var mapView = MGLMapView.alloc().initWithFrameStyleURL(mapFrame, style);
+      // TODO this in not working yet
+      var style = settings.style;
+      style = "asset://styles/"+style+"-v8.json";
+
       this.mapView = MGLMapView.alloc().initWithFrame(mapFrame);
 
       // TODO not sure this works as planned.. better to listen for rotate events ([..didrotate..] and fix the frame
@@ -58,31 +58,27 @@ mapbox.show = function (arg) {
 
       //mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
+      if (settings.center) {
+        console.log("------------------------------------ " + settings.center);
+        console.log("------------------------------------ " + settings.center.lat);
+        console.log("------------------------------------ " + settings.center.lng);
+        var centerCoordinate = CLLocationCoordinate2DMake(settings.center.lat, settings.center.lng);
+        this.mapView.setCenterCoordinateZoomLevelAnimated(centerCoordinate, settings.zoomLevel, false);
+      } else {
+        this.mapView.setZoomLevel(settings.zoomLevel);
+      }
+
       // TODO pass in lat, lng, zoom
-      var centerCoordinate = CLLocationCoordinate2DMake(52.3702160, 4.8951680);
-      var zoomLevel = 13;
-      this.mapView.setCenterCoordinateZoomLevelAnimated(centerCoordinate, zoomLevel, false);
+//      var centerCoordinate = CLLocationCoordinate2DMake(52.3702160, 4.8951680);
+//      this.mapView.setCenterCoordinateZoomLevelAnimated(centerCoordinate, settings.zoomLevel, false);
 
-      this.mapView.showsUserLocation = true;
-
-      // TODO pass in, default false
-      this.mapView.attributionButton.hidden = true;
-
-      // TODO pass in, default YES - required for the 'starter' plan
-      this.mapView.logoView.hidden = true;
-
-      // TODO pass in, default false
-      this.mapView.compassView.hidden = true;
-
-      // TODO pass in, default true
-      this.mapView.rotateEnabled = true;
-
-      // TODO pass in, default true
-      this.mapView.scrollEnabled = true;
-
-      // TODO pass in, default true
-      this.mapView.zoomEnabled = true;
-
+      this.mapView.showsUserLocation = settings.showUserLocation;
+      this.mapView.attributionButton.hidden = settings.hideAttribution;
+      this.mapView.logoView.hidden = settings.hideLogo;
+      this.mapView.compassView.hidden = settings.hideCompass;
+      this.mapView.rotateEnabled = !settings.disableRotation;
+      this.mapView.scrollEnabled = !settings.disableScroll;
+      this.mapView.zoomEnabled = !settings.disableZoom;
 
 
 

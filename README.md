@@ -1,5 +1,7 @@
 # NativeScript Maps - by Mapbox
 
+TODO update these instructions for the 1.3.0 release
+
 Wait until {N} 1.3.0 is released because now we need to:
 - After installation copy ios/Podfile to platforms/ios and from the command prompt run `pod install`
 - Then always use the xcworkspace file
