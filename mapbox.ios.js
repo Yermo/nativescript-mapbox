@@ -56,14 +56,9 @@ mapbox.show = function (arg) {
         }
       }
 
-      ////////////// TODO check dit: https://github.com/NativeScript/NativeScript/issues/432
-
-
       // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
       var delegate = MGLMapViewDelegateImpl.new().initWithCallback(function (loaded) {
-        // TODO don't use resolve here as we already did.. can we use a custom callback handler? Or don't we need this neway?
-        // Remove the local variable for the delegate.
-//        delegate = undefined;
+        //delegate = undefined;
       });
       mapView.delegate = delegate;
 
@@ -185,20 +180,19 @@ var MGLMapViewDelegateImpl = (function (_super) {
     return this;
   };
   MGLMapViewDelegateImpl.prototype.mapViewDidFinishLoadingMap = function(mapView) {
-    console.log("mapViewDidFinishLoadingMap");
     this._callback(true);
   };
   MGLMapViewDelegateImpl.prototype.mapViewAnnotationCanShowCallout = function(mapView, annotation) {
-    console.log("mapViewAnnotationCanShowCallout");
-    this._callback(true);
-    //return true;
+    return true;
   };
   MGLMapViewDelegateImpl.prototype.mapViewDidSelectAnnotation = function(mapView, annotation) {
     var title = annotation.title;
     var subtitle = annotation.subtitle;
     var coord = annotation.coordinate;
-    console.log("Annotation selected: " + title);
-    this._callback(true);
+    console.log("Mapbox marker selected with title: " + title);
+    // this won't work as we can only resolve once, so find a different way if somebody needs this..
+    // .. perhaps some JS event
+    //this._callback(true);
   };
   MGLMapViewDelegateImpl.ObjCProtocols = [MGLMapViewDelegate];
   return MGLMapViewDelegateImpl;
