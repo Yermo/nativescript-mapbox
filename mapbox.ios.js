@@ -1,41 +1,10 @@
 var mapbox = require("./mapbox-common");
-var page = require("ui/page");
 
 mapbox.mapView = null;
-
-mapbox.addAnnotations = function (arg) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var point = MGLPointAnnotation.alloc().init();
-      point.coordinate = CLLocationCoordinate2DMake(52.3712160, 4.8941680);
-      point.title = "The title";
-      point.subtitle = "The subtitle";
-      this.mapView.addAnnotation(point);
-      resolve("Anno done");
-    } catch (ex) {
-      console.log("Error in mapbox.addAnnotations: " + ex);
-      reject(ex);
-    }
-  })
-};
-
-mapbox.hide = function (arg) {
-  return new Promise(function (resolve, reject) {
-    try {
-      this.mapView.removeFromSuperview();
-      resolve("Done");
-    } catch (ex) {
-      console.log("Error in mapbox.hide: " + ex);
-      reject(ex);
-    }
-  });
-};
 
 mapbox.show = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      //   _mapView = [[MGLMapView alloc] initWithFrame:mapFrame styleURL:[NSURL URLWithString:@"asset://styles/mapbox-streets-v7.json"]];
-
       var settings = mapbox.merge(arg, mapbox.defaults);
 
       var view = UIApplication.sharedApplication().keyWindow.rootViewController.view;
@@ -51,36 +20,41 @@ mapbox.show = function (arg) {
       var style = settings.style;
       style = "asset://styles/"+style+"-v8.json";
 
-      this.mapView = MGLMapView.alloc().initWithFrame(mapFrame);
+      mapView = MGLMapView.alloc().initWithFrame(mapFrame);
 
       // TODO not sure this works as planned.. better to listen for rotate events ([..didrotate..] and fix the frame
-      this.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+      mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
       //mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
       if (settings.center) {
-        console.log("------------------------------------ " + settings.center);
-        console.log("------------------------------------ " + settings.center.lat);
-        console.log("------------------------------------ " + settings.center.lng);
         var centerCoordinate = CLLocationCoordinate2DMake(settings.center.lat, settings.center.lng);
-        this.mapView.setCenterCoordinateZoomLevelAnimated(centerCoordinate, settings.zoomLevel, false);
+        mapView.setCenterCoordinateZoomLevelAnimated(centerCoordinate, settings.zoomLevel, false);
       } else {
-        this.mapView.setZoomLevel(settings.zoomLevel);
+        mapView.setZoomLevelAnimated(settings.zoomLevel, false);
       }
 
-      // TODO pass in lat, lng, zoom
-//      var centerCoordinate = CLLocationCoordinate2DMake(52.3702160, 4.8951680);
-//      this.mapView.setCenterCoordinateZoomLevelAnimated(centerCoordinate, settings.zoomLevel, false);
-
-      this.mapView.showsUserLocation = settings.showUserLocation;
-      this.mapView.attributionButton.hidden = settings.hideAttribution;
-      this.mapView.logoView.hidden = settings.hideLogo;
-      this.mapView.compassView.hidden = settings.hideCompass;
-      this.mapView.rotateEnabled = !settings.disableRotation;
-      this.mapView.scrollEnabled = !settings.disableScroll;
-      this.mapView.zoomEnabled = !settings.disableZoom;
+      mapView.showsUserLocation = settings.showUserLocation;
+      mapView.attributionButton.hidden = settings.hideAttribution;
+      mapView.logoView.hidden = settings.hideLogo;
+      mapView.compassView.hidden = settings.hideCompass;
+      mapView.rotateEnabled = !settings.disableRotation;
+      mapView.scrollEnabled = !settings.disableScroll;
+      mapView.zoomEnabled = !settings.disableZoom;
 
 
+      if (settings.markers) {
+        for (var m in settings.markers) {
+          var marker = settings.markers[m];
+          var lat = marker.lat;
+          var lng = marker.lng;
+          var point = MGLPointAnnotation.alloc().init();
+          point.coordinate = CLLocationCoordinate2DMake(lat, lng);
+          point.title = marker.title;
+          point.subtitle = marker.subtitle;
+          mapView.addAnnotation(point);
+        }
+      }
 
       ////////////// TODO check dit: https://github.com/NativeScript/NativeScript/issues/432
 
@@ -91,13 +65,107 @@ mapbox.show = function (arg) {
         // Remove the local variable for the delegate.
 //        delegate = undefined;
       });
-      this.mapView.delegate = delegate;
+      mapView.delegate = delegate;
 
       view.addSubview(mapView);
 
       resolve("Done");
     } catch (ex) {
       console.log("Error in mapbox.show: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.hide = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      mapView.removeFromSuperview();
+      resolve("Done");
+    } catch (ex) {
+      console.log("Error in mapbox.hide: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.addMarkers = function (markers) {
+  return new Promise(function (resolve, reject) {
+    try {
+      for (m in markers) {
+        var marker = markers[m];
+        var lat = marker.lat;
+        var lng = marker.lng;
+        var point = MGLPointAnnotation.alloc().init();
+        point.coordinate = CLLocationCoordinate2DMake(lat, lng);
+        point.title = marker.title;
+        point.subtitle = marker.subtitle;
+        mapView.addAnnotation(point);
+      }
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.addMarkers: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.setCenter = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var animated = arg.animated || true;
+      var lat = arg.lat;
+      var lng = arg.lng;
+      var coordinate = CLLocationCoordinate2DMake(lat, lng);
+      mapView.setCenterCoordinateAnimated(coordinate, animated);
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.setCenter: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.getCenter = function () {
+  return new Promise(function (resolve, reject) {
+    try {
+      var coordinate = mapView.centerCoordinate;
+      resolve({
+        lat: coordinate.latitude,
+        lng: coordinate.longitude
+      })
+    } catch (ex) {
+      console.log("Error in mapbox.getCenter: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.setZoomLevel = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var animated = arg.animated || true;
+      var level = arg.level;
+      if (level >=0 && level <= 20) {
+        mapView.setZoomLevelAnimated(level, animated);
+        resolve();
+      } else {
+        reject("invalid zoomlevel, use any double value from 0 to 20 (like 8.3)");
+      }
+    } catch (ex) {
+      console.log("Error in mapbox.addMarkers: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.getZoomLevel = function () {
+  return new Promise(function (resolve, reject) {
+    try {
+      var level = mapView.zoomLevel;
+      resolve(level);
+    } catch (ex) {
+      console.log("Error in mapbox.getZoomLevel: " + ex);
       reject(ex);
     }
   });

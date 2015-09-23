@@ -1,0 +1,11 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd" loaded="pageLoaded">
+  <StackLayout>
+    <Button text="Show" tap="{{ showMapTapAction }}" />
+    <Button text="Hide" tap="{{ hideMapTapAction }}" />
+    <Button text="Add markers" tap="{{ addMarkersTapAction }}" />
+    <Button text="Set center" tap="{{ setCenterTapAction }}" />
+    <Button text="Get center" tap="{{ getCenterTapAction }}" />
+    <Button text="Set zoom level" tap="{{ setZoomLevelTapAction }}" />
+    <Button text="Get zoom level" tap="{{ getZoomLevelTapAction }}" />
+  </StackLayout>
+</Page>
