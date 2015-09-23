@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+  	<key>MGLMapboxAccessToken</key>
+  	<!-- TODO this needs to be a variable, OR pass it in at runtime via the js api (but that's less secure) -->
+  	<string>sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw</string>
+    <key>MGLMapboxMetricsEnabledSettingShownInApp</key>
+    <true/>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We use your location to show where you are on the map in our app.</string>
+  </dict>
+</plist>
