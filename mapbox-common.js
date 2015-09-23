@@ -8,7 +8,7 @@ mapbox.defaults = {
     'top': 20,
     'bottom': 60
   },
-  zoomLevel: 10, // 0 (the entire world) to 20 (streetlevel)
+  zoomLevel: 0, // 0 (a big part of the world) to 20 (streetlevel)
   showUserLocation: false, // true requires adding `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription` in the .plist
   hideLogo: false, // required for the 'started' plan
   hideAttribution: false,
@@ -34,6 +34,6 @@ mapbox.merge = function merge(obj1, obj2){ // Our merge function
     result[i] = obj2[i];
   }
   return result;
-}
+};
 
 module.exports = mapbox;
