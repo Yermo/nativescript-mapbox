@@ -1,5 +1,7 @@
 # NativeScript Maps - by Mapbox
 
+ALMOST DONE, hang in there :)
+
 TODO update these instructions for the 1.3.0 release
 
 Wait until {N} 1.3.0 is released because now we need to:
