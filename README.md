@@ -2,6 +2,8 @@
 
 Awesome native OpenGL powered maps - by Mapbox
 
+<img src="screenshots/iOS-demo-app.png" width="375px" />
+
 ## Prerequisites
 NativeScript 1.3.0 (`tns --version`) is required for smooth installation, so please upgrade if you need to.
 
