@@ -4,8 +4,9 @@
     <Button text="Hide" tap="{{ hideMapTapAction }}" />
     <Button text="Add markers" tap="{{ addMarkersTapAction }}" />
     <Button text="Set center" tap="{{ setCenterTapAction }}" />
-    <Button text="Get center" tap="{{ getCenterTapAction }}" />
+    <Button text="Get center (see console)" tap="{{ getCenterTapAction }}" />
     <Button text="Set zoom level" tap="{{ setZoomLevelTapAction }}" />
-    <Button text="Get zoom level" tap="{{ getZoomLevelTapAction }}" />
+    <Button text="Get zoom level (see console)" tap="{{ getZoomLevelTapAction }}" />
+    <Button text="Add polygon" tap="{{ addPolygonTapAction }}" />
   </StackLayout>
 </Page>
