@@ -1,31 +1,31 @@
 var mapbox = require("./mapbox-common");
 
-mapbox.mapView = null;
-
 mapbox.show = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
       var settings = mapbox.merge(arg, mapbox.defaults);
 
-      var view = UIApplication.sharedApplication().keyWindow.rootViewController.view;
-      var frameRect = view.frame;
+      // if no accessToken was set the app may crash
+      if (settings.accessToken === undefined) {
+        reject("Please set the 'accessToken' parameter");
+        return;
+      }
 
-      var mapFrame = CGRectMake(
-          settings.margins.left,
-          settings.margins.top,
-          frameRect.size.width - settings.margins.left - settings.margins.right,
-          frameRect.size.height - settings.margins.top - settings.margins.bottom);
+      var view = UIApplication.sharedApplication().keyWindow.rootViewController.view,
+          frameRect = view.frame,
+          mapFrame = CGRectMake(
+              settings.margins.left,
+              settings.margins.top,
+              frameRect.size.width - settings.margins.left - settings.margins.right,
+              frameRect.size.height - settings.margins.top - settings.margins.bottom
+          ),
+          styleURL = NSURL.URLWithString("asset://styles/" + mapbox.getStyle(settings.style) + "-v8.json");
 
-      // TODO this in not working yet
-      var style = settings.style;
-      style = "asset://styles/"+style+"-v8.json";
+      MGLAccountManager.setAccessToken(settings.accessToken);
+      mapView = MGLMapView.alloc().initWithFrameStyleURL(mapFrame, styleURL);
 
-      mapView = MGLMapView.alloc().initWithFrame(mapFrame);
-
-      // TODO not sure this works as planned.. better to listen for rotate events ([..didrotate..] and fix the frame
+      // TODO not sure this works as planned.. perhaps better to listen for rotate events ([..didrotate..] and fix the frame
       mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-      //mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
 
       if (settings.center) {
         var centerCoordinate = CLLocationCoordinate2DMake(settings.center.lat, settings.center.lng);
@@ -41,7 +41,6 @@ mapbox.show = function (arg) {
       mapView.rotateEnabled = !settings.disableRotation;
       mapView.scrollEnabled = !settings.disableScroll;
       mapView.zoomEnabled = !settings.disableZoom;
-
 
       if (settings.markers) {
         for (var m in settings.markers) {
@@ -62,7 +61,10 @@ mapbox.show = function (arg) {
       });
       mapView.delegate = delegate;
 
-      view.addSubview(mapView);
+      // wrapping in a little timeout since the map area tends to flash black a bit initially
+      setTimeout(function() {
+        view.addSubview(mapView);
+      }, 200);
 
       resolve("Done");
     } catch (ex) {
@@ -148,7 +150,7 @@ mapbox.setZoomLevel = function (arg) {
         reject("invalid zoomlevel, use any double value from 0 to 20 (like 8.3)");
       }
     } catch (ex) {
-      console.log("Error in mapbox.addMarkers: " + ex);
+      console.log("Error in mapbox.setZoomLevel: " + ex);
       reject(ex);
     }
   });
@@ -161,6 +163,18 @@ mapbox.getZoomLevel = function () {
       resolve(level);
     } catch (ex) {
       console.log("Error in mapbox.getZoomLevel: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.addPolygon = function () {
+  return new Promise(function (resolve, reject) {
+    try {
+      // TODO implement
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.addPolygon: " + ex);
       reject(ex);
     }
   });

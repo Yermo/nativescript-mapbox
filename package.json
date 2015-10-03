@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "description" : "Native Maps, by Mapbox.",
   "main" : "mapbox.js",
   "nativescript": {
@@ -19,7 +19,7 @@
     "Maps",
     "Mapbox"
   ],
-  "author": "Eddy Verbruggen <eddyverbruggen@gmail.com>",
+  "author": "Telerik / Eddy Verbruggen <eddyverbruggen@gmail.com>",
   "license": {
     "type": "MIT",
     "url": "https://github.com/eddyverbruggen/nativescript-mapbox/blob/master/LICENSE"

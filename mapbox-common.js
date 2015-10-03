@@ -5,17 +5,31 @@ mapbox.defaults = {
   margins: {
     'left': 0,
     'right': 0,
-    'top': 20,
-    'bottom': 60
+    'top': 0,
+    'bottom': 0
   },
   zoomLevel: 0, // 0 (a big part of the world) to 20 (streetlevel)
   showUserLocation: false, // true requires adding `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription` in the .plist
-  hideLogo: false, // required for the 'started' plan
-  hideAttribution: false,
+  hideLogo: false, // required for the 'starter' plan
+  hideAttribution: true,
   hideCompass: false,
   disableRotation: false,
   disableScroll: false,
   disableZoom: false
+};
+
+mapbox.getStyle = function getStyle(requested) {
+  if ("light" === requested) {
+    return "light";
+  } else if ("dark" === requested) {
+    return "dark";
+  } else if ("emerald" === requested) {
+    return "emerald";
+  } else if ("satellite" === requested) {
+    return "satellite";
+  } else {
+    return "streets";
+  }
 };
 
 mapbox.merge = function merge(obj1, obj2){ // Our merge function
@@ -35,5 +49,7 @@ mapbox.merge = function merge(obj1, obj2){ // Our merge function
   }
   return result;
 };
+
+mapbox.mapView = null;
 
 module.exports = mapbox;
