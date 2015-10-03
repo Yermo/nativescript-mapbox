@@ -2,10 +2,13 @@
 
 Awesome native OpenGL powered maps - by Mapbox
 
-<img src="screenshots/iOS-demo-app.png" width="375px" />
+<img src="screenshots/ios-demoapp.png" width="375px" />
 
 ## Prerequisites
 NativeScript 1.3.0 (`tns --version`) is required for smooth installation, so please upgrade if you need to.
+
+You need a Mapbox API access token (they have a free Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
+Once you've registered go to your Account > Apps > New token. The 'Default Secret Token' is what you'll need.
 
 ## Installation
 From the command prompt go to your app's root folder and execute:
@@ -22,7 +25,7 @@ For a quick demo simply copy-paste the contents of the demo folder to your app, 
   var mapbox = require("nativescript-mapbox");
 
   mapbox.show({
-    accessToken: 'YOUR_ACCESSTOKEN_HERE',
+    accessToken: 'YOUR_API_ACCESS_TOKEN', // see 'Prerequisites' above
     style: 'emerald', // light|dark|emerald|satellite|streets , default 'streets'
     margins: {
       left: 40, // default 0
