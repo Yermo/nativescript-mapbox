@@ -4,6 +4,14 @@ Awesome native OpenGL powered maps - by Mapbox
 
 <img src="screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
+### Use when
+* you want full map styling capability to match the uses of your app (example: downplaying highways for a running app),
+* you want a platform independent map implementation,
+* you care about performance so you don't want a web based solution,
+* you want an open source map implementation that you can tweak yourself,
+* you want to leverage Mapbox's backend to visualize massive geo data sets,
+* you want advanced analytics about your app's users.
+
 ## Prerequisites
 NativeScript 1.3.0 (`tns --version`) is required for smooth installation, so please upgrade if you need to.
 
@@ -39,8 +47,8 @@ For a quick demo simply copy-paste the contents of the demo folder to your app, 
     },
     zoomLevel: 9.25, // 0-20, default 0
     showUserLocation: true, // default false - requires location permissions on Android which you can remove from AndroidManifest.xml if you don't need them
-    hideAttribution: true, // a clickable info icon - default true (as it may crash Android when tapped)
-    hideLogo: true, // default false - required for the Mapbox 'starter' plan
+    hideAttribution: false, // default false, Mapbox requires this default if you're on a free plan
+    hideLogo: false, // default false, Mapbox requires this default if you're on a free plan
     hideCompass: false, // default false
     disableRotation: false, // default false
     disableScroll: false, // default false
