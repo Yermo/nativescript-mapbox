@@ -26,7 +26,8 @@ tns plugin add nativescript-mapbox
 
 ## Usage
 
-For a quick demo simply copy-paste the contents of the demo folder to your app, but here's the comprehensive list of supported functions:
+If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
+And here's the comprehensive list of supported functions:
 
 ### function: show
 ```js
