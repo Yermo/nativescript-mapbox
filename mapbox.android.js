@@ -15,7 +15,7 @@ mapbox.show = function(arg) {
         return;
       }
 
-      mapView = new com.mapbox.mapboxgl.views.MapView(context, settings.accessToken);
+      mapView = new com.mapbox.mapboxsdk.views.MapView(context, settings.accessToken);
       mapView.onResume();
       mapView.onCreate(null);
       mapView.setStyleUrl("asset://styles/" + mapbox.getStyle(settings.style) + "-v8.json");
@@ -34,7 +34,7 @@ mapbox.show = function(arg) {
       mapView.setLayoutParams(params);
 
       if (settings.center) {
-        mapView.setCenterCoordinate(new com.mapbox.mapboxgl.geometry.LatLngZoom(settings.center.lat, settings.center.lng, settings.zoomLevel));
+        mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLngZoom(settings.center.lat, settings.center.lng, settings.zoomLevel));
       } else {
         mapView.setZoomLevel(settings.zoomLevel);
       }
@@ -62,10 +62,10 @@ mapbox.show = function(arg) {
       if (settings.markers) {
         for (var m in settings.markers) {
           var marker = settings.markers[m];
-          var markerOptions = new com.mapbox.mapboxgl.annotations.MarkerOptions();
+          var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
           markerOptions.title(marker.title);
           markerOptions.snippet(marker.subtitle);
-          markerOptions.position(new com.mapbox.mapboxgl.geometry.LatLng(marker.lat, marker.lng));
+          markerOptions.position(new com.mapbox.mapboxsdk.geometry.LatLng(marker.lat, marker.lng));
           mapView.addMarker(markerOptions);
         }
       }
@@ -98,10 +98,10 @@ mapbox.addMarkers = function (markers) {
     try {
       for (var m in markers) {
         var marker = markers[m];
-        var markerOptions = new com.mapbox.mapboxgl.annotations.MarkerOptions();
+        var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
         markerOptions.title(marker.title);
         markerOptions.snippet(marker.subtitle);
-        markerOptions.position(new com.mapbox.mapboxgl.geometry.LatLng(marker.lat, marker.lng));
+        markerOptions.position(new com.mapbox.mapboxsdk.geometry.LatLng(marker.lat, marker.lng));
         mapView.addMarker(markerOptions);
       }
       resolve();
@@ -118,7 +118,7 @@ mapbox.setCenter = function (arg) {
       var animated = arg.animated || true;
       var lat = arg.lat;
       var lng = arg.lng;
-      mapView.setCenterCoordinate(new com.mapbox.mapboxgl.geometry.LatLng(lat, lng), animated);
+      mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLng(lat, lng), animated);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.setCenter: " + ex);
@@ -179,10 +179,10 @@ mapbox.addPolygon = function (arg) {
       if (points === undefined) {
         reject("Please set the 'points' parameter");
       } else {
-        var polygonOptions = new com.mapbox.mapboxgl.annotations.PolygonOptions();
+        var polygonOptions = new com.mapbox.mapboxsdk.annotations.PolygonOptions();
         for (var p in points) {
           var point = points[p];
-          polygonOptions.add(new com.mapbox.mapboxgl.geometry.LatLng(point.lat, point.lng));
+          polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
         }
         mapView.addPolygon(polygonOptions);
         resolve();
