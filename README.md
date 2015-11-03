@@ -162,3 +162,33 @@ Draw a shape (like a line/route, or star). Just connect the dots like we did as 
     ]
   })
 ```
+
+### function: hasFineLocationPermission / requestFineLocationPermission
+On Android 6 you need to request permission to be able to show the user's position on the map at runtime when targeting API level 23+.
+Even if the `uses-permission` tag for `ACCESS_FINE_LOCATION` is present in `AndroidManifest.xml`.
+
+Note that `hasFineLocationPermission` will return true when:
+* You're running this on iOS, or
+* You're targeting an API level lower than 23, or
+* You're using Android < 6, or
+* You've already granted permission.
+
+```js
+  mapbox.hasFineLocationPermission().then(
+      function(granted) {
+        // if this is 'false' you probably want to call 'requestFineLocationPermission' now
+        console.log("Has Location Permission? " + result);
+      }
+  );
+
+  // if no permission was granted previously this wil open a user consent screen
+  mapbox.requestFineLocationPermission().then(
+      function() {
+        console.log("Location permission requested");
+      }
+  );
+```
+
+Note that the `show` function will also check for permission if you passed in `showUserLocation : true`.
+If you didn't request permission before showing the map, and permission was needed, then
+the location is not drawn on the map and the plugin will log an error to the console.

@@ -28,8 +28,8 @@
             <Button row="3" col="0" text="add markers" tap="{{ doAddMarkers }}" />
             <Button row="3" col="1"  text="add polygon" tap="{{ doAddPolygon }}" />
 
-            <Button row="4" col="0"  text="has location permission?" tap="{{ doCheckHasFineLocationPermission }}" />
-            <Button row="4" col="1"  text="request location permission" tap="{{ doRequestFineLocationPermission }}" />
+            <Button row="4" col="0"  text="location perm?" tap="{{ doCheckHasFineLocationPermission }}" />
+            <Button row="4" col="1"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" />
 
           </GridLayout>
         </TabViewItem.view>
