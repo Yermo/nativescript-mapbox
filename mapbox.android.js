@@ -3,6 +3,7 @@ var application = require("application");
 var frame = require("ui/frame");
 var mapbox = require("./mapbox-common");
 var context = application.android.context;
+var FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
 
 mapbox.show = function(arg) {
   return new Promise(function (resolve, reject) {
@@ -43,7 +44,15 @@ mapbox.show = function(arg) {
       mapView.setRotateEnabled(!settings.disableRotation);
       mapView.setScrollEnabled(!settings.disableScroll);
       mapView.setZoomEnabled(!settings.disableZoom);
-      mapView.setMyLocationEnabled(settings.showUserLocation);
+
+      if (settings.showUserLocation) {
+        if (mapbox.hasFineLocationPermission()) {
+          mapView.setMyLocationEnabled(true);
+        } else {
+          // devs should ask permission upfront, otherwise enabling location will crash the app on Android 6
+          console.log("Mapbox plugin: not showing the user location on this device because persmission was not requested/granted");
+        }
+      }
 
       // if we want to hide this, just render it outside the view
       if (settings.hideAttribution) {
@@ -191,6 +200,36 @@ mapbox.addPolygon = function (arg) {
       console.log("Error in mapbox.addPolygon: " + ex);
       reject(ex);
     }
+  });
+};
+
+mapbox.requestFineLocationPermission = function () {
+  return new Promise(function (resolve) {
+    if (!mapbox._fineLocationPermissionGranted()) {
+      // in a future version we could hook up the callback and change this flow a bit
+      android.support.v4.app.ActivityCompat.requestPermissions(
+          appModule.android.foregroundActivity,
+          [android.Manifest.permission.FINE_LOCATION],
+          FINE_LOCATION_PERMISSION_REQUEST_CODE);
+      // this is not the nicest solution as the user needs to initiate scanning again after granting permission,
+      // so enhance this in a future version, but it's ok for now
+      resolve();
+    }
+  });
+};
+
+mapbox._fineLocationPermissionGranted = function () {
+  var hasPermission = android.os.Build.VERSION.SDK_INT < 23; // Android M. (6.0)
+  if (!hasPermission) {
+    hasPermission = android.content.pm.PackageManager.PERMISSION_GRANTED ==
+    android.support.v4.content.ContextCompat.checkSelfPermission(appModule.android.foregroundActivity, android.Manifest.permission.FINE_LOCATION);
+  }
+  return hasPermission;
+};
+
+mapbox.hasFineLocationPermission = function () {
+  return new Promise(function (resolve) {
+    resolve(mapbox._fineLocationPermissionGranted());
   });
 };
 

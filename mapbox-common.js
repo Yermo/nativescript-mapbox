@@ -50,6 +50,18 @@ mapbox.merge = function merge(obj1, obj2){ // Our merge function
   return result;
 };
 
+mapbox.requestFineLocationPermission = function () {
+  return new Promise(function (resolve) {
+    resolve(true);
+  });
+};
+
+mapbox.hasFineLocationPermission = function () {
+  return new Promise(function (resolve) {
+    resolve(true);
+  });
+};
+
 mapbox.mapView = null;
 
 module.exports = mapbox;
