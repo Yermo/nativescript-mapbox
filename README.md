@@ -119,7 +119,6 @@ Here the promise callback makes sense, so adding it to the example:
 ```
 
 ### function: setZoomLevel
-Here the promise callback makes sense, so adding it to the example:
 ```js
   mapbox.setZoomLevel(
       {
