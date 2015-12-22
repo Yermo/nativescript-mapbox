@@ -24,6 +24,9 @@ From the command prompt go to your app's root folder and execute:
 tns plugin add nativescript-mapbox
 ```
 
+If you get an error during iOS build related to Podspec versions, probably the easiest fix is:
+`tns platform remove ios` and `tns platform add ios`.
+
 ## Usage
 
 If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
@@ -176,7 +179,7 @@ Note that `hasFineLocationPermission` will return true when:
   mapbox.hasFineLocationPermission().then(
       function(granted) {
         // if this is 'false' you probably want to call 'requestFineLocationPermission' now
-        console.log("Has Location Permission? " + result);
+        console.log("Has Location Permission? " + granted);
       }
   );
 
