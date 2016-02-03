@@ -1,12 +1,21 @@
 var mapbox = {};
 
+mapbox.MapStyle = {
+  DARK: "dark",
+  EMERALD: "emerald",
+  HYBRID: "hybrid",
+  LIGHT: "light",
+  SATELLITE: "satellite",
+  STREETS: "streets"
+};
+
 mapbox.defaults = {
   style: 'streets',
   margins: {
-    'left': 0,
-    'right': 0,
-    'top': 0,
-    'bottom': 0
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0
   },
   zoomLevel: 0, // 0 (a big part of the world) to 20 (streetlevel)
   showUserLocation: false, // true requires adding `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription` in the .plist
@@ -15,21 +24,8 @@ mapbox.defaults = {
   hideCompass: false,
   disableRotation: false,
   disableScroll: false,
-  disableZoom: false
-};
-
-mapbox.getStyle = function getStyle(requested) {
-  if ("light" === requested) {
-    return "light";
-  } else if ("dark" === requested) {
-    return "dark";
-  } else if ("emerald" === requested) {
-    return "emerald";
-  } else if ("satellite" === requested) {
-    return "satellite";
-  } else {
-    return "streets";
-  }
+  disableZoom: false,
+  disableTilt: false
 };
 
 mapbox.merge = function merge(obj1, obj2){ // Our merge function
