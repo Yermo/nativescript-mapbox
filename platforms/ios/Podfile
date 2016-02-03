@@ -1,9 +1,1 @@
-pod 'Mapbox-iOS-SDK', '~> 2.1.2'
-
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['ENABLE_BITCODE'] = 'NO'
-    end
-  end
-end
+pod 'Mapbox-iOS-SDK', '~> 3.0.1'

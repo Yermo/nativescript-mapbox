@@ -1,4 +1,22 @@
+// TODO add callback handler for clicked marker callouts
 var mapbox = require("./mapbox-common");
+
+mapbox._getMapStyle = function(input) {
+  if (input === mapbox.MapStyle.LIGHT) {
+    return MGLStyle.lightStyleURL();
+  } else if (input === mapbox.MapStyle.DARK) {
+    return MGLStyle.darkStyleURL();
+  } else if (input === mapbox.MapStyle.EMERALD) {
+    return MGLStyle.emeraldStyleURL();
+  } else if (input === mapbox.MapStyle.SATELLITE) {
+    return MGLStyle.satelliteStyleURL();
+  } else if (input === mapbox.MapStyle.HYBRID) {
+    return MGLStyle.hybridStyleURL();
+  } else {
+    // default
+    return MGLStyle.streetsStyleURL();
+  }
+};
 
 mapbox.show = function (arg) {
   return new Promise(function (resolve, reject) {
@@ -19,7 +37,7 @@ mapbox.show = function (arg) {
               frameRect.size.width - settings.margins.left - settings.margins.right,
               frameRect.size.height - settings.margins.top - settings.margins.bottom
           ),
-          styleURL = NSURL.URLWithString("asset://styles/" + mapbox.getStyle(settings.style) + "-v8.json");
+          styleURL = mapbox._getMapStyle(settings.style);
 
       MGLAccountManager.setAccessToken(settings.accessToken);
       mapView = MGLMapView.alloc().initWithFrameStyleURL(mapFrame, styleURL);
@@ -41,6 +59,7 @@ mapbox.show = function (arg) {
       mapView.rotateEnabled = !settings.disableRotation;
       mapView.scrollEnabled = !settings.disableScroll;
       mapView.zoomEnabled = !settings.disableZoom;
+      mapView.allowsTilting = !settings.disableTilt;
 
       if (settings.markers) {
         for (var m in settings.markers) {
@@ -64,7 +83,7 @@ mapbox.show = function (arg) {
       // wrapping in a little timeout since the map area tends to flash black a bit initially
       setTimeout(function() {
         view.addSubview(mapView);
-      }, 200);
+      }, 500);
 
       resolve("Done");
     } catch (ex) {
@@ -89,7 +108,7 @@ mapbox.hide = function (arg) {
 mapbox.addMarkers = function (markers) {
   return new Promise(function (resolve, reject) {
     try {
-      for (m in markers) {
+      for (var m in markers) {
         var marker = markers[m];
         var lat = marker.lat;
         var lng = marker.lng;
@@ -130,7 +149,7 @@ mapbox.getCenter = function () {
       resolve({
         lat: coordinate.latitude,
         lng: coordinate.longitude
-      })
+      });
     } catch (ex) {
       console.log("Error in mapbox.getCenter: " + ex);
       reject(ex);
@@ -168,11 +187,96 @@ mapbox.getZoomLevel = function () {
   });
 };
 
-mapbox.addPolygon = function () {
+mapbox.setTilt = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      // TODO implement
+      // TODO implement when the native SDK adds support (it's not in 3.0.1)
+      reject("not implemented for iOS (yet)");
+    } catch (ex) {
+      console.log("Error in mapbox.setTilt: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.getTilt = function () {
+  return new Promise(function (resolve, reject) {
+    try {
+      // TODO implement when the native SDK adds support (it's not in 3.0.1)
+      reject("not implemented for iOS (yet)");
+    } catch (ex) {
+      console.log("Error in mapbox.getTilt: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.animateCamera = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      
+      var target = arg.target;
+      if (target === undefined) {
+        reject("Please set the 'target' parameter");
+        return;
+      }
+
+      var cam = MGLMapCamera.camera();
+      
+      cam.centerCoordinate = CLLocationCoordinate2DMake(target.lat, target.lng);
+
+      if (arg.altitude) {
+        cam.altitude = arg.altitude;
+      }
+
+      if (arg.bearing) {
+        cam.heading = arg.bearing;
+      }
+
+      if (arg.tilt) {
+        cam.pitch = arg.tilt;
+      }
+
+      var duration = arg.duration || 15; // default
+
+      mapView.setCameraWithDurationAnimationTimingFunction(
+        cam,
+        duration,
+        CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut));
+
       resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.animateCamera: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.addPolygon = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var points = arg.points;
+      if (points === undefined) {
+        reject("Please set the 'points' parameter");
+        return;
+      }
+
+      /*
+      TODO 'sizeof' is not valid in {N}, but we need it for this:
+      var coordinates = malloc(points.length * sizeof(CLLocationCoordinate2D));
+      for (var i=0; i<points.length; i++) {
+        var point = points[i];
+        coordinates[i] = CLLocationCoordinate2DMake(point.lat, point.lng);
+      }
+
+      var polygon = MGLPolygon.polygonWithCoordinatesCount(
+        coordinates,
+        points.length);
+
+      mapView.addAnnotation(polygon);
+      */
+
+      reject("not implemented for iOS (yet)");
     } catch (ex) {
       console.log("Error in mapbox.addPolygon: " + ex);
       reject(ex);

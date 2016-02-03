@@ -1,3 +1,4 @@
+// TODO add callback handler for clicked marker callouts
 var utils = require("utils/utils");
 var application = require("application");
 var frame = require("ui/frame");
@@ -35,6 +36,22 @@ mapbox.requestFineLocationPermission = function () {
   });
 };
 
+mapbox._getMapStyle = function(input) {
+  var Style = com.mapbox.mapboxsdk.constants.Style;
+  if (input === mapbox.MapStyle.LIGHT) {
+    return Style.LIGHT;
+  } else if (input === mapbox.MapStyle.DARK) {
+    return Style.DARK;
+  } else if (input === mapbox.MapStyle.EMERALD) {
+    return Style.EMERALD;
+  } else if (input === mapbox.MapStyle.SATELLITE) {
+    return Style.SATELLITE;
+  } else {
+    // default
+    return Style.MAPBOX_STREETS;
+  }
+};
+
 mapbox.show = function(arg) {
   return new Promise(function (resolve, reject) {
     try {
@@ -49,7 +66,7 @@ mapbox.show = function(arg) {
       mapView = new com.mapbox.mapboxsdk.views.MapView(context, settings.accessToken);
       mapView.onResume();
       mapView.onCreate(null);
-      mapView.setStyleUrl("asset://styles/" + mapbox.getStyle(settings.style) + "-v8.json");
+      mapView.setStyleUrl(mapbox._getMapStyle(settings.style));
 
       var topMostFrame = frame.topmost(),
           density = utils.layout.getDisplayDensity(),
@@ -74,6 +91,7 @@ mapbox.show = function(arg) {
       mapView.setRotateEnabled(!settings.disableRotation);
       mapView.setScrollEnabled(!settings.disableScroll);
       mapView.setZoomEnabled(!settings.disableZoom);
+      mapView.setTiltEnabled(!settings.disableTilt);
 
       if (settings.showUserLocation) {
         if (mapbox._fineLocationPermissionGranted()) {
@@ -121,7 +139,7 @@ mapbox.hide = function(arg) {
   return new Promise(function (resolve, reject) {
     try {
       var viewGroup = mapView.getParent();
-      if (viewGroup != null) {
+      if (viewGroup !== null) {
         viewGroup.removeView(mapView);
       }
       resolve();
@@ -173,7 +191,7 @@ mapbox.getCenter = function () {
       resolve({
         lat: coordinate.getLatitude(),
         lng: coordinate.getLongitude()
-      })
+      });
     } catch (ex) {
       console.log("Error in mapbox.getCenter: " + ex);
       reject(ex);
@@ -211,21 +229,86 @@ mapbox.getZoomLevel = function () {
   });
 };
 
+mapbox.setTilt = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      mapView.setTilt(
+        new java.lang.Double(arg.pitch || 30),
+        new java.lang.Double(arg.duration || 5000));
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.setTilt: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.getTilt = function () {
+  return new Promise(function (resolve, reject) {
+    try {
+      var tilt = mapView.getTilt();
+      resolve(tilt);
+    } catch (ex) {
+      console.log("Error in mapbox.getTilt: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.animateCamera = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      
+      var target = arg.target;
+      if (target === undefined) {
+        reject("Please set the 'target' parameter");
+        return;
+      }
+      
+      var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+            .target(new com.mapbox.mapboxsdk.geometry.LatLng(target.lat, target.lng));
+      
+      if (arg.bearing) {
+        cameraPositionBuilder.bearing(arg.bearing);
+      }
+
+      if (arg.tilt) {
+        cameraPositionBuilder.bearing(arg.tilt);
+      }
+
+      if (arg.zoomLevel) {
+        cameraPositionBuilder.zoom(arg.zoomLevel);
+      }
+
+      mapView.animateCamera(
+          com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build()),
+          (arg.duration ? arg.duration : 15) * 1000, // default 15 seconds
+          null);
+
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.animateCamera: " + ex);
+      reject(ex);
+    }
+  });
+};
+
 mapbox.addPolygon = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
       var points = arg.points;
       if (points === undefined) {
         reject("Please set the 'points' parameter");
-      } else {
-        var polygonOptions = new com.mapbox.mapboxsdk.annotations.PolygonOptions();
-        for (var p in points) {
-          var point = points[p];
-          polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
-        }
-        mapView.addPolygon(polygonOptions);
-        resolve();
+        return;
       }
+
+      var polygonOptions = new com.mapbox.mapboxsdk.annotations.PolygonOptions();
+      for (var p in points) {
+        var point = points[p];
+        polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
+      }
+      mapView.addPolygon(polygonOptions);
+      resolve();
     } catch (ex) {
       console.log("Error in mapbox.addPolygon: " + ex);
       reject(ex);
