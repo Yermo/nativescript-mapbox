@@ -32,13 +32,13 @@ If you get an error during iOS build related to Podspec versions, probably the e
 If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
 And here's the comprehensive list of supported functions:
 
-### function: show
+### show
 ```js
   var mapbox = require("nativescript-mapbox");
 
   mapbox.show({
     accessToken: 'YOUR_API_ACCESS_TOKEN', // see 'Prerequisites' above
-    style: 'emerald', // light|dark|emerald|satellite|streets , default 'streets'
+    style: 'emerald', // light|dark|emerald|satellite|streets , default 'streets' (there is also 'hybrid' for Android)
     margins: {
       left: 40, // default 0
       right: 40, // default 0
@@ -75,14 +75,14 @@ And here's the comprehensive list of supported functions:
   )
 ```
 
-### function: hide
+### hide
 All further examples assume `mapbox` has been required.
 Also, all functions support promises, but we're leaving out the `.then()` stuff for brevity where it doesn't add value.
 ```js
   mapbox.hide()
 ```
 
-### function: addMarkers
+### addMarkers
 ```js
   mapbox.addMarkers([
     {
@@ -97,7 +97,7 @@ Also, all functions support promises, but we're leaving out the `.then()` stuff 
   ])
 ```
 
-### function: setCenter
+### setCenter
 ```js
   mapbox.setCenter(
       {
@@ -121,7 +121,7 @@ Here the promise callback makes sense, so adding it to the example:
   )
 ```
 
-### function: setZoomLevel
+### setZoomLevel
 ```js
   mapbox.setZoomLevel(
       {
@@ -131,7 +131,7 @@ Here the promise callback makes sense, so adding it to the example:
   )
 ```
 
-### function: getZoomLevel
+### getZoomLevel
 ```js
   mapbox.getZoomLevel().then(
       function(result) {
@@ -143,7 +143,45 @@ Here the promise callback makes sense, so adding it to the example:
   )
 ```
 
-### function: addPolygon
+### animateCamera
+Move the camera from the current point on the map to a new point in one smooth transition.
+
+```js
+  // this is a boring triangle drawn near Amsterdam Central Station
+  mapbox.animateCamera({
+    // this is where we animate to
+    target: {
+        lat: 52.3732160,
+        lng: 4.8941680,
+    },
+    zoomLevel: 17, // Android
+    altitude: 2000, // iOS (meters from the ground)
+    bearing: 270, // Where the camera is pointing, 0-360 (degrees)
+    tilt: 50,
+    duration: 10 // in seconds
+  })
+```
+
+### setTilt (Android)
+```js
+  mapbox.setTilt(
+      {
+        pitch: 35, // default 30 (degrees angle)
+        duration: 4000 // default 5000 (milliseconds)
+      }
+  )
+```
+
+### getTilt (Android)
+```js
+  mapbox.getTilt().then(
+      function(tilt) {
+        console.log("Current map tilt: " +  tilt);
+      }
+  )
+```
+
+### addPolygon (Android)
 Draw a shape (like a line/route, or star). Just connect the dots like we did as a child. The first person to tweet a snowman drawn with this function gets a T-shirt.
 ```js
   // this is a boring triangle drawn near Amsterdam Central Station
@@ -165,7 +203,7 @@ Draw a shape (like a line/route, or star). Just connect the dots like we did as 
   })
 ```
 
-### function: hasFineLocationPermission / requestFineLocationPermission
+### hasFineLocationPermission / requestFineLocationPermission
 On Android 6 you need to request permission to be able to show the user's position on the map at runtime when targeting API level 23+.
 Even if the `uses-permission` tag for `ACCESS_FINE_LOCATION` is present in `AndroidManifest.xml`.
 
