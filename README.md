@@ -144,7 +144,6 @@ Here the promise callback makes sense, so adding it to the example:
 ```
 
 ### animateCamera
-Move the camera from the current point on the map to a new point in one smooth transition.
 
 ```js
   // this is a boring triangle drawn near Amsterdam Central Station
