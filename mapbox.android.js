@@ -3,7 +3,6 @@ var utils = require("utils/utils");
 var application = require("application");
 var frame = require("ui/frame");
 var mapbox = require("./mapbox-common");
-var context = application.android.context;
 var ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
 
 mapbox._fineLocationPermissionGranted = function () {
@@ -63,7 +62,7 @@ mapbox.show = function(arg) {
         return;
       }
 
-      mapView = new com.mapbox.mapboxsdk.views.MapView(context, settings.accessToken);
+      mapView = new com.mapbox.mapboxsdk.views.MapView(application.android.context, settings.accessToken);
       mapView.onResume();
       mapView.onCreate(null);
       mapView.setStyleUrl(mapbox._getMapStyle(settings.style));
