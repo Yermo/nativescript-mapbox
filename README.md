@@ -1,6 +1,6 @@
 # NativeScript Mapbox
 
-Awesome native OpenGL powered maps - by Mapbox
+Awesome native OpenGL-owered maps - by Mapbox
 
 <img src="screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
