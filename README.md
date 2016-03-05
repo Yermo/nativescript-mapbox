@@ -220,7 +220,7 @@ Note that `hasFineLocationPermission` will return true when:
       }
   );
 
-  // if no permission was granted previously this wil open a user consent screen
+  // if no permission was granted previously this will open a user consent screen
   mapbox.requestFineLocationPermission().then(
       function() {
         console.log("Location permission requested");
