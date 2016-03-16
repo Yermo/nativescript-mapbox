@@ -233,7 +233,7 @@ mapbox.setTilt = function (arg) {
     try {
       mapView.setTilt(
         new java.lang.Double(arg.pitch || 30),
-        new java.lang.Double(arg.duration || 5000));
+        new java.lang.Long(arg.duration || 5000));
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.setTilt: " + ex);
