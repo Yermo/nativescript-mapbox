@@ -27,6 +27,11 @@ tns plugin add nativescript-mapbox
 If you get an error during iOS build related to Podspec versions, probably the easiest fix is:
 `tns platform remove ios` and `tns platform add ios`.
 
+On Android make sure you add this to the `<application>` node of `app/App_Resources/Android/AndroidManifest.xml`:
+```xml
+  <service android:name="com.mapbox.mapboxsdk.telemetry.TelemetryService" />
+```
+
 ## Usage
 
 If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
