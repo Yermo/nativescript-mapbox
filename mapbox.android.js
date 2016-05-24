@@ -315,4 +315,29 @@ mapbox.addPolygon = function (arg) {
   });
 };
 
+mapbox.addPolyline = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var points = arg.points;
+      if (points === undefined) {
+        reject("Please set the 'points' parameter");
+        return;
+      }
+
+      var polylineOptions = new com.mapbox.mapboxsdk.annotations.PolylineOptions();
+      polylineOptions.width(arg.width || 5); //Default width 5
+      polylineOptions.color(arg.color || 0xff000000); //Default color black
+      for (var p in points) {
+        var point = points[p];
+        polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
+      }
+      mapView.addPolyline(polylineOptions);
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.addPolyline: " + ex);
+      reject(ex);
+    }
+  });
+};
+
 module.exports = mapbox;

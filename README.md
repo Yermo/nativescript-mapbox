@@ -202,6 +202,30 @@ Draw a shape (like a line/route, or star). Just connect the dots like we did as 
   })
 ```
 
+### addPolyline (Android)
+Draw a polyline. Connect the points given as parameters.
+```js
+  // Draw a two segment line near Amsterdam Central Station
+  mapbox.addPolyline({
+      color: 0xff29a025, //Set the color of the line (default black)
+      width: 7, //Set the width of the line (default 5)
+      points: [
+          {
+              'lat': 52.3833160, // mandatory
+              'lng': 4.8991780 // mandatory
+          },
+          {
+              'lat': 52.3834160,
+              'lng': 4.8991880
+          },
+          {
+              'lat': 52.3835160,
+              'lng': 4.8991980
+          }
+      ]
+  });
+```
+
 ### hasFineLocationPermission / requestFineLocationPermission
 On Android 6 you need to request permission to be able to show the user's position on the map at runtime when targeting API level 23+.
 Even if the `uses-permission` tag for `ACCESS_FINE_LOCATION` is present in `AndroidManifest.xml`.
