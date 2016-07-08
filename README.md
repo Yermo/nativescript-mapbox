@@ -64,10 +64,13 @@ And here's the comprehensive list of supported functions:
     disableZoom: false, // default false
     markers: [ // optional without a default
       {
-        'lat': 52.3732160, // mandatory
-        'lng': 4.8941680, // mandatory
-        'title': 'Nice location', // recommended to pass in
-        'subtitle': 'Really really nice location' // one line is available on iOS, multiple on Android
+        lat: 52.3732160, // mandatory
+        lng: 4.8941680, // mandatory
+        title: 'Nice location', // recommended to pass in
+        subtitle: 'Really really nice location', // one line is available on iOS, multiple on Android
+        iconPath: 'res/markers/green_pin_marker.png', // anywhere in your app folder
+        onTap: function(marker) { console.log("This marker was tapped"); },
+        onCalloutTap: function(marker) { console.log("The callout of this marker was tapped"); }
       }
     ]
   }).then(
@@ -89,12 +92,22 @@ Also, all functions support promises, but we're leaving out the `.then()` stuff 
 
 ### addMarkers
 ```js
+  var onTap = function(marker) {
+    console.log("Marker tapped with title: '" + marker.title + "'");
+  };
+  var onCalloutTap = function(marker) {
+    alert("Marker callout tapped with title: '" + marker.title + "'");
+  };
+
   mapbox.addMarkers([
     {
-      'lat': 52.3602160, // mandatory
-      'lng': 4.8891680, // mandatory
-      'title': 'One-line title here', // no popup unless set
-      'subtitle': 'Infamous subtitle!'
+      lat: 52.3602160, // mandatory
+      lng: 4.8891680, // mandatory
+      title: 'One-line title here', // no popup unless set
+      subtitle: 'Infamous subtitle!',
+      iconPath: 'res/markers/home_marker.png',
+      onTap: onTap,
+      onCalloutTap: onCalloutTap
     },
     {
       ..
@@ -162,7 +175,7 @@ Here the promise callback makes sense, so adding it to the example:
     altitude: 2000, // iOS (meters from the ground)
     bearing: 270, // Where the camera is pointing, 0-360 (degrees)
     tilt: 50,
-    duration: 10 // in seconds
+    duration: 10000 // in milliseconds
   })
 ```
 
@@ -170,7 +183,7 @@ Here the promise callback makes sense, so adding it to the example:
 ```js
   mapbox.setTilt(
       {
-        pitch: 35, // default 30 (degrees angle)
+        tilt: 40, // default 30 (degrees angle)
         duration: 4000 // default 5000 (milliseconds)
       }
   )
