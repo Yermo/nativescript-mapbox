@@ -1,0 +1,17 @@
+android {
+    productFlavors {
+        "mapbox" {
+            dimension "mapbox"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:4.1.0@aar'){
+        transitive=true
+    }
+}

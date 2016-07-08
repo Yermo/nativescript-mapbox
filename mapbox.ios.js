@@ -1,5 +1,6 @@
-// TODO add callback handler for clicked marker callouts
 var mapbox = require("./mapbox-common");
+var fs = require("file-system");
+var imgSrc = require("image-source");
 
 mapbox._getMapStyle = function(input) {
   if (input === mapbox.MapStyle.LIGHT) {
@@ -61,31 +62,20 @@ mapbox.show = function (arg) {
       mapView.zoomEnabled = !settings.disableZoom;
       mapView.allowsTilting = !settings.disableTilt;
 
-      if (settings.markers) {
-        for (var m in settings.markers) {
-          var marker = settings.markers[m];
-          var lat = marker.lat;
-          var lng = marker.lng;
-          var point = MGLPointAnnotation.alloc().init();
-          point.coordinate = CLLocationCoordinate2DMake(lat, lng);
-          point.title = marker.title;
-          point.subtitle = marker.subtitle;
-          mapView.addAnnotation(point);
+      mapView.delegate = mapbox._delegate = MGLMapViewDelegateImpl.new().initWithCallback(
+        function () {
+          resolve();
         }
-      }
+      );
 
-      // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
-      var delegate = MGLMapViewDelegateImpl.new().initWithCallback(function (loaded) {
-        //delegate = undefined;
-      });
-      mapView.delegate = delegate;
+      mapbox._markers = [];
+      mapbox._addMarkers(settings.markers);
 
       // wrapping in a little timeout since the map area tends to flash black a bit initially
       setTimeout(function() {
         view.addSubview(mapView);
       }, 500);
 
-      resolve("Done");
     } catch (ex) {
       console.log("Error in mapbox.show: " + ex);
       reject(ex);
@@ -108,22 +98,30 @@ mapbox.hide = function (arg) {
 mapbox.addMarkers = function (markers) {
   return new Promise(function (resolve, reject) {
     try {
-      for (var m in markers) {
-        var marker = markers[m];
-        var lat = marker.lat;
-        var lng = marker.lng;
-        var point = MGLPointAnnotation.alloc().init();
-        point.coordinate = CLLocationCoordinate2DMake(lat, lng);
-        point.title = marker.title;
-        point.subtitle = marker.subtitle;
-        mapView.addAnnotation(point);
-      }
+      mapbox._addMarkers(markers);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addMarkers: " + ex);
       reject(ex);
     }
   });
+};
+
+mapbox._addMarkers = function(markers) {
+  if (!markers) {
+    return;
+  }
+  for (var m in markers) {
+    var marker = markers[m];
+    mapbox._markers.push(marker);
+    var lat = marker.lat;
+    var lng = marker.lng;
+    var point = MGLPointAnnotation.alloc().init();
+    point.coordinate = CLLocationCoordinate2DMake(lat, lng);
+    point.title = marker.title;
+    point.subtitle = marker.subtitle;
+    mapView.addAnnotation(point);
+  }
 };
 
 mapbox.setCenter = function (arg) {
@@ -190,8 +188,7 @@ mapbox.getZoomLevel = function () {
 mapbox.setTilt = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      // TODO implement when the native SDK adds support (it's not in 3.0.1)
-      reject("not implemented for iOS (yet)");
+      reject("Not implemented for iOS");
     } catch (ex) {
       console.log("Error in mapbox.setTilt: " + ex);
       reject(ex);
@@ -202,8 +199,7 @@ mapbox.setTilt = function (arg) {
 mapbox.getTilt = function () {
   return new Promise(function (resolve, reject) {
     try {
-      // TODO implement when the native SDK adds support (it's not in 3.0.1)
-      reject("not implemented for iOS (yet)");
+      reject("Not implemented for iOS");
     } catch (ex) {
       console.log("Error in mapbox.getTilt: " + ex);
       reject(ex);
@@ -237,7 +233,7 @@ mapbox.animateCamera = function (arg) {
         cam.pitch = arg.tilt;
       }
 
-      var duration = arg.duration || 15; // default
+      var duration = arg.duration ? (arg.duration / 1000) : 10;
 
       mapView.setCameraWithDurationAnimationTimingFunction(
         cam,
@@ -293,25 +289,69 @@ var MGLMapViewDelegateImpl = (function (_super) {
   MGLMapViewDelegateImpl.new = function () {
     return _super.new.call(this);
   };
-  MGLMapViewDelegateImpl.prototype.initWithCallback = function (callback) {
-    this._callback = callback;
+  MGLMapViewDelegateImpl.prototype.initWithCallback = function (mapLoadedCallback) {
+    this._mapLoadedCallback = mapLoadedCallback;
     return this;
   };
   MGLMapViewDelegateImpl.prototype.mapViewDidFinishLoadingMap = function(mapView) {
-    this._callback(true);
+    console.log("--- mapViewDidFinishLoadingMap");
+    this._mapLoadedCallback();
   };
   MGLMapViewDelegateImpl.prototype.mapViewAnnotationCanShowCallout = function(mapView, annotation) {
     return true;
   };
-  MGLMapViewDelegateImpl.prototype.mapViewDidSelectAnnotation = function(mapView, annotation) {
-    var title = annotation.title;
-    var subtitle = annotation.subtitle;
-    var coord = annotation.coordinate;
-    console.log("Mapbox marker selected with title: " + title);
-    // this won't work as we can only resolve once, so find a different way if somebody needs this..
-    // .. perhaps some JS event
-    //this._callback(true);
+
+  // fired when the marker icon is about to be rendered - return null for the default icon
+  MGLMapViewDelegateImpl.prototype.mapViewImageForAnnotation = function(mapView, annotation) {
+    var cachedMarker = _getTappedMarkerDetails(annotation);
+    if (cachedMarker && cachedMarker.iconPath) {
+      if (cachedMarker.reuseIdentifier) {
+        return mapView.dequeueReusableAnnotationImageWithIdentifier(cachedMarker.reuseIdentifier);
+      }
+      var appPath = fs.knownFolders.currentApp().path;
+      var iconFullPath = appPath + "/" + cachedMarker.iconPath;
+      if (fs.File.exists(iconFullPath)) {
+        var image = imgSrc.fromFile(iconFullPath).ios;
+        // TODO (future) add resize options for nice retina rendering
+        cachedMarker.reuseIdentifier = cachedMarker.iconPath;
+        return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(image, cachedMarker.reuseIdentifier);
+      }
+    }
+    return null;
   };
+
+  // fired when on of the callout's accessoryviews is tapped (not currently used)
+  MGLMapViewDelegateImpl.prototype.mapViewAnnotationCalloutAccessoryControlTapped = function(mapView, annotation, control) {
+  };
+
+  // fired when a marker is tapped
+  MGLMapViewDelegateImpl.prototype.mapViewDidSelectAnnotation = function(mapView, annotation) {
+    var cachedMarker = _getTappedMarkerDetails(annotation);
+    if (cachedMarker && cachedMarker.onTap) {
+      cachedMarker.onTap(cachedMarker);
+    }
+  };
+
+  // fired when a callout is tapped
+  MGLMapViewDelegateImpl.prototype.mapViewTapOnCalloutForAnnotation = function(mapView, annotation) {
+    var cachedMarker = _getTappedMarkerDetails(annotation);
+    if (cachedMarker && cachedMarker.onCalloutTap) {
+      cachedMarker.onCalloutTap(cachedMarker);
+    }
+  };
+
+  function _getTappedMarkerDetails(tapped) {
+    for (var m in mapbox._markers) {
+      var cached = mapbox._markers[m];
+      if (cached.lat == tapped.coordinate.latitude &&
+          cached.lng == tapped.coordinate.longitude &&
+          cached.title == tapped.title &&
+          cached.subtitle == tapped.subtitle) {
+        return cached;
+      }
+    }
+  }
+
   MGLMapViewDelegateImpl.ObjCProtocols = [MGLMapViewDelegate];
   return MGLMapViewDelegateImpl;
 })(NSObject);
