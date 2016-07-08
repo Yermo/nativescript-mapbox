@@ -1,7 +1,7 @@
-// TODO add callback handler for clicked marker callouts
 var utils = require("utils/utils");
 var application = require("application");
 var frame = require("ui/frame");
+var fs = require("file-system");
 var mapbox = require("./mapbox-common");
 var ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
 
@@ -41,9 +41,9 @@ mapbox._getMapStyle = function(input) {
     return Style.LIGHT;
   } else if (input === mapbox.MapStyle.DARK) {
     return Style.DARK;
-  } else if (input === mapbox.MapStyle.EMERALD) {
+  } else if (input === mapbox.MapStyle.EMERALD) { // TODO repl with OUTDOOR -- add dropdown to UI
     return Style.EMERALD;
-  } else if (input === mapbox.MapStyle.SATELLITE) {
+  } else if (input === mapbox.MapStyle.SATELLITE) { // TODO: also, SATELLITE_STREETS: https://www.mapbox.com/android-sdk/
     return Style.SATELLITE;
   } else {
     // default
@@ -62,6 +62,8 @@ mapbox.show = function(arg) {
         return;
       }
 
+      com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
+
       var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
         .zoom(settings.zoomLevel);
       
@@ -70,7 +72,6 @@ mapbox.show = function(arg) {
       }
       
       var mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
-        .accessToken(settings.accessToken)
         .styleUrl(mapbox._getMapStyle(settings.style))
         .compassEnabled(!settings.hideCompass)
         .rotateGesturesEnabled(!settings.disableRotation)
@@ -97,11 +98,38 @@ mapbox.show = function(arg) {
       mapView.getMapAsync(
         new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
           onMapReady: function (mbMap) {
-            console.log("map ready");
             mapboxMap = mbMap;
             // mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
             //             mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
 
+            mapbox._markers = [];
+            mapbox._addMarkers(settings.markers);
+
+            mapboxMap.setOnMarkerClickListener(
+              new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
+                onMarkerClick: function (marker) {
+                  var cachedMarker = mapbox._getClickedMarkerDetails(marker);
+                  if (cachedMarker && cachedMarker.onTap) {
+                    cachedMarker.onTap(cachedMarker);
+                  }
+                  return false;
+                }
+              })
+            );
+
+            mapboxMap.setOnInfoWindowClickListener(
+              new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
+                onInfoWindowClick: function (marker) {
+                  var cachedMarker = mapbox._getClickedMarkerDetails(marker);
+                  if (cachedMarker && cachedMarker.onCalloutTap) {
+                    cachedMarker.onCalloutTap(cachedMarker);
+                  }
+                  return true;
+                }
+              })
+            );
+
+            resolve();
           }
         })
       );
@@ -135,25 +163,23 @@ mapbox.show = function(arg) {
       var mapViewLayout = new android.widget.FrameLayout(activity);
       mapViewLayout.addView(mapView);
       topMostFrame.currentPage.android.getParent().addView(mapViewLayout);
-
-      // TODO re-enable once the addMarkers function below is fixed
-      if (false && settings.markers) {
-        for (var m in settings.markers) {
-          var marker = settings.markers[m];
-          var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
-          markerOptions.title(marker.title);
-          markerOptions.snippet(marker.subtitle);
-          markerOptions.position(new com.mapbox.mapboxsdk.geometry.LatLng(marker.lat, marker.lng));
-          mapboxMap.addMarker(markerOptions);
-        }
-      }
-
-      resolve();
     } catch (ex) {
       console.log("Error in mapbox.show: " + ex);
       reject(ex);
     }
   });
+};
+
+mapbox._getClickedMarkerDetails = function (clicked) {
+  for (var m in mapbox._markers) {
+    var cached = mapbox._markers[m];
+    if (cached.lat == clicked.getPosition().getLatitude() &&
+        cached.lng == clicked.getPosition().getLongitude() &&
+        cached.title == clicked.getTitle() &&
+        cached.subtitle == clicked.getSnippet()) {
+      return cached;
+    }
+  }
 };
 
 mapbox.hide = function(arg) {
@@ -174,15 +200,7 @@ mapbox.hide = function(arg) {
 mapbox.addMarkers = function (markers) {
   return new Promise(function (resolve, reject) {
     try {
-      for (var m in markers) {
-        var marker = markers[m];
-        var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
-        markerOptions
-          .title(marker.title)
-          .snippet(marker.subtitle)
-          .position(new com.mapbox.mapboxsdk.geometry.LatLng(marker.lat, marker.lng));
-        mapboxMap.addMarker(markerOptions);
-      }
+      mapbox._addMarkers(markers);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addMarkers: " + ex);
@@ -191,13 +209,51 @@ mapbox.addMarkers = function (markers) {
   });
 };
 
+mapbox._addMarkers = function(markers) {
+  if (!markers) {
+    return;
+  }
+  for (var m in markers) {
+    var marker = markers[m];
+    mapbox._markers.push(marker);
+    var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
+    markerOptions.setTitle(marker.title);
+    markerOptions.setSnippet(marker.subtitle);
+    markerOptions.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(marker.lat, marker.lng));
+    if (marker.iconPath) {
+      // TODO these bits can be cached
+      var iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
+      var appPath = fs.knownFolders.currentApp().path;
+      var iconFullPath = appPath + "/" + marker.iconPath;
+      // if the file doesn't exist the app will crash, so checking it
+      if (fs.File.exists(iconFullPath)) {
+        var icon = iconFactory.fromPath(iconFullPath);
+        // TODO (future) width, height, retina, see https://github.com/Telerik-Verified-Plugins/Mapbox/pull/42/files?diff=unified&short_path=1c65267
+        markerOptions.setIcon(icon);
+      } else {
+        console.log("Marker icon not found, using the default instead. Requested full path: " + iconFullPath);
+      }
+    }
+    mapboxMap.addMarker(markerOptions);
+  }
+};
+
 mapbox.setCenter = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      var animated = arg.animated || true;
-      var lat = arg.lat;
-      var lng = arg.lng;
-      mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLng(lat, lng), animated);
+
+      var cameraPosition = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder().target(
+            new com.mapbox.mapboxsdk.geometry.LatLng(arg.lat, arg.lng)).build();
+
+      if (arg.animated === true) {
+        mapboxMap.animateCamera(
+            com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPosition),
+            1000,
+            null);
+      } else {
+        mapboxMap.setCameraPosition(cameraPosition);
+      }
+
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.setCenter: " + ex);
@@ -209,7 +265,7 @@ mapbox.setCenter = function (arg) {
 mapbox.getCenter = function () {
   return new Promise(function (resolve, reject) {
     try {
-      var coordinate = mapView.getCenterCoordinate();
+      var coordinate = mapboxMap.getCameraPosition().target;
       resolve({
         lat: coordinate.getLatitude(),
         lng: coordinate.getLongitude()
@@ -259,8 +315,16 @@ mapbox.getZoomLevel = function () {
 mapbox.setTilt = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
+      var tilt = 30;
+
+      if (arg.tilt) {
+        tilt = arg.tilt;
+      } else if (arg.pitch) {
+        tilt = arg.pitch;
+      }
+
       var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
-        .tilt(arg.pitch || 30);
+        .tilt(tilt);
        
       var cameraUpdate = com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build());
 
@@ -312,7 +376,7 @@ mapbox.animateCamera = function (arg) {
 
       mapboxMap.animateCamera(
           com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build()),
-          (arg.duration ? arg.duration : 15) * 1000, // default 15 seconds
+          arg.duration ? arg.duration : 10000, // default 10 seconds
           null);
 
       resolve();
