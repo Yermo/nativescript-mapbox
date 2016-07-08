@@ -43,7 +43,7 @@ And here's the comprehensive list of supported functions:
 
   mapbox.show({
     accessToken: 'YOUR_API_ACCESS_TOKEN', // see 'Prerequisites' above
-    style: 'emerald', // light|dark|emerald|satellite|streets , default 'streets' (there is also 'hybrid' for Android)
+    style: 'light', // light|dark|satellite|streets , default 'streets' (there is also 'hybrid' for Android)
     margins: {
       left: 40, // default 0
       right: 40, // default 0
