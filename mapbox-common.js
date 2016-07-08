@@ -59,5 +59,6 @@ mapbox.hasFineLocationPermission = function () {
 };
 
 mapbox.mapView = null;
+mapbox.mapboxMap = null;
 
 module.exports = mapbox;
