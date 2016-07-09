@@ -3,19 +3,21 @@ var fs = require("file-system");
 var imgSrc = require("image-source");
 
 mapbox._getMapStyle = function(input) {
+  var version = 9;
+
   if (input === mapbox.MapStyle.LIGHT) {
-    return MGLStyle.lightStyleURL();
+    return MGLStyle.lightStyleURLWithVersion(version);
   } else if (input === mapbox.MapStyle.DARK) {
-    return MGLStyle.darkStyleURL();
-  } else if (input === mapbox.MapStyle.EMERALD) {
-    return MGLStyle.emeraldStyleURL();
+    return MGLStyle.darkStyleURLWithVersion(version);
+  } else if (input === mapbox.MapStyle.OUTDOORS) {
+    return MGLStyle.outdoorsStyleURLWithVersion(version);
   } else if (input === mapbox.MapStyle.SATELLITE) {
-    return MGLStyle.satelliteStyleURL();
-  } else if (input === mapbox.MapStyle.HYBRID) {
-    return MGLStyle.hybridStyleURL();
+    return MGLStyle.satelliteStyleURLWithVersion(version);
+  } else if (input === mapbox.MapStyle.HYBRID || mapbox.MapStyle.SATELLITE_STREETS) {
+    return MGLStyle.satelliteStreetsStyleURLWithVersion(version);
   } else {
     // default
-    return MGLStyle.streetsStyleURL();
+    return MGLStyle.streetsStyleURLWithVersion(version);
   }
 };
 
@@ -210,7 +212,7 @@ mapbox.getTilt = function () {
 mapbox.animateCamera = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      
+
       var target = arg.target;
       if (target === undefined) {
         reject("Please set the 'target' parameter");
@@ -218,7 +220,7 @@ mapbox.animateCamera = function (arg) {
       }
 
       var cam = MGLMapCamera.camera();
-      
+
       cam.centerCoordinate = CLLocationCoordinate2DMake(target.lat, target.lng);
 
       if (arg.altitude) {

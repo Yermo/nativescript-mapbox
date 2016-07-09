@@ -5,10 +5,11 @@ declare module "nativescript-mapbox" {
      */
     enum MapStyle {
       DARK,
-      EMERALD,
-      HYBRID,
+      OUTDOORS,
       LIGHT,
       SATELLITE,
+      HYBRID, // deprecated, use SATELLITE_STREETS
+      SATELLITE_STREETS,
       STREETS
     }
 
