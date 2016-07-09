@@ -41,10 +41,12 @@ mapbox._getMapStyle = function(input) {
     return Style.LIGHT;
   } else if (input === mapbox.MapStyle.DARK) {
     return Style.DARK;
-  } else if (input === mapbox.MapStyle.EMERALD) { // TODO repl with OUTDOOR -- add dropdown to UI
-    return Style.EMERALD;
-  } else if (input === mapbox.MapStyle.SATELLITE) { // TODO: also, SATELLITE_STREETS: https://www.mapbox.com/android-sdk/
+  } else if (input === mapbox.MapStyle.OUTDOORS) {
+    return Style.OUTDOORS;
+  } else if (input === mapbox.MapStyle.SATELLITE) {
     return Style.SATELLITE;
+  } else if (input === mapbox.MapStyle.HYBRID || mapbox.MapStyle.SATELLITE_STREETS) {
+    return Style.SATELLITE_STREETS;
   } else {
     // default
     return Style.MAPBOX_STREETS;
