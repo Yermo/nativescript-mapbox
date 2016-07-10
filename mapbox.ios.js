@@ -282,6 +282,124 @@ mapbox.addPolygon = function (arg) {
   });
 };
 
+
+mapbox._reportOfflineRegionDownloadProgress = function() {
+  if (firebase._receivedNotificationCallback !== null) {
+    for (var p in firebase._pendingNotifications) {
+      var userInfoJSON = firebase._pendingNotifications[p];
+      console.log("Received a push notification with title: " + userInfoJSON.aps.alert.title);
+      // move the most relevant properties so it's according to the TS definition and aligned with Android
+      userInfoJSON.title = userInfoJSON.aps.alert.title;
+      userInfoJSON.body = userInfoJSON.aps.alert.body;
+      userInfoJSON.badge = userInfoJSON.aps.badge;
+      firebase._receivedNotificationCallback(userInfoJSON);
+    }
+    firebase._pendingNotifications = [];
+    firebase._addObserver(kFIRInstanceIDTokenRefreshNotification, firebase._onTokenRefreshNotification);
+    UIApplication.sharedApplication().applicationIconBadgeNumber = 0;
+  }
+};
+
+mapbox.getViewport = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      resolve({
+        bounds: mapView.visibleCoordinateBounds,
+        zoomLevel: mapView.zoomLevel
+      });
+    } catch (ex) {
+      console.log("Error in mapbox.getViewport: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.downloadOfflineRegion = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      // TODO verify input of all params, and mark them mandatory in TS d.
+
+      var styleURL = mapbox._getMapStyle(arg.style);
+
+      var swCoordinate = CLLocationCoordinate2DMake(arg.bounds.south, arg.bounds.west);
+      var neCoordinate = CLLocationCoordinate2DMake(arg.bounds.north, arg.bounds.east);
+
+      var bounds = MGLCoordinateBounds;
+      bounds.sw = swCoordinate;
+      bounds.ne = neCoordinate;
+
+      var region = MGLTilePyramidOfflineRegion.alloc().initWithStyleURLBoundsFromZoomLevelToZoomLevel(
+            styleURL,
+            bounds,
+            arg.minZoom,
+            arg.maxZoom);
+
+      // TODO there's more observers, see https://www.mapbox.com/ios-sdk/examples/offline-pack/
+      if (arg.onProgress) {
+        mapbox._addObserver(MGLOfflinePackProgressChangedNotification, function (notification) {
+          var offlinePack = notification.object;
+          var offlinePackProgress = offlinePack.progress;
+          var userInfo = NSKeyedUnarchiver.unarchiveObjectWithData(offlinePack.context);
+          var complete = offlinePackProgress.countOfResourcesCompleted == offlinePackProgress.countOfResourcesExpected;
+
+          arg.onProgress({
+            name: userInfo.objectForKey("name"),
+            completed: offlinePackProgress.countOfResourcesCompleted,
+            expected: offlinePackProgress.countOfResourcesExpected,
+            percentage: Math.round((offlinePackProgress.countOfResourcesCompleted / offlinePackProgress.countOfResourcesExpected) * 10000) / 100,
+            complete: complete
+          });
+
+          if (complete) {
+            resolve();
+          }
+        });
+      }
+
+      mapbox._addObserver(MGLOfflinePackErrorNotification, function (notification) {
+        var offlinePack = notification.object;
+        var userInfo = NSKeyedUnarchiver.unarchiveObjectWithData(offlinePack.context);
+        var error = notification.userInfo[MGLOfflinePackErrorUserInfoKey];
+        reject({
+          name: userInfo.objectForKey("name"),
+          error: error.localizedFailureReason
+        });
+      });
+
+      mapbox._addObserver(MGLOfflinePackMaximumMapboxTilesReachedNotification, function (notification) {
+        console.log("--- error MGLOfflinePackMaximumMapboxTilesReachedNotification");
+        var offlinePack = notification.object;
+        var userInfo = NSKeyedUnarchiver.unarchiveObjectWithData(offlinePack.context);
+        var maximumCount = notification.userInfo[MGLOfflinePackMaximumCountUserInfoKey];
+        console.log("Offline region " + userInfo.objectForKey("name") + " reached the tile limit of " + maximumCount);
+      });
+
+      // Store some data for identification purposes alongside the downloaded resources.
+      var userInfo = {"name": arg.name };
+      var context = NSKeyedArchiver.archivedDataWithRootObject(userInfo);
+
+      // Create and register an offline pack with the shared offline storage object.
+      MGLOfflineStorage.sharedOfflineStorage().addPackForRegionWithContextCompletionHandler(region, context, function(pack, error) {
+        if (error) {
+          // The pack couldn’t be created for some reason.
+          reject(error.localizedFailureReason);
+        } else {
+          // Start downloading.
+          pack.resume();
+        }
+      });
+
+    } catch (ex) {
+      console.log("Error in mapbox.downloadOfflineRegion: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox._addObserver = function (eventName, callback) {
+  return NSNotificationCenter.defaultCenter().addObserverForNameObjectQueueUsingBlock(eventName, null, NSOperationQueue.mainQueue(), callback);
+};
+
 var MGLMapViewDelegateImpl = (function (_super) {
   __extends(MGLMapViewDelegateImpl, _super);
   function MGLMapViewDelegateImpl() {
