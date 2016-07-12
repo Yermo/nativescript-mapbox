@@ -50,6 +50,60 @@ declare module "nativescript-mapbox" {
       bottom?: number;
     }
 
+    export interface Bounds {
+      north: number;
+      east: number;
+      south: number;
+      west: number;
+    }
+
+    export interface Viewport {
+      bounds: Bounds;
+      zoomLevel: number;
+    }
+
+    export interface DeleteOfflineRegionOptions {
+      /**
+       * The name of the offline region to delete.
+       */
+      name: string;
+    }
+
+    export interface ListOfflineRegionsOptions {
+      /**
+       * On Android you need to pass this in in case you haven't done so in a previous function (like 'show')
+       */
+      accessToken?: string;
+    }
+
+    export interface OfflineRegion {
+      name: string;
+      bounds: Bounds;
+      minZoom: number;
+      maxZoom: number;
+      style: MapStyle;
+    }
+
+    export interface DownloadProgress {
+      name: string;
+      completed: number;
+      expected: number;
+      percentage: number;
+      complete: boolean;
+      /**
+       * Android only, the size in bytes of the download so far.
+       */
+      completedSize?: number;
+    }
+
+    export interface DownloadOfflineRegionOptions extends OfflineRegion {
+      /**
+       * On Android you need to pass this in in case you haven't done so in a previous function (like 'show')
+       */
+      accessToken?: string;
+      onProgress: (data: DownloadProgress) => void;
+    }
+
     /**
      * The options object passed into the show function.
      */
@@ -116,15 +170,27 @@ declare module "nativescript-mapbox" {
 
     export function show(options: ShowOptions): Promise<any>;
     export function hide(): Promise<any>;
+
     export function addMarkers(markers: AddMarkersOption[]): Promise<any>;
+
     export function setCenter(arg: LatLng): Promise<any>;
     export function getCenter(): Promise<LatLng>;
+
     export function setZoomLevel(arg: SetZoomLevelOptions): Promise<any>;
     export function getZoomLevel(): Promise<number>;
+
     export function setTilt(arg: SetTiltOptions): Promise<any>;
     export function getTilt(): Promise<number>;
+
     export function addPolygon(arg: AddPolygonOptions): Promise<any>;
+
     export function animateCamera(arg: AnimateCameraOptions): Promise<any>;
+
     export function requestFineLocationPermission(): Promise<any>;
     export function hasFineLocationPermission(): Promise<boolean>;
+
+    export function getViewport(): Promise<Viewport>;
+    export function downloadOfflineRegion(arg: DownloadOfflineRegionOptions): Promise<any>;
+    export function listOfflineRegions(arg: ListOfflineRegionsOptions): Promise<Array<OfflineRegion>>;
+    export function deleteOfflineRegion(arg: DeleteOfflineRegionOptions): Promise<any>;
 }

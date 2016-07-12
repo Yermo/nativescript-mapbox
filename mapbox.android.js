@@ -64,6 +64,8 @@ mapbox.show = function(arg) {
         return;
       }
 
+      mapbox._accessToken = settings.accessToken;
+
       com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
 
       var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
@@ -100,14 +102,14 @@ mapbox.show = function(arg) {
       mapView.getMapAsync(
         new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
           onMapReady: function (mbMap) {
-            mapboxMap = mbMap;
-            // mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
-            //             mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
+            mapbox.mapboxMap = mbMap;
+            // mapbox.mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
+            // mapbox.mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
 
             mapbox._markers = [];
             mapbox._addMarkers(settings.markers);
 
-            mapboxMap.setOnMarkerClickListener(
+            mapbox.mapboxMap.setOnMarkerClickListener(
               new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
                 onMarkerClick: function (marker) {
                   var cachedMarker = mapbox._getClickedMarkerDetails(marker);
@@ -119,7 +121,7 @@ mapbox.show = function(arg) {
               })
             );
 
-            mapboxMap.setOnInfoWindowClickListener(
+            mapbox.mapboxMap.setOnInfoWindowClickListener(
               new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
                 onInfoWindowClick: function (marker) {
                   var cachedMarker = mapbox._getClickedMarkerDetails(marker);
@@ -236,7 +238,7 @@ mapbox._addMarkers = function(markers) {
         console.log("Marker icon not found, using the default instead. Requested full path: " + iconFullPath);
       }
     }
-    mapboxMap.addMarker(markerOptions);
+    mapbox.mapboxMap.addMarker(markerOptions);
   }
 };
 
@@ -248,12 +250,12 @@ mapbox.setCenter = function (arg) {
             new com.mapbox.mapboxsdk.geometry.LatLng(arg.lat, arg.lng)).build();
 
       if (arg.animated === true) {
-        mapboxMap.animateCamera(
+        mapbox.mapboxMap.animateCamera(
             com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPosition),
             1000,
             null);
       } else {
-        mapboxMap.setCameraPosition(cameraPosition);
+        mapbox.mapboxMap.setCameraPosition(cameraPosition);
       }
 
       resolve();
@@ -267,7 +269,7 @@ mapbox.setCenter = function (arg) {
 mapbox.getCenter = function () {
   return new Promise(function (resolve, reject) {
     try {
-      var coordinate = mapboxMap.getCameraPosition().target;
+      var coordinate = mapbox.mapboxMap.getCameraPosition().target;
       resolve({
         lat: coordinate.getLatitude(),
         lng: coordinate.getLongitude()
@@ -287,9 +289,9 @@ mapbox.setZoomLevel = function (arg) {
       if (level >=0 && level <= 20) {
         var cameraUpdate = com.mapbox.mapboxsdk.camera.CameraUpdateFactory.zoomTo(level);
         if (animated) {
-          mapboxMap.easeCamera(cameraUpdate);          
+          mapbox.mapboxMap.easeCamera(cameraUpdate);          
         } else {
-          mapboxMap.moveCamera(cameraUpdate);
+          mapbox.mapboxMap.moveCamera(cameraUpdate);
         }
         resolve();
       } else {
@@ -305,7 +307,7 @@ mapbox.setZoomLevel = function (arg) {
 mapbox.getZoomLevel = function () {
   return new Promise(function (resolve, reject) {
     try {
-      var level = mapboxMap.getCameraPosition().zoom;
+      var level = mapbox.mapboxMap.getCameraPosition().zoom;
       resolve(level);
     } catch (ex) {
       console.log("Error in mapbox.getZoomLevel: " + ex);
@@ -330,7 +332,7 @@ mapbox.setTilt = function (arg) {
        
       var cameraUpdate = com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build());
 
-      mapboxMap.easeCamera(cameraUpdate, arg.duration || 5000);          
+      mapbox.mapboxMap.easeCamera(cameraUpdate, arg.duration || 5000);          
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.setTilt: " + ex);
@@ -342,7 +344,7 @@ mapbox.setTilt = function (arg) {
 mapbox.getTilt = function () {
   return new Promise(function (resolve, reject) {
     try {
-      var tilt = mapboxMap.getCameraPosition().tilt;
+      var tilt = mapbox.mapboxMap.getCameraPosition().tilt;
       resolve(tilt);
     } catch (ex) {
       console.log("Error in mapbox.getTilt: " + ex);
@@ -376,7 +378,7 @@ mapbox.animateCamera = function (arg) {
         cameraPositionBuilder.zoom(arg.zoomLevel);
       }
 
-      mapboxMap.animateCamera(
+      mapbox.mapboxMap.animateCamera(
           com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build()),
           arg.duration ? arg.duration : 10000, // default 10 seconds
           null);
@@ -435,6 +437,236 @@ mapbox.addPolyline = function (arg) {
       reject(ex);
     }
   });
+};
+
+mapbox.getViewport = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      if (!mapbox.mapboxMap) {
+        reject("No map has been loaded");
+        return;
+      }
+
+      var bounds = mapbox.mapboxMap.getProjection().getVisibleRegion().latLngBounds;
+      
+      resolve({
+        bounds: {
+          north: bounds.getLatNorth(),
+          east: bounds.getLonEast(),
+          south: bounds.getLatSouth(),
+          west: bounds.getLonWest()
+        },
+        zoomLevel: mapbox.mapboxMap.getCameraPosition().zoom
+      });
+    } catch (ex) {
+      console.log("Error in mapbox.getViewport: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox._getRegionName = function (offlineRegion) {
+  var metadata = offlineRegion.getMetadata();
+  var jsonStr = new java.lang.String(metadata, "UTF-8");
+  var jsonObj = new org.json.JSONObject(jsonStr);
+  return jsonObj.getString("name");
+};
+
+mapbox.deleteOfflineRegion = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      if (!arg || !arg.name) {
+        reject("Pass in the 'region' param");
+        return;
+      }
+
+      var pack = arg.name;
+      var offlineManager = mapbox._getOfflineManager(arg);
+
+      offlineManager.listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
+        onError: function (errorString) {
+          reject(errorString);
+        },
+        onList: function (offlineRegions) {
+          var regions = [];
+          var found = false;
+          if (offlineRegions !== null) {
+            for (var i=0; i< offlineRegions.length; i++) {
+              var offlineRegion = offlineRegions[i];
+              var name = mapbox._getRegionName(offlineRegion);
+              if (name === pack) {
+                found = true;
+                offlineRegion.delete(new com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionDeleteCallback({
+                  onError: function (errorString) {
+                    reject(errorString);
+                  },
+                  onDelete: function () {
+                    resolve();
+                    // don't return, see note below
+                  }
+                }));
+                // don't break the loop as there may be multiple packs with the same name
+              }
+            }
+          }
+          if (!found) {
+            reject("Region not found");
+          }
+        }
+      }));
+
+    } catch (ex) {
+      console.log("Error in mapbox.listOfflineRegions: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.listOfflineRegions = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      if (!mapbox._accessToken && !arg.accessToken) {
+        reject("First show a map, or pass in an 'accessToken' param");
+        return;
+      }
+
+      var offlineManager = mapbox._getOfflineManager(arg);
+
+      offlineManager.listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
+        onError: function (errorString) {
+          reject(errorString);
+        },
+        onList: function (offlineRegions) {
+          var regions = [];
+          if (offlineRegions !== null) {
+            for (var i=0; i < offlineRegions.length; i++) {
+              var offlineRegion = offlineRegions[i];
+              var name = mapbox._getRegionName(offlineRegion);
+              var offlineRegionDefinition = offlineRegion.getDefinition();
+              var bounds = offlineRegionDefinition.getBounds();
+              
+              regions.push({
+                name: name,
+                style: offlineRegionDefinition.getStyleURL(),
+                minZoom: offlineRegionDefinition.getMinZoom() ,
+                maxZoom: offlineRegionDefinition.getMaxZoom() ,
+                bounds: {
+                  north: bounds.getLatNorth(),
+                  east: bounds.getLonEast(),
+                  south: bounds.getLatSouth(),
+                  west: bounds.getLonWest()
+                }
+              });
+            }
+          }
+          resolve(regions);
+        }
+      }));
+
+    } catch (ex) {
+      console.log("Error in mapbox.listOfflineRegions: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.downloadOfflineRegion = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      // TODO verify input of all params, and mark them mandatory in TS d.
+
+      var styleURL = mapbox._getMapStyle(arg.style);
+
+      var bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.north, arg.bounds.west))
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.south, arg.bounds.east))
+            .build();
+
+      var retinaFactor = utils.layout.getDisplayDensity();
+
+      var offlineRegionDefinition = new com.mapbox.mapboxsdk.offline.OfflineTilePyramidRegionDefinition(
+            styleURL,
+            bounds,
+            arg.minZoom,
+            arg.maxZoom,
+            retinaFactor);
+
+      var info = '{name:"' + arg.name + '"}';
+      var infoStr = new java.lang.String(info);
+      var encodedMetadata = infoStr.getBytes();
+
+      if (!mapbox._accessToken && !arg.accessToken) {
+        reject("First show a map, or pass in an 'accessToken' param");
+        return;
+      }
+      var offlineManager = mapbox._getOfflineManager(arg);
+
+      offlineManager.createOfflineRegion(offlineRegionDefinition, encodedMetadata, new com.mapbox.mapboxsdk.offline.OfflineManager.CreateOfflineRegionCallback({
+        onError: function (errorString) {
+          reject(errorString);
+        },
+
+        onCreate: function (offlineRegion) {
+          if (arg.onCreate) {
+            arg.onCreate(offlineRegion);
+          }
+
+          offlineRegion.setDownloadState(com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE);
+
+          // Monitor the download progress using setObserver
+          offlineRegion.setObserver(new com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionObserver({
+            onStatusChanged: function (status) {
+              // Calculate the download percentage and update the progress bar
+              var percentage = status.getRequiredResourceCount() >= 0 ?
+                      (100.0 * status.getCompletedResourceCount() / status.getRequiredResourceCount()) :
+                      0.0;
+
+              if (arg.onProgress) {
+                arg.onProgress({
+                  name: arg.name,
+                  completedSize: status.getCompletedResourceSize(),
+                  completed: status.getCompletedResourceCount(),
+                  expected: status.getRequiredResourceCount(),
+                  percentage: Math.round(percentage * 100) / 100,
+                  // downloading: status.getDownloadState() == com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE,
+                  complete: status.isComplete()
+                });
+              }
+
+              if (status.isComplete()) {
+                resolve();
+              } else if (status.isRequiredResourceCountPrecise()) {
+              }
+            },
+
+            onError: function (error) {
+              reject(error.getMessage() + ", reason: " + error.getReason());
+            },
+
+            mapboxTileCountLimitExceeded: function (limit) {
+              console.log("dl mapboxTileCountLimitExceeded: " + limit);
+            }
+          }));
+        }
+      }));
+
+    } catch (ex) {
+      console.log("Error in mapbox.downloadOfflineRegion: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox._getOfflineManager = function (arg) {
+  if (!mapbox._offlineManager) {
+    mapbox._offlineManager = com.mapbox.mapboxsdk.offline.OfflineManager.getInstance(application.android.context);
+    if (arg.accessToken) {
+      mapbox._offlineManager.setAccessToken(arg.accessToken);
+    } else if (mapbox._accessToken) {
+      mapbox._offlineManager.setAccessToken(mapbox._accessToken);      
+    }
+  }
+  return mapbox._offlineManager;
 };
 
 module.exports = mapbox;
