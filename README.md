@@ -11,7 +11,7 @@ Awesome native OpenGL-powered maps - by Mapbox
 * you want an open source map implementation that you can tweak yourself,
 * you want to leverage Mapbox's backend to visualize massive geo data sets,
 * you want advanced analytics about your app's users,
-* __NEW__ You need offline maps and custom markers.
+* __NEW:__ You need offline maps and custom markers.
 
 ## Prerequisites
 You need a Mapbox API access token (they have a free Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
