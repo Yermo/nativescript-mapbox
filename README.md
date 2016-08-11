@@ -89,7 +89,7 @@ And here's the comprehensive list of supported functions:
 All further examples assume `mapbox` has been required.
 Also, all functions support promises, but we're leaving out the `.then()` stuff for brevity where it doesn't add value.
 ```js
-  mapbox.hide()
+  mapbox.hide();
 ```
 
 ### addMarkers
