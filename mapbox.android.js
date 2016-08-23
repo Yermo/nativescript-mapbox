@@ -37,6 +37,10 @@ mapbox.requestFineLocationPermission = function () {
 
 mapbox._getMapStyle = function(input) {
   var Style = com.mapbox.mapboxsdk.constants.Style;
+  // allow for a style URL to be passed
+  if (/^mapbox:\/\/styles/.test(input)) {
+    return input;
+  }
   if (input === mapbox.MapStyle.LIGHT) {
     return Style.LIGHT;
   } else if (input === mapbox.MapStyle.DARK) {
