@@ -11,7 +11,7 @@ Awesome native OpenGL-powered maps - by Mapbox
 * you want an open source map implementation that you can tweak yourself,
 * you want to leverage Mapbox's backend to visualize massive geo data sets,
 * you want advanced analytics about your app's users,
-* __NEW__ You need offline maps and custom markers.
+* __NEW:__ You need offline maps and custom markers.
 
 ## Prerequisites
 You need a Mapbox API access token (they have a free Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
@@ -89,7 +89,7 @@ And here's the comprehensive list of supported functions:
 All further examples assume `mapbox` has been required.
 Also, all functions support promises, but we're leaving out the `.then()` stuff for brevity where it doesn't add value.
 ```js
-  mapbox.hide()
+  mapbox.hide();
 ```
 
 ### addMarkers
@@ -247,7 +247,7 @@ Draw a polyline. Connect the points given as parameters.
 ```
 
 ## Offline maps
-For situation where you want the user to pre-load certain regions you can use these methods to create and remove offline regions.
+For situations where you want the user to pre-load certain regions you can use these methods to create and remove offline regions.
 
 __Important read:__ [the offline maps documentation by Mapbox](https://www.mapbox.com/help/mobile-offline/).
 
