@@ -37,6 +37,11 @@ mapbox.show = function (arg) {
         return;
       }
 
+      // if already added, make sure it's removed first
+      if (mapbox.mapView) {
+        mapbox.mapView.removeFromSuperview();
+      }
+
       var view = UIApplication.sharedApplication().keyWindow.rootViewController.view,
           frameRect = view.frame,
           mapFrame = CGRectMake(
@@ -102,6 +107,44 @@ mapbox.hide = function (arg) {
   });
 };
 
+mapbox.unhide = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      if (mapbox.mapView) {
+        var view = UIApplication.sharedApplication().keyWindow.rootViewController.view;
+        view.addSubview(mapbox.mapView);
+        resolve();
+      } else {
+        reject("No map found");
+      }
+    } catch (ex) {
+      console.log("Error in mapbox.unhide: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.removeMarkers = function (ids) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var markersToRemove = [];
+      for (var m in mapbox._markers) {
+        var marker = mapbox._markers[m];
+        if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
+          markersToRemove.push(marker.ios);
+        }
+      }
+      if (markersToRemove.length > 0) {
+        mapbox.mapView.removeAnnotations(markersToRemove);
+      }
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.removeMarkers: " + ex);
+      reject(ex);
+    }
+  });
+};
+
 mapbox.addMarkers = function (markers) {
   return new Promise(function (resolve, reject) {
     try {
@@ -120,7 +163,6 @@ mapbox._addMarkers = function(markers) {
   }
   for (var m in markers) {
     var marker = markers[m];
-    mapbox._markers.push(marker);
     var lat = marker.lat;
     var lng = marker.lng;
     var point = MGLPointAnnotation.alloc().init();
@@ -128,6 +170,8 @@ mapbox._addMarkers = function(markers) {
     point.title = marker.title;
     point.subtitle = marker.subtitle;
     mapbox.mapView.addAnnotation(point);
+    marker.ios = point;
+    mapbox._markers.push(marker);
   }
 };
 

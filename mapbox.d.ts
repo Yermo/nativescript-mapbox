@@ -23,6 +23,10 @@ declare module "nativescript-mapbox" {
     }
 
     export interface AddMarkersOption extends LatLng {
+      /**
+       * Set this in case you want to later pass it to 'removeMarker'.
+       */
+      id?: any;
       title?: string;
       subtitle?: string;
     }
@@ -170,8 +174,10 @@ declare module "nativescript-mapbox" {
 
     export function show(options: ShowOptions): Promise<any>;
     export function hide(): Promise<any>;
+    export function unhide(): Promise<any>;
 
     export function addMarkers(markers: AddMarkersOption[]): Promise<any>;
+    export function removeMarkers(arg?: any): Promise<any>;
 
     export function setCenter(arg: LatLng): Promise<any>;
     export function getCenter(): Promise<LatLng>;

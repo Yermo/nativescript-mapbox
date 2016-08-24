@@ -64,6 +64,14 @@ mapbox.show = function(arg) {
         return;
       }
 
+      // if already added, make sure it's removed first
+      if (mapbox.mapView) {
+        var viewGroup = mapbox.mapView.getParent();
+        if (viewGroup !== null) {
+          viewGroup.removeView(mapbox.mapView);
+        }
+      }
+
       mapbox._accessToken = settings.accessToken;
 
       com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
@@ -95,11 +103,11 @@ mapbox.show = function(arg) {
         }
       }
 
-      mapView = new com.mapbox.mapboxsdk.maps.MapView(
+      mapbox.mapView = new com.mapbox.mapboxsdk.maps.MapView(
         application.android.context,
         mapboxMapOptions);
 
-      mapView.getMapAsync(
+      mapbox.mapView.getMapAsync(
         new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
           onMapReady: function (mbMap) {
             mapbox.mapboxMap = mbMap;
@@ -140,8 +148,8 @@ mapbox.show = function(arg) {
       
       // TODO remove stuff below if possible
 
-      mapView.onResume();
-      mapView.onCreate(null);
+      mapbox.mapView.onResume();
+      mapbox.mapView.onCreate(null);
 
       var topMostFrame = frame.topmost(),
           density = utils.layout.getDisplayDensity(),
@@ -154,18 +162,18 @@ mapbox.show = function(arg) {
 
       var params = new android.widget.FrameLayout.LayoutParams(viewWidth - left - right, viewHeight - top - bottom);
       params.setMargins(left, top, right, bottom);
-      mapView.setLayoutParams(params);
+      mapbox.mapView.setLayoutParams(params);
 
       if (settings.center) {
         // TODO use jumpTo?
-        // mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
+        // mapbox.mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
       }
       // TODO see https://github.com/mapbox/mapbox-gl-native/issues/4216
-      // mapView.setZoomLevel(settings.zoomLevel);
+      // mapbox.mapView.setZoomLevel(settings.zoomLevel);
 
       var activity = application.android.foregroundActivity;
       var mapViewLayout = new android.widget.FrameLayout(activity);
-      mapViewLayout.addView(mapView);
+      mapViewLayout.addView(mapbox.mapView);
       topMostFrame.currentPage.android.getParent().addView(mapViewLayout);
     } catch (ex) {
       console.log("Error in mapbox.show: " + ex);
@@ -189,13 +197,48 @@ mapbox._getClickedMarkerDetails = function (clicked) {
 mapbox.hide = function(arg) {
   return new Promise(function (resolve, reject) {
     try {
-      var viewGroup = mapView.getParent();
+      var viewGroup = mapbox.mapView.getParent();
       if (viewGroup !== null) {
-        viewGroup.removeView(mapView);
+        viewGroup.setVisibility(android.view.View.INVISIBLE);
       }
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.show: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.unhide = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      if (mapbox.mapView) {
+        var viewGroup = mapbox.mapView.getParent();
+        viewGroup.setVisibility(android.view.View.VISIBLE);
+        resolve();
+      } else {
+        reject("No map found");
+      }
+    } catch (ex) {
+      console.log("Error in mapbox.unhide: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.removeMarkers = function (ids) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var markersToRemove = [];
+      for (var m in mapbox._markers) {
+        var marker = mapbox._markers[m];
+        if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
+          mapbox.mapboxMap.removeAnnotation(marker.android);
+        }
+      }
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.removeMarkers: " + ex);
       reject(ex);
     }
   });
@@ -238,7 +281,8 @@ mapbox._addMarkers = function(markers) {
         console.log("Marker icon not found, using the default instead. Requested full path: " + iconFullPath);
       }
     }
-    mapbox.mapboxMap.addMarker(markerOptions);
+    // marker.android = markerOptions;
+    marker.android = mapbox.mapboxMap.addMarker(markerOptions);
   }
 };
 
@@ -405,7 +449,7 @@ mapbox.addPolygon = function (arg) {
         var point = points[p];
         polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
       }
-      mapView.addPolygon(polygonOptions);
+      mapbox.mapView.addPolygon(polygonOptions);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addPolygon: " + ex);
@@ -430,7 +474,7 @@ mapbox.addPolyline = function (arg) {
         var point = points[p];
         polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
       }
-      mapView.addPolyline(polylineOptions);
+      mapbox.mapView.addPolyline(polylineOptions);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addPolyline: " + ex);
