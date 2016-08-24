@@ -66,6 +66,7 @@ And here's the comprehensive list of supported functions:
     disableZoom: false, // default false
     markers: [ // optional without a default
       {
+        id: 1, // can be user in 'removeMarkers()'
         lat: 52.3732160, // mandatory
         lng: 4.8941680, // mandatory
         title: 'Nice location', // recommended to pass in
@@ -92,6 +93,14 @@ Also, all functions support promises, but we're leaving out the `.then()` stuff 
   mapbox.hide();
 ```
 
+### unhide
+If you previously called `hide()` you can quickly unhide the map,
+instead of redrawing it (which is a lot slower and you loose the viewport position, etc).
+
+```js
+  mapbox.unhide();
+```
+
 ### addMarkers
 ```js
   var onTap = function(marker) {
@@ -103,6 +112,7 @@ Also, all functions support promises, but we're leaving out the `.then()` stuff 
 
   mapbox.addMarkers([
     {
+      id: 2, // can be user in 'removeMarkers()'
       lat: 52.3602160, // mandatory
       lng: 4.8891680, // mandatory
       title: 'One-line title here', // no popup unless set
@@ -115,6 +125,18 @@ Also, all functions support promises, but we're leaving out the `.then()` stuff 
       ..
     }
   ])
+```
+
+### removeMarkers
+You can either remove all markers by not passing in an argument,
+or remove specific marker id's (which you specified previously). 
+
+```js
+  // remove all markers
+  mapbox.removeMarkers();
+  
+  // remove specific markers by id
+  mapbox.removeMarkers([1, 2]);
 ```
 
 ### setCenter
