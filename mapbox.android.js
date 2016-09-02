@@ -171,10 +171,10 @@ mapbox.show = function(arg) {
       // TODO see https://github.com/mapbox/mapbox-gl-native/issues/4216
       // mapbox.mapView.setZoomLevel(settings.zoomLevel);
 
-      var activity = application.android.foregroundActivity;
-      var mapViewLayout = new android.widget.FrameLayout(activity);
+      var context = application.android.currentContext;
+      var mapViewLayout = new android.widget.FrameLayout(context);
       mapViewLayout.addView(mapbox.mapView);
-      topMostFrame.currentPage.android.getParent().addView(mapViewLayout);
+      topMostFrame.currentPage.android.addView(mapViewLayout);
     } catch (ex) {
       console.log("Error in mapbox.show: " + ex);
       reject(ex);
