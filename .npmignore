@@ -1,1 +1,8 @@
-screenshots
+screenshots/
+.vscode/
+.idea/
+demo/
+*.png
+*.log
+*.ts
+!mapbox.d.ts
