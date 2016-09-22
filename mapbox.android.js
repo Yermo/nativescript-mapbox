@@ -449,7 +449,7 @@ mapbox.addPolygon = function (arg) {
         var point = points[p];
         polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
       }
-      mapbox.mapView.addPolygon(polygonOptions);
+      mapbox.mapboxMap.addPolygon(polygonOptions);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addPolygon: " + ex);
@@ -474,7 +474,7 @@ mapbox.addPolyline = function (arg) {
         var point = points[p];
         polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
       }
-      mapbox.mapView.addPolyline(polylineOptions);
+      mapbox.mapboxMap.addPolyline(polylineOptions);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addPolyline: " + ex);
