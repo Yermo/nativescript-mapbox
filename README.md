@@ -2,6 +2,8 @@
 
 Awesome native OpenGL-powered maps - by Mapbox
 
+> Note that version 1.5.0 requires NativeScript 2.3.0.
+
 <img src="screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
 ### Use when

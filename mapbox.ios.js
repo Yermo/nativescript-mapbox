@@ -1,6 +1,7 @@
 var mapbox = require("./mapbox-common");
 var fs = require("file-system");
 var imgSrc = require("image-source");
+var utils = require("utils/utils");
 
 (function() {
   // need to kick this off otherwise offline stuff won't work without first showing a map
@@ -31,6 +32,9 @@ mapbox.show = function (arg) {
     try {
       var settings = mapbox.merge(arg, mapbox.defaults);
 
+      // var directions = MBDirections.alloc().initWithAccessToken(arg.accessToken);
+      // alert("directions: " + directions);
+
       // if no accessToken was set the app may crash
       if (settings.accessToken === undefined) {
         reject("Please set the 'accessToken' parameter");
@@ -42,7 +46,7 @@ mapbox.show = function (arg) {
         mapbox.mapView.removeFromSuperview();
       }
 
-      var view = UIApplication.sharedApplication().keyWindow.rootViewController.view,
+      var view = utils.ios.getter(UIApplication, UIApplication.sharedApplication).keyWindow.rootViewController.view,
           frameRect = view.frame,
           mapFrame = CGRectMake(
               settings.margins.left,
@@ -111,7 +115,7 @@ mapbox.unhide = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
       if (mapbox.mapView) {
-        var view = UIApplication.sharedApplication().keyWindow.rootViewController.view;
+        var view = utils.ios.getter(UIApplication, UIApplication.sharedApplication).keyWindow.rootViewController.view;
         view.addSubview(mapbox.mapView);
         resolve();
       } else {
@@ -165,7 +169,7 @@ mapbox._addMarkers = function(markers) {
     var marker = markers[m];
     var lat = marker.lat;
     var lng = marker.lng;
-    var point = MGLPointAnnotation.alloc().init();
+    var point = MGLPointAnnotation.new();
     point.coordinate = CLLocationCoordinate2DMake(lat, lng);
     point.title = marker.title;
     point.subtitle = marker.subtitle;
@@ -345,7 +349,7 @@ mapbox._reportOfflineRegionDownloadProgress = function() {
     }
     firebase._pendingNotifications = [];
     firebase._addObserver(kFIRInstanceIDTokenRefreshNotification, firebase._onTokenRefreshNotification);
-    UIApplication.sharedApplication().applicationIconBadgeNumber = 0;
+    utils.ios.getter(UIApplication, UIApplication.sharedApplication).applicationIconBadgeNumber = 0;
   }
 };
 
@@ -536,7 +540,7 @@ mapbox.downloadOfflineRegion = function (arg) {
 };
 
 mapbox._addObserver = function (eventName, callback) {
-  return NSNotificationCenter.defaultCenter().addObserverForNameObjectQueueUsingBlock(eventName, null, NSOperationQueue.mainQueue(), callback);
+  return utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).addObserverForNameObjectQueueUsingBlock(eventName, null, utils.ios.getter(NSOperationQueue, NSOperationQueue.mainQueue), callback);
 };
 
 var MGLMapViewDelegateImpl = (function (_super) {
