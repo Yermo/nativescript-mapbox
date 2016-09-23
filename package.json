@@ -1,12 +1,12 @@
 {
   "name": "nativescript-mapbox",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox.js",
   "nativescript": {
     "platforms": {
-      "android": "1.3.0",
-      "ios": "1.3.0"
+      "android": "2.3.0",
+      "ios": "2.3.0"
     }
   },
   "repository": {
