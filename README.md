@@ -2,7 +2,7 @@
 
 Awesome native OpenGL-powered maps - by Mapbox
 
-> Note that version 1.5.0 requires NativeScript 2.3.0.
+> Note that version 1.5.0+ requires NativeScript 2.3.0.
 
 <img src="screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
@@ -34,7 +34,64 @@ On Android make sure you add this to the `<application>` node of `app/App_Resour
   <service android:name="com.mapbox.mapboxsdk.telemetry.TelemetryService" />
 ```
 
-## Basic usage
+## Declaring a map in XML (recommended approach)
+You can instantiate a map from JS or TS but declaring it in XML has a few advantages. As the map is yet another view component it will play nice with any NativeScript layout you throw it in. You can also easily add multiple maps to the same page or to different pages in any layout you like.
+
+<table>
+  <tr>
+    <td><img src="screenshots/ios-xml-declared.png" width="373px" height="361px" /></td>
+    <td>
+```xml
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" navigatingTo="navigatingTo">
+  <StackLayout>
+    <Label text="Nice map, huh!" class="title"/>
+    <ContentView height="240" width="240">
+      <map:Mapbox
+          latitude="52.3702160"
+          longitude="4.8951680"
+          zoomLevel="3"
+          mapStyle="light"
+          hideAttribution="false"
+          showUserLocation="true"
+          hideCompass="false"
+          accessToken="your_token">
+      </map:Mapbox>
+    </ContentView>
+  </StackLayout>
+</Page>
+```
+</td>
+  </tr>
+</table>
+
+|pic|bla
+|---|---
+|<img src="screenshots/ios-xml-declared.png" width="373px" height="361px" />|```<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" navigatingTo="navigatingTo">
+  <StackLayout>
+    <Label text="Nice map, huh!" class="title"/>
+    <ContentView height="240" width="240">
+      <map:Mapbox
+          latitude="52.3702160"
+          longitude="4.8951680"
+          zoomLevel="3"
+          mapStyle="light"
+          hideAttribution="false"
+          showUserLocation="true"
+          hideCompass="false"
+          accessToken="your_token">
+      </map:Mapbox>
+    </ContentView>
+  </StackLayout>
+</Page>```
+
+
+|option|description
+|---|---
+|`latitude `|foo
+|`longitude`|bar
+
+
+## Declaring a map programmatically
 
 If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
 And here's the comprehensive list of supported functions:
