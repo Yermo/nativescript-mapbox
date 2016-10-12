@@ -2,11 +2,81 @@ var mapbox = require("./mapbox-common");
 var fs = require("file-system");
 var imgSrc = require("image-source");
 var utils = require("utils/utils");
+mapbox._markers = [];
 
 (function() {
   // need to kick this off otherwise offline stuff won't work without first showing a map
   MGLOfflineStorage.sharedOfflineStorage();
 })();
+
+
+/*************** XML definition START ****************/
+var Mapbox = (function (_super) {
+	__extends(Mapbox, _super);
+	function Mapbox() {
+    _super.call(this);
+    this.config = {};
+	}
+
+	Mapbox.prototype.onLoaded = function () {
+    _super.prototype.onLoaded.call(this);
+    this._ios.delegate = this._delegate = MGLMapViewDelegateImpl.new().initWithCallback(function() {});
+    this.notifyMapReady();
+  };
+
+	Object.defineProperty(Mapbox.prototype, "ios", {
+    get: function () {
+      if (!this._ios) {
+        var settings = mapbox.merge(this.config, mapbox.defaults);
+        if (settings.accessToken === undefined) {
+          setTimeout(function() {
+            var dialogs = require("ui/dialogs");
+            dialogs.alert("Please set the 'accessToken' property because now the map will be entirely black :)");
+          }, 0);
+        }
+
+        MGLAccountManager.setAccessToken(settings.accessToken);
+        this._ios = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, 1, 1), mapbox._getMapStyle(settings.style));
+        mapbox._setMapboxMapOptions(this._ios, settings);
+      }
+      return this._ios;
+    },
+    enumerable: true,
+    configurable: true
+	});
+	Object.defineProperty(Mapbox.prototype, "mapBox", {
+    get: function () {
+      return this._ios;
+    },
+    enumerable: true,
+    configurable: true
+	});
+	return Mapbox;
+}(mapbox.Mapbox));
+exports.Mapbox = Mapbox;
+/*************** XML definition END ****************/
+
+
+mapbox._setMapboxMapOptions = function (mapView, settings) {
+  mapView.logoView.hidden = settings.hideLogo;
+  mapView.attributionButton.hidden = settings.hideAttribution;
+  mapView.showsUserLocation = settings.showUserLocation;
+  mapView.compassView.hidden = settings.hideCompass;
+  mapView.rotateEnabled = !settings.disableRotation;
+  mapView.scrollEnabled = !settings.disableScroll;
+  mapView.zoomEnabled = !settings.disableZoom;
+  mapView.allowsTilting = !settings.disableTilt;
+
+  if (settings.center && settings.center.lat && settings.center.lng) {
+    var centerCoordinate = CLLocationCoordinate2DMake(settings.center.lat, settings.center.lng);
+    mapView.setCenterCoordinateZoomLevelAnimated(centerCoordinate, settings.zoomLevel, false);
+  } else {
+    mapView.setZoomLevelAnimated(settings.zoomLevel, false);
+  }
+
+  // TODO not sure this works as planned.. perhaps better to listen for rotate events ([..didrotate..] and fix the frame
+  mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+};
 
 mapbox._getMapStyle = function(input) {
   var version = 9;
@@ -58,25 +128,7 @@ mapbox.show = function (arg) {
 
       MGLAccountManager.setAccessToken(settings.accessToken);
       mapbox.mapView = MGLMapView.alloc().initWithFrameStyleURL(mapFrame, styleURL);
-
-      // TODO not sure this works as planned.. perhaps better to listen for rotate events ([..didrotate..] and fix the frame
-      mapbox.mapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
-      if (settings.center) {
-        var centerCoordinate = CLLocationCoordinate2DMake(settings.center.lat, settings.center.lng);
-        mapbox.mapView.setCenterCoordinateZoomLevelAnimated(centerCoordinate, settings.zoomLevel, false);
-      } else {
-        mapbox.mapView.setZoomLevelAnimated(settings.zoomLevel, false);
-      }
-
-      mapbox.mapView.showsUserLocation = settings.showUserLocation;
-      mapbox.mapView.attributionButton.hidden = settings.hideAttribution;
-      mapbox.mapView.logoView.hidden = settings.hideLogo;
-      mapbox.mapView.compassView.hidden = settings.hideCompass;
-      mapbox.mapView.rotateEnabled = !settings.disableRotation;
-      mapbox.mapView.scrollEnabled = !settings.disableScroll;
-      mapbox.mapView.zoomEnabled = !settings.disableZoom;
-      mapbox.mapView.allowsTilting = !settings.disableTilt;
+      mapbox._setMapboxMapOptions(mapbox.mapView, settings);
 
       mapbox.mapView.delegate = mapbox._delegate = MGLMapViewDelegateImpl.new().initWithCallback(
         function () {
@@ -149,10 +201,10 @@ mapbox.removeMarkers = function (ids) {
   });
 };
 
-mapbox.addMarkers = function (markers) {
+mapbox.addMarkers = function (markers, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      mapbox._addMarkers(markers);
+      mapbox._addMarkers(markers, nativeMap);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addMarkers: " + ex);
@@ -161,10 +213,11 @@ mapbox.addMarkers = function (markers) {
   });
 };
 
-mapbox._addMarkers = function(markers) {
+mapbox._addMarkers = function(markers, nativeMap) {
   if (!markers) {
     return;
   }
+  var theMap = nativeMap || mapbox.mapView;
   for (var m in markers) {
     var marker = markers[m];
     var lat = marker.lat;
@@ -173,7 +226,7 @@ mapbox._addMarkers = function(markers) {
     point.coordinate = CLLocationCoordinate2DMake(lat, lng);
     point.title = marker.title;
     point.subtitle = marker.subtitle;
-    mapbox.mapView.addAnnotation(point);
+    theMap.addAnnotation(point);
     marker.ios = point;
     mapbox._markers.push(marker);
   }
@@ -618,4 +671,4 @@ var MGLMapViewDelegateImpl = (function (_super) {
   return MGLMapViewDelegateImpl;
 })(NSObject);
 
-module.exports = mapbox;
+exports.mapbox = mapbox;
