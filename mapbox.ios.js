@@ -53,7 +53,7 @@ var Mapbox = (function (_super) {
 	});
 	return Mapbox;
 }(mapbox.Mapbox));
-exports.Mapbox = Mapbox;
+mapbox.Mapbox = Mapbox;
 /*************** XML definition END ****************/
 
 
@@ -671,4 +671,4 @@ var MGLMapViewDelegateImpl = (function (_super) {
   return MGLMapViewDelegateImpl;
 })(NSObject);
 
-exports.mapbox = mapbox;
+module.exports = mapbox;
