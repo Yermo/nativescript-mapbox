@@ -34,12 +34,17 @@ On Android make sure you add this to the `<application>` node of `app/App_Resour
   <service android:name="com.mapbox.mapboxsdk.telemetry.TelemetryService" />
 ```
 
+## Demo
+If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
+It shows you how to draw a map in XML and JS with almost all possible options.
+
+
 ## Declaring a map in XML (recommended approach)
 You can instantiate a map from JS or TS but declaring it in XML has a few advantages. As the map is yet another view component it will play nice with any NativeScript layout you throw it in. You can also easily add multiple maps to the same page or to different pages in any layout you like.
 
-A simple layout like this:
+A simple layout could look like this:
 
-<img style="border: 1px solid #777" src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-xml-declared.png" width="373px" height="361px" />
+<img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-xml-declared.png" width="373px" height="361px" />
 
 Could be rendered by a definition like this:
 
@@ -113,9 +118,6 @@ I wouldn't recommend using that though, but use the plugin's platform agnostic A
 At this point on the `addMarkers` function can be used this way but I'm exploring the best way to expose all other options as well. 
 
 ## Declaring a map programmatically
-
-If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
-And here's the comprehensive list of supported functions:
 
 ### show
 ```js
