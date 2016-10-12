@@ -71,7 +71,11 @@ var Mapbox = (function (_super) {
   Mapbox.mapReadyEvent = "mapReady";
 
   Mapbox.prototype.notifyMapReady = function () {
-    this.notify({ eventName: Mapbox.mapReadyEvent, object: this, mapBox: this.mapBox });
+    this.notify({
+      eventName: Mapbox.mapReadyEvent,
+      object: this,
+      native: this.native
+    });
   };
 
 	Object.defineProperty(Mapbox.prototype, "accessToken", {

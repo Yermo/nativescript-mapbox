@@ -54,7 +54,8 @@ Could be rendered by a definition like this:
           latitude="52.3702160"
           longitude="4.8951680"
           zoomLevel="3"
-          showUserLocation="true">
+          showUserLocation="true"
+          mapReady="onMapReady">
       </map:Mapbox>
     </ContentView>
   </StackLayout>
@@ -78,7 +79,38 @@ All currently supported options for your XML based map are:
 |`disableRotation`|false|Don't allow the user to rotate the map (two finger gesture)
 |`disableScroll`|false|Don't allow the user to move the center of the map (one finger drag)
 |`disableTilt`|false|Don't allow the user to tilt the map (two finger drag up or down)
+|`mapReady`|-|The name of a callback function you can declare to interact with the map after it has been drawn
 
+### Want to add markers?
+This where that last option in the table above comes in - `mapReady`.
+It allows you to interact with the map after it has been drawn to the page.
+
+Open `main-page.[js|ts]` and add this:
+
+```js
+var mapbox = require("nativescript-mapbox");
+
+function onMapReady(args) {
+  mapbox.addMarkers([
+    {
+      id: 1,
+      lat: 52.3602160,
+      lng: 4.8891680,
+      title: 'One-line title here', // no popup unless set
+      subtitle: 'Really really nice location',
+      onTap: function(){console.log("'Nice location' marker tapped");},
+      onCalloutTap: function(){console.log("'Nice location' marker callout tapped");}
+    }], args.native
+  );
+}
+
+exports.onMapReady = onMapReady;
+```
+
+That `args.native` object above gives you access to the native iOS or Android Mapbox SDK, depending on the runtime platform.
+
+I wouldn't recommend using that though, but use the plugin's platform agnostic API instead.
+At this point on the `addMarkers` function can be used this way but I'm exploring the best way to expose all other options as well. 
 
 ## Declaring a map programmatically
 
