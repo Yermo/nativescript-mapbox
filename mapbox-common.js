@@ -73,10 +73,15 @@ var Mapbox = (function (_super) {
   Mapbox.prototype.notifyMapReady = function () {
     this.notify({
       eventName: Mapbox.mapReadyEvent,
-      object: this,
+      map: this,
       native: this.native
     });
   };
+
+  // TODO add more of the API methods so they can be used from the XML map's "mapReady" event
+	Mapbox.prototype.addMarkers = function (args) {
+    mapbox.addMarkers(args, this.native);
+	};
 
 	Object.defineProperty(Mapbox.prototype, "accessToken", {
 			set: function (value) {

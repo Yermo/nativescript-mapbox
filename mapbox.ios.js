@@ -44,6 +44,7 @@ var Mapbox = (function (_super) {
     enumerable: true,
     configurable: true
 	});
+
 	Object.defineProperty(Mapbox.prototype, "native", {
     get: function () {
       return this._ios;
@@ -51,6 +52,7 @@ var Mapbox = (function (_super) {
     enumerable: true,
     configurable: true
 	});
+
 	return Mapbox;
 }(mapbox.Mapbox));
 mapbox.Mapbox = Mapbox;
