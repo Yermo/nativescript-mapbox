@@ -60,7 +60,7 @@ var Mapbox = (function (_super) {
 	});
 	return Mapbox;
 }(mapbox.Mapbox));
-exports.Mapbox = Mapbox;
+mapbox.Mapbox = Mapbox;
 /*************** XML definition END ****************/
 
 
@@ -777,4 +777,4 @@ mapbox._getOfflineManager = function (arg) {
   return mapbox._offlineManager;
 };
 
-exports.mapbox = mapbox;
+module.exports = mapbox;

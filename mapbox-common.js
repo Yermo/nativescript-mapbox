@@ -2,7 +2,7 @@ var view = require("ui/core/view");
 
 var mapbox = {};
 
-exports.MapStyle = {
+mapbox.MapStyle = {
   DARK: "dark",
   EMERALD: "emerald",
   HYBRID: "hybrid",
@@ -11,7 +11,7 @@ exports.MapStyle = {
   STREETS: "streets"
 };
 
-exports.defaults = {
+mapbox.defaults = {
   style: 'streets',
   margins: {
     left: 0,
@@ -30,7 +30,7 @@ exports.defaults = {
   disableTilt: false
 };
 
-exports.merge = function merge(obj1, obj2){ // Our merge function
+mapbox.merge = function merge(obj1, obj2){ // Our merge function
   var result = {}; // return result
   for(var i in obj1){      // for every property in obj1
     if((i in obj2) && (typeof obj1[i] === "object") && (i !== null)){
@@ -48,19 +48,17 @@ exports.merge = function merge(obj1, obj2){ // Our merge function
   return result;
 };
 
-exports.requestFineLocationPermission = function () {
+mapbox.requestFineLocationPermission = function () {
   return new Promise(function (resolve) {
     resolve(true);
   });
 };
 
-exports.hasFineLocationPermission = function () {
+mapbox.hasFineLocationPermission = function () {
   return new Promise(function (resolve) {
     resolve(true);
   });
 };
-
-
 
 /*************** XML definition START ****************/
 var Mapbox = (function (_super) {
@@ -146,9 +144,8 @@ var Mapbox = (function (_super) {
 
   return Mapbox;
 }(view.View));
-exports.Mapbox = Mapbox;
+mapbox.Mapbox = Mapbox;
 /*************** XML definition END ****************/
 
 
-//module.exports = mapbox;
-exports.mapbox = mapbox;
+module.exports = mapbox;
