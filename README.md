@@ -90,32 +90,29 @@ All currently supported options for your XML based map are:
 This where that last option in the table above comes in - `mapReady`.
 It allows you to interact with the map after it has been drawn to the page.
 
-Open `main-page.[js|ts]` and add this:
+Open `main-page.[js|ts]` and add this (see [`addMarkers`](#addMarkers) further below for the full marker API):
 
 ```js
 var mapbox = require("nativescript-mapbox");
 
 function onMapReady(args) {
-  mapbox.addMarkers([
+  args.map.addMarkers([
     {
-      id: 1,
       lat: 52.3602160,
       lng: 4.8891680,
-      title: 'One-line title here', // no popup unless set
+      title: 'One-line title here',
       subtitle: 'Really really nice location',
-      onTap: function(){console.log("'Nice location' marker tapped");},
       onCalloutTap: function(){console.log("'Nice location' marker callout tapped");}
-    }], args.native
+    }]
   );
 }
 
 exports.onMapReady = onMapReady;
 ```
 
-That `args.native` object above gives you access to the native iOS or Android Mapbox SDK, depending on the runtime platform.
-
-I wouldn't recommend using that though, but use the plugin's platform agnostic API instead.
-At this point on the `addMarkers` function can be used this way but I'm exploring the best way to expose all other options as well. 
+Note that at the moment this is the only one of the methods listed below
+you can use with the XML-rendered map API. It's very easy to add other methods though,
+so please open an issue on GitHub if you need to fi get the zoom level in a similar way.
 
 ## Declaring a map programmatically
 
