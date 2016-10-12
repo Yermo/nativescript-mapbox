@@ -4,7 +4,7 @@ Awesome native OpenGL-powered maps - by Mapbox
 
 > Note that version 1.5.0+ requires NativeScript 2.3.0.
 
-<img src="screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
+<img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
 ### Use when
 * you want full map styling capability to match the uses of your app (example: downplaying highways for a running app),
@@ -37,58 +37,47 @@ On Android make sure you add this to the `<application>` node of `app/App_Resour
 ## Declaring a map in XML (recommended approach)
 You can instantiate a map from JS or TS but declaring it in XML has a few advantages. As the map is yet another view component it will play nice with any NativeScript layout you throw it in. You can also easily add multiple maps to the same page or to different pages in any layout you like.
 
-<table>
-  <tr>
-    <td><img src="screenshots/ios-xml-declared.png" width="373px" height="361px" /></td>
-    <td>
+A simple layout like this:
+
+<img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-xml-declared.png" width="373px" height="361px" border="1" />
+
+Could be rendered by a definition like this:
+
 ```xml
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" navigatingTo="navigatingTo">
   <StackLayout>
     <Label text="Nice map, huh!" class="title"/>
     <ContentView height="240" width="240">
       <map:Mapbox
+          accessToken="your_token"
+          mapStyle="light"
           latitude="52.3702160"
           longitude="4.8951680"
           zoomLevel="3"
-          mapStyle="light"
-          hideAttribution="false"
-          showUserLocation="true"
-          hideCompass="false"
-          accessToken="your_token">
+          showUserLocation="true">
       </map:Mapbox>
     </ContentView>
   </StackLayout>
 </Page>
 ```
-</td>
-  </tr>
-</table>
 
-|pic|bla
-|---|---
-|<img src="screenshots/ios-xml-declared.png" width="373px" height="361px" />|```<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" navigatingTo="navigatingTo">
-  <StackLayout>
-    <Label text="Nice map, huh!" class="title"/>
-    <ContentView height="240" width="240">
-      <map:Mapbox
-          latitude="52.3702160"
-          longitude="4.8951680"
-          zoomLevel="3"
-          mapStyle="light"
-          hideAttribution="false"
-          showUserLocation="true"
-          hideCompass="false"
-          accessToken="your_token">
-      </map:Mapbox>
-    </ContentView>
-  </StackLayout>
-</Page>```
+All currently supported options for your XML based map are:
 
-
-|option|description
-|---|---
-|`latitude `|foo
-|`longitude`|bar
+|option|default|description
+|---|---|---
+|`accesstoken`|-|see 'Prerequisites' above
+|`mapStyle`|streets|streets, light, dark, emerald, hybrid, satellite
+|`latitude `|-|Set the center of the map by passing this in
+|`longitude`|-|.. and this as well
+|`zoomLevel`|0|0-20
+|`showUserLocation `|false|Requires location permissions on Android which you can remove from `AndroidManifest.xml` if you don't need them
+|`hideCompass `|false|Don't show the compass in the top right corner during rotation of the map
+|`hideLogo`|false|Mapbox requires `false` if you're on a free plan
+|`hideAttribution `|true|Mapbox requires `false` if you're on a free plan
+|`disableZoom`|false|Don't allow the user to zoom in or out (pinch and double-tap)
+|`disableRotation`|false|Don't allow the user to rotate the map (two finger gesture)
+|`disableScroll`|false|Don't allow the user to move the center of the map (one finger drag)
+|`disableTilt`|false|Don't allow the user to tilt the map (two finger drag up or down)
 
 
 ## Declaring a map programmatically
@@ -117,7 +106,7 @@ And here's the comprehensive list of supported functions:
     },
     zoomLevel: 9.25, // 0-20, default 0
     showUserLocation: true, // default false - requires location permissions on Android which you can remove from AndroidManifest.xml if you don't need them
-    hideAttribution: false, // default false, Mapbox requires this default if you're on a free plan
+    hideAttribution: false, // default true, Mapbox requires `false` if you're on a free plan
     hideLogo: false, // default false, Mapbox requires this default if you're on a free plan
     hideCompass: false, // default false
     disableRotation: false, // default false
