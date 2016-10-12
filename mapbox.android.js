@@ -51,7 +51,7 @@ var Mapbox = (function (_super) {
 			enumerable: true,
 			configurable: true
 	});
-	Object.defineProperty(Mapbox.prototype, "mapBox", {
+	Object.defineProperty(Mapbox.prototype, "native", {
 			get: function () {
 					return this._android;
 			},
