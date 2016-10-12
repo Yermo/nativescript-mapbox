@@ -3,7 +3,97 @@ var application = require("application");
 var frame = require("ui/frame");
 var fs = require("file-system");
 var mapbox = require("./mapbox-common");
+mapbox._markers = [];
 var ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
+
+
+/*************** XML definition START ****************/
+var Mapbox = (function (_super) {
+	__extends(Mapbox, _super);
+	function Mapbox() {
+			_super.call(this);
+      this.config = {};
+	}
+
+  Mapbox.prototype._createUI = function () {
+    var settings = mapbox.merge(this.config, mapbox.defaults);
+    if (settings.accessToken === undefined) {
+      setTimeout(function() {
+        var dialogs = require("ui/dialogs");
+        dialogs.alert("Please set the 'accessToken' property because now there will be no map :)");
+      }, 0);
+      return;
+    }
+
+    com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
+
+    this._android = new com.mapbox.mapboxsdk.maps.MapView(
+      application.android.context,
+      mapbox._getMapboxMapOptions(settings));
+
+    var that = this;
+    this._android.getMapAsync(
+      new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
+        onMapReady: function (mbMap) {
+          that._android.mapboxMap = mbMap;
+          that.notifyMapReady();
+        }
+      })
+    );
+    
+    this._android.onCreate(null);
+  };
+
+	Object.defineProperty(Mapbox.prototype, "android", {
+			get: function () {
+					return this._android;
+			},
+			enumerable: true,
+			configurable: true
+	});
+	Object.defineProperty(Mapbox.prototype, "mapBox", {
+			get: function () {
+					return this._android;
+			},
+			enumerable: true,
+			configurable: true
+	});
+	return Mapbox;
+}(mapbox.Mapbox));
+exports.Mapbox = Mapbox;
+/*************** XML definition END ****************/
+
+
+mapbox._getMapboxMapOptions = function (settings) {
+  var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+    .zoom(settings.zoomLevel);
+
+  if (settings.center && settings.center.lat && settings.center.lng) {
+    cameraPositionBuilder.target(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
+  }
+
+  var mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
+    .styleUrl(mapbox._getMapStyle(settings.style))
+    .compassEnabled(!settings.hideCompass)
+    .rotateGesturesEnabled(!settings.disableRotation)
+    .scrollGesturesEnabled(!settings.disableScroll)
+    .tiltGesturesEnabled(!settings.disableTilt)
+    .zoomGesturesEnabled(!settings.disableZoom)
+    .attributionEnabled(!settings.hideAttribution)
+    .logoEnabled(!settings.hideLogo)
+    .camera(cameraPositionBuilder.build());
+
+  if (settings.showUserLocation) {
+    if (mapbox._fineLocationPermissionGranted()) {
+      mapboxMapOptions.locationEnabled(true);
+    } else {
+      // devs should ask permission upfront, otherwise enabling location will crash the app on Android 6
+      console.log("Mapbox plugin: not showing the user location on this device because persmission was not requested/granted");
+    }
+  }
+
+  return mapboxMapOptions;
+};
 
 mapbox._fineLocationPermissionGranted = function () {
   var hasPermission = android.os.Build.VERSION.SDK_INT < 23; // Android M. (6.0)
@@ -73,35 +163,8 @@ mapbox.show = function(arg) {
       }
 
       mapbox._accessToken = settings.accessToken;
-
       com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
-
-      var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
-        .zoom(settings.zoomLevel);
-      
-      if (settings.center) {  
-        cameraPositionBuilder.target(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
-      }
-      
-      var mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
-        .styleUrl(mapbox._getMapStyle(settings.style))
-        .compassEnabled(!settings.hideCompass)
-        .rotateGesturesEnabled(!settings.disableRotation)
-        .scrollGesturesEnabled(!settings.disableScroll)
-        .tiltGesturesEnabled(!settings.disableTilt)
-        .zoomGesturesEnabled(!settings.disableZoom)
-        .attributionEnabled(!settings.hideAttribution)
-        .logoEnabled(!settings.hideLogo)
-        .camera(cameraPositionBuilder.build());
-
-      if (settings.showUserLocation) {
-        if (mapbox._fineLocationPermissionGranted()) {
-          mapboxMapOptions.locationEnabled(true);
-        } else {
-          // devs should ask permission upfront, otherwise enabling location will crash the app on Android 6
-          console.log("Mapbox plugin: not showing the user location on this device because persmission was not requested/granted");
-        }
-      }
+      var mapboxMapOptions = mapbox._getMapboxMapOptions(settings);
 
       mapbox.mapView = new com.mapbox.mapboxsdk.maps.MapView(
         application.android.context,
@@ -244,10 +307,10 @@ mapbox.removeMarkers = function (ids) {
   });
 };
 
-mapbox.addMarkers = function (markers) {
+mapbox.addMarkers = function (markers, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      mapbox._addMarkers(markers);
+      mapbox._addMarkers(markers, nativeMap);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addMarkers: " + ex);
@@ -256,10 +319,11 @@ mapbox.addMarkers = function (markers) {
   });
 };
 
-mapbox._addMarkers = function(markers) {
+mapbox._addMarkers = function(markers, nativeMap) {
   if (!markers) {
     return;
   }
+  var theMap = nativeMap || mapbox;
   for (var m in markers) {
     var marker = markers[m];
     mapbox._markers.push(marker);
@@ -282,7 +346,7 @@ mapbox._addMarkers = function(markers) {
       }
     }
     // marker.android = markerOptions;
-    marker.android = mapbox.mapboxMap.addMarker(markerOptions);
+    marker.android = theMap.mapboxMap.addMarker(markerOptions);
   }
 };
 
@@ -713,4 +777,4 @@ mapbox._getOfflineManager = function (arg) {
   return mapbox._offlineManager;
 };
 
-module.exports = mapbox;
+exports.mapbox = mapbox;

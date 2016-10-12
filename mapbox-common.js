@@ -1,6 +1,8 @@
+var view = require("ui/core/view");
+
 var mapbox = {};
 
-mapbox.MapStyle = {
+exports.MapStyle = {
   DARK: "dark",
   EMERALD: "emerald",
   HYBRID: "hybrid",
@@ -9,7 +11,7 @@ mapbox.MapStyle = {
   STREETS: "streets"
 };
 
-mapbox.defaults = {
+exports.defaults = {
   style: 'streets',
   margins: {
     left: 0,
@@ -28,7 +30,7 @@ mapbox.defaults = {
   disableTilt: false
 };
 
-mapbox.merge = function merge(obj1, obj2){ // Our merge function
+exports.merge = function merge(obj1, obj2){ // Our merge function
   var result = {}; // return result
   for(var i in obj1){      // for every property in obj1
     if((i in obj2) && (typeof obj1[i] === "object") && (i !== null)){
@@ -46,19 +48,107 @@ mapbox.merge = function merge(obj1, obj2){ // Our merge function
   return result;
 };
 
-mapbox.requestFineLocationPermission = function () {
+exports.requestFineLocationPermission = function () {
   return new Promise(function (resolve) {
     resolve(true);
   });
 };
 
-mapbox.hasFineLocationPermission = function () {
+exports.hasFineLocationPermission = function () {
   return new Promise(function (resolve) {
     resolve(true);
   });
 };
 
-mapbox.mapView = null;
-mapbox.mapboxMap = null;
 
-module.exports = mapbox;
+
+/*************** XML definition START ****************/
+var Mapbox = (function (_super) {
+  __extends(Mapbox, _super);
+
+  function Mapbox() {
+      _super.apply(this, arguments);
+  }
+
+  Mapbox.mapReadyEvent = "mapReady";
+
+  Mapbox.prototype.notifyMapReady = function () {
+    this.notify({ eventName: Mapbox.mapReadyEvent, object: this, mapBox: this.mapBox });
+  };
+
+	Object.defineProperty(Mapbox.prototype, "accessToken", {
+			set: function (value) {
+        this.config.accessToken = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "mapStyle", {
+			set: function (value) {
+        this.config.style = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "zoomLevel", {
+			set: function (value) {
+        this.config.zoomLevel = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "disableZoom", {
+			set: function (value) {
+        this.config.disableZoom = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "hideAttribution", {
+			set: function (value) {
+        this.config.hideAttribution = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "latitude", {
+			set: function (value) {
+        this.config.center = this.config.center || {};
+        this.config.center.lat = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "longitude", {
+			set: function (value) {
+        this.config.center = this.config.center || {};
+        this.config.center.lng = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "hideLogo", {
+			set: function (value) {
+        this.config.hideLogo = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "showUserLocation", {
+			set: function (value) {
+        this.config.showUserLocation = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "hideCompass", {
+			set: function (value) {
+        this.config.hideCompass = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "disableRotation", {
+			set: function (value) {
+        this.config.disableRotation = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "disableScroll", {
+			set: function (value) {
+        this.config.disableScroll = value;
+			}
+	});
+	Object.defineProperty(Mapbox.prototype, "disableTilt", {
+			set: function (value) {
+        this.config.disableTilt = value;
+			}
+	});
+
+  return Mapbox;
+}(view.View));
+exports.Mapbox = Mapbox;
+/*************** XML definition END ****************/
+
+
+//module.exports = mapbox;
+exports.mapbox = mapbox;
