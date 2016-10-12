@@ -39,7 +39,7 @@ You can instantiate a map from JS or TS but declaring it in XML has a few advant
 
 A simple layout like this:
 
-<img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-xml-declared.png" width="373px" height="361px" border="1" />
+<img style="border: 1px solid #777" src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-xml-declared.png" width="373px" height="361px" />
 
 Could be rendered by a definition like this:
 
