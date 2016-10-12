@@ -90,7 +90,7 @@ All currently supported options for your XML based map are:
 This where that last option in the table above comes in - `mapReady`.
 It allows you to interact with the map after it has been drawn to the page.
 
-Open `main-page.[js|ts]` and add this (see [`addMarkers`](#addMarkers) further below for the full marker API):
+Open `main-page.[js|ts]` and add this (see [`addMarkers`](#addmarkers) further below for the full marker API):
 
 ```js
 var mapbox = require("nativescript-mapbox");
