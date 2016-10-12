@@ -29,6 +29,18 @@ declare module "nativescript-mapbox" {
       id?: any;
       title?: string;
       subtitle?: string;
+      /**
+       * Example: "res/markers/green_pin_marker.png"
+       */
+      iconPath?: string;
+      /**
+       * A callback function to invoke when the marker is tapped.
+       */
+      onTap?: Function;
+      /**
+       * A callback function to invoke when the callout (popup) of this marker is tapped.
+       */
+      onCalloutTap?: Function;
     }
 
     export interface SetZoomLevelOptions {
@@ -155,6 +167,10 @@ declare module "nativescript-mapbox" {
        * default false
        */
       disableTilt?: boolean;
+      /**
+       * A list of markers to initially populate the map with.
+       */
+      markers?: AddMarkersOption[]
     }
 
     export interface AnimateCameraOptions {
