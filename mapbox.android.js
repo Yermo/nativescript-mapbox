@@ -150,98 +150,108 @@ mapbox._getMapStyle = function(input) {
 mapbox.show = function(arg) {
   return new Promise(function (resolve, reject) {
     try {
-      var settings = mapbox.merge(arg, mapbox.defaults);
+      var showIt = function() {
+        var settings = mapbox.merge(arg, mapbox.defaults);
 
-      // if no accessToken was set the app may crash
-      if (settings.accessToken === undefined) {
-        reject("Please set the 'accessToken' parameter");
-        return;
-      }
-
-      // if already added, make sure it's removed first
-      if (mapbox.mapView) {
-        var viewGroup = mapbox.mapView.getParent();
-        if (viewGroup !== null) {
-          viewGroup.removeView(mapbox.mapView);
+        // if no accessToken was set the app may crash
+        if (settings.accessToken === undefined) {
+          reject("Please set the 'accessToken' parameter");
+          return;
         }
-      }
 
-      mapbox._accessToken = settings.accessToken;
-      com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
-      var mapboxMapOptions = mapbox._getMapboxMapOptions(settings);
-
-      mapbox.mapView = new com.mapbox.mapboxsdk.maps.MapView(
-        application.android.context,
-        mapboxMapOptions);
-
-      mapbox.mapView.getMapAsync(
-        new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
-          onMapReady: function (mbMap) {
-            mapbox.mapboxMap = mbMap;
-            // mapbox.mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
-            // mapbox.mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
-
-            mapbox._markers = [];
-            mapbox._addMarkers(settings.markers);
-
-            mapbox.mapboxMap.setOnMarkerClickListener(
-              new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
-                onMarkerClick: function (marker) {
-                  var cachedMarker = mapbox._getClickedMarkerDetails(marker);
-                  if (cachedMarker && cachedMarker.onTap) {
-                    cachedMarker.onTap(cachedMarker);
-                  }
-                  return false;
-                }
-              })
-            );
-
-            mapbox.mapboxMap.setOnInfoWindowClickListener(
-              new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
-                onInfoWindowClick: function (marker) {
-                  var cachedMarker = mapbox._getClickedMarkerDetails(marker);
-                  if (cachedMarker && cachedMarker.onCalloutTap) {
-                    cachedMarker.onCalloutTap(cachedMarker);
-                  }
-                  return true;
-                }
-              })
-            );
-
-            resolve();
+        // if already added, make sure it's removed first
+        if (mapbox.mapView) {
+          var viewGroup = mapbox.mapView.getParent();
+          if (viewGroup !== null) {
+            viewGroup.removeView(mapbox.mapView);
           }
-        })
-      );
-      
-      // TODO remove stuff below if possible
+        }
 
-      mapbox.mapView.onResume();
-      mapbox.mapView.onCreate(null);
+        mapbox._accessToken = settings.accessToken;
+        com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
+        var mapboxMapOptions = mapbox._getMapboxMapOptions(settings);
 
-      var topMostFrame = frame.topmost(),
-          density = utils.layout.getDisplayDensity(),
-          left = settings.margins.left * density,
-          right = settings.margins.right * density,
-          top = settings.margins.top * density,
-          bottom = settings.margins.bottom * density,
-          viewWidth = topMostFrame.currentPage.android.getWidth(),
-          viewHeight = topMostFrame.currentPage.android.getHeight();
+        mapbox.mapView = new com.mapbox.mapboxsdk.maps.MapView(
+          application.android.context,
+          mapboxMapOptions);
 
-      var params = new android.widget.FrameLayout.LayoutParams(viewWidth - left - right, viewHeight - top - bottom);
-      params.setMargins(left, top, right, bottom);
-      mapbox.mapView.setLayoutParams(params);
+        mapbox.mapView.getMapAsync(
+          new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
+            onMapReady: function (mbMap) {
+              mapbox.mapboxMap = mbMap;
+              // mapbox.mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
+              // mapbox.mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
 
-      if (settings.center) {
-        // TODO use jumpTo?
-        // mapbox.mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
-      }
-      // TODO see https://github.com/mapbox/mapbox-gl-native/issues/4216
-      // mapbox.mapView.setZoomLevel(settings.zoomLevel);
+              mapbox._markers = [];
+              mapbox._addMarkers(settings.markers);
 
-      var context = application.android.currentContext;
-      var mapViewLayout = new android.widget.FrameLayout(context);
-      mapViewLayout.addView(mapbox.mapView);
-      topMostFrame.currentPage.android.addView(mapViewLayout);
+              mapbox.mapboxMap.setOnMarkerClickListener(
+                new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
+                  onMarkerClick: function (marker) {
+                    var cachedMarker = mapbox._getClickedMarkerDetails(marker);
+                    if (cachedMarker && cachedMarker.onTap) {
+                      cachedMarker.onTap(cachedMarker);
+                    }
+                    return false;
+                  }
+                })
+              );
+
+              mapbox.mapboxMap.setOnInfoWindowClickListener(
+                new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
+                  onInfoWindowClick: function (marker) {
+                    var cachedMarker = mapbox._getClickedMarkerDetails(marker);
+                    if (cachedMarker && cachedMarker.onCalloutTap) {
+                      cachedMarker.onCalloutTap(cachedMarker);
+                    }
+                    return true;
+                  }
+                })
+              );
+
+              resolve();
+            }
+          })
+        );
+
+        // TODO remove stuff below if possible
+
+        mapbox.mapView.onResume();
+        mapbox.mapView.onCreate(null);
+
+        var topMostFrame = frame.topmost(),
+            density = utils.layout.getDisplayDensity(),
+            left = settings.margins.left * density,
+            right = settings.margins.right * density,
+            top = settings.margins.top * density,
+            bottom = settings.margins.bottom * density,
+            viewWidth = topMostFrame.currentPage.android.getWidth(),
+            viewHeight = topMostFrame.currentPage.android.getHeight();
+
+        var params = new android.widget.FrameLayout.LayoutParams(viewWidth - left - right, viewHeight - top - bottom);
+        params.setMargins(left, top, right, bottom);
+        mapbox.mapView.setLayoutParams(params);
+
+        if (settings.center) {
+          // TODO use jumpTo?
+          // mapbox.mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
+        }
+        // TODO see https://github.com/mapbox/mapbox-gl-native/issues/4216
+        // mapbox.mapView.setZoomLevel(settings.zoomLevel);
+
+        var context = application.android.currentContext;
+        var mapViewLayout = new android.widget.FrameLayout(context);
+        mapViewLayout.addView(mapbox.mapView);
+        if (topMostFrame.currentPage.android.getParent()) {
+          topMostFrame.currentPage.android.getParent().addView(mapViewLayout);
+        } else {
+          topMostFrame.currentPage.android.addView(mapViewLayout);
+        }
+      };
+
+      // if the map is invoked immediately after launch this delay will prevent an error
+      setTimeout(showIt, 200);
+
     } catch (ex) {
       console.log("Error in mapbox.show: " + ex);
       reject(ex);
