@@ -438,14 +438,16 @@ mapbox.getViewport = function (arg) {
   });
 };
 
-mapbox.setViewport = function (arg) {
+mapbox.setViewport = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      if (!mapbox.mapView) {
+      var theMap = nativeMap || mapbox.mapView;
+
+      if (!theMap) {
         reject("No map has been loaded");
         return;
       }
-
+      
       var swCoordinate = CLLocationCoordinate2DMake(arg.bounds.south, arg.bounds.west);
       var neCoordinate = CLLocationCoordinate2DMake(arg.bounds.north, arg.bounds.east);
       var bounds = MGLCoordinateBounds;
@@ -455,7 +457,7 @@ mapbox.setViewport = function (arg) {
       var animated = arg.animated === undefined  || arg.animated;
       var padding = UIEdgeInsetsMake(25, 25, 25, 25);
 
-      mapbox.mapView.setVisibleCoordinateBoundsEdgePaddingAnimated(bounds, padding, animated);
+      theMap.setVisibleCoordinateBoundsEdgePaddingAnimated(bounds, padding, animated);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.setViewport: " + ex);

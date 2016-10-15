@@ -587,10 +587,12 @@ mapbox.getViewport = function (arg) {
   });
 };
 
-mapbox.setViewport = function (arg) {
+mapbox.setViewport = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      if (!mapbox.mapboxMap) {
+      var theMap = nativeMap || mapbox;
+
+      if (!theMap) {
         reject("No map has been loaded");
         return;
       }
@@ -603,7 +605,7 @@ mapbox.setViewport = function (arg) {
       var animated = arg.animated === undefined  || arg.animated;
       var padding = 25;
 
-      mapbox.mapboxMap.easeCamera(
+      theMap.mapboxMap.easeCamera(
         com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bounds, padding),
         animated ? 1000 : 0);
 
