@@ -1,7 +1,27 @@
 # Change Log
 
+## [2.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.1.0) (2016-10-15)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.0.0...2.1.0)
+
+**Implemented enhancements:**
+
+- Custom Styles In Maps [\#34](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/34)
+
+**Fixed bugs:**
+
+- NullPointerException when running on Android [\#3](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/3)
+
+**Merged pull requests:**
+
+- add support for mapbox style URLs [\#38](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/38) ([blinkythebear](https://github.com/blinkythebear))
+- Fix null on .show\(\) android [\#30](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/30) ([bradmartin](https://github.com/bradmartin))
+
 ## [2.0.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.0.0) (2016-10-12)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/1.5.0...2.0.0)
+
+**Implemented enhancements:**
+
+- Create map as XML element? [\#8](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/8)
 
 ## [1.5.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/1.5.0) (2016-09-23)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/1.4.0...1.5.0)
@@ -38,6 +58,10 @@
 
 ## [1.2.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/1.2.0) (2016-07-08)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/1.1.2...1.2.0)
+
+**Implemented enhancements:**
+
+- Add click event on marker [\#6](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/6)
 
 **Closed issues:**
 
