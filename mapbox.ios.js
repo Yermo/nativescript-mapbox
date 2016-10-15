@@ -241,7 +241,7 @@ mapbox._addMarkers = function(markers, nativeMap) {
 mapbox.setCenter = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      var animated = arg.animated || true;
+      var animated = arg.animated === undefined  || arg.animated;
       var lat = arg.lat;
       var lng = arg.lng;
       var coordinate = CLLocationCoordinate2DMake(lat, lng);
@@ -272,7 +272,7 @@ mapbox.getCenter = function () {
 mapbox.setZoomLevel = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      var animated = arg.animated || true;
+      var animated = arg.animated === undefined  || arg.animated;
       var level = arg.level;
       if (level >=0 && level <= 20) {
         mapbox.mapView.setZoomLevelAnimated(level, animated);
@@ -433,6 +433,32 @@ mapbox.getViewport = function (arg) {
       });
     } catch (ex) {
       console.log("Error in mapbox.getViewport: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.setViewport = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      if (!mapbox.mapView) {
+        reject("No map has been loaded");
+        return;
+      }
+
+      var swCoordinate = CLLocationCoordinate2DMake(arg.bounds.south, arg.bounds.west);
+      var neCoordinate = CLLocationCoordinate2DMake(arg.bounds.north, arg.bounds.east);
+      var bounds = MGLCoordinateBounds;
+      bounds.sw = swCoordinate;
+      bounds.ne = neCoordinate;
+
+      var animated = arg.animated === undefined  || arg.animated;
+      var padding = UIEdgeInsetsMake(25, 25, 25, 25);
+
+      mapbox.mapView.setVisibleCoordinateBoundsEdgePaddingAnimated(bounds, padding, animated);
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.setViewport: " + ex);
       reject(ex);
     }
   });
