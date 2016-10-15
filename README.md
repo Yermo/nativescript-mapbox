@@ -110,7 +110,29 @@ function onMapReady(args) {
 exports.onMapReady = onMapReady;
 ```
 
-Note that at the moment this is the only one of the methods listed below
+### .. or want to set the viewport bounds?
+
+```js
+var mapbox = require("nativescript-mapbox");
+
+function onMapReady(args) {
+  args.map.setViewport([
+      {
+        bounds: {
+          north: 52.4820,
+          east: 5.1087,
+          south: 52.2581,
+          west: 4.6816
+        },
+        animated: true
+      }
+  );
+}
+
+exports.onMapReady = onMapReady;
+```
+
+Note that at the moment these are the only two of the methods listed below
 you can use with the XML-rendered map API. It's very easy to add other methods though,
 so please open an issue on GitHub if you need to fi get the zoom level in a similar way.
 
@@ -217,6 +239,34 @@ or remove specific marker id's (which you specified previously).
   // remove specific markers by id
   mapbox.removeMarkers([1, 2]);
 ```
+
+### setViewport
+If you want to for instance make the viewport contain all markers you
+can set the bounds to the lat/lng of the outermost markers using this function. 
+
+```js
+  mapbox.setViewport(
+      {
+        bounds: {
+          north: 52.4820,
+          east: 5.1087,
+          south: 52.2581,
+          west: 4.6816
+        },
+        animated: true // default true
+      }
+  )
+```
+
+### getViewport
+```js
+  mapbox.getViewport().then(
+      function(result) {
+        console.log("Mapbox getViewport done, result: " + JSON.stringify(result));
+      }
+  )
+```
+
 
 ### setCenter
 ```js

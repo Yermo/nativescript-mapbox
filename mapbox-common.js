@@ -78,11 +78,16 @@ var Mapbox = (function (_super) {
     });
   };
 
-  // TODO add more of the API methods so they can be used from the XML map's "mapReady" event
+  // functions that can be called from the XML map's "mapReady" event
 	Mapbox.prototype.addMarkers = function (args) {
     mapbox.addMarkers(args, this.native);
 	};
 
+	Mapbox.prototype.setViewport = function (args) {
+    mapbox.setViewport(args, this.native);
+	};
+
+  // properties that can be set from XML
 	Object.defineProperty(Mapbox.prototype, "accessToken", {
 			set: function (value) {
         this.config.accessToken = value;
