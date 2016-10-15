@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox.js",
   "typings": "mapbox.d.ts",

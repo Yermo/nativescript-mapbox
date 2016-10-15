@@ -406,7 +406,7 @@ mapbox.getCenter = function () {
 mapbox.setZoomLevel = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      var animated = arg.animated || true;
+      var animated = arg.animated === undefined  || arg.animated;
       var level = arg.level;
       if (level >=0 && level <= 20) {
         var cameraUpdate = com.mapbox.mapboxsdk.camera.CameraUpdateFactory.zoomTo(level);
@@ -587,6 +587,34 @@ mapbox.getViewport = function (arg) {
   });
 };
 
+mapbox.setViewport = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      if (!mapbox.mapboxMap) {
+        reject("No map has been loaded");
+        return;
+      }
+
+      var bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.north, arg.bounds.east))
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.south, arg.bounds.west))
+            .build();
+      
+      var animated = arg.animated === undefined  || arg.animated;
+      var padding = 25;
+
+      mapbox.mapboxMap.easeCamera(
+        com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bounds, padding),
+        animated ? 1000 : 0);
+
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.setViewport: " + ex);
+      reject(ex);
+    }
+  });
+};
+
 mapbox._getRegionName = function (offlineRegion) {
   var metadata = offlineRegion.getMetadata();
   var jsonStr = new java.lang.String(metadata, "UTF-8");
@@ -700,8 +728,8 @@ mapbox.downloadOfflineRegion = function (arg) {
       var styleURL = mapbox._getMapStyle(arg.style);
 
       var bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
-            .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.north, arg.bounds.west))
-            .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.south, arg.bounds.east))
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.north, arg.bounds.east))
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.south, arg.bounds.west))
             .build();
 
       var retinaFactor = utils.layout.getDisplayDensity();

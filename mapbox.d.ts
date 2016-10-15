@@ -78,6 +78,15 @@ declare module "nativescript-mapbox" {
       zoomLevel: number;
     }
 
+    export interface SetViewportOptions {
+      bounds: Bounds;
+      /**
+       * Add an animation of about 1 second.
+       * Default true.
+       */
+      animated?: boolean;
+    }
+
     export interface DeleteOfflineRegionOptions {
       /**
        * The name of the offline region to delete.
@@ -167,10 +176,6 @@ declare module "nativescript-mapbox" {
        * default false
        */
       disableTilt?: boolean;
-      /**
-       * A list of markers to initially populate the map with.
-       */
-      markers?: AddMarkersOption[]
     }
 
     export interface AnimateCameraOptions {
@@ -212,6 +217,8 @@ declare module "nativescript-mapbox" {
     export function hasFineLocationPermission(): Promise<boolean>;
 
     export function getViewport(): Promise<Viewport>;
+    export function setViewport(arg: SetViewportOptions): Promise<any>;
+
     export function downloadOfflineRegion(arg: DownloadOfflineRegionOptions): Promise<any>;
     export function listOfflineRegions(arg: ListOfflineRegionsOptions): Promise<Array<OfflineRegion>>;
     export function deleteOfflineRegion(arg: DeleteOfflineRegionOptions): Promise<any>;
