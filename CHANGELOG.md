@@ -6,6 +6,7 @@
 **Implemented enhancements:**
 
 - Custom Styles In Maps [\#34](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/34)
+- Implement FitToBounds [\#21](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/21)
 
 **Fixed bugs:**
 
