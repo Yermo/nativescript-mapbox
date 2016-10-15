@@ -83,6 +83,10 @@ mapbox._setMapboxMapOptions = function (mapView, settings) {
 mapbox._getMapStyle = function(input) {
   var version = 9;
 
+  // allow for a style URL to be passed
+  if (/^mapbox:\/\/styles/.test(input)) {
+    return input;
+  }
   if (input === mapbox.MapStyle.LIGHT) {
     return MGLStyle.lightStyleURLWithVersion(version);
   } else if (input === mapbox.MapStyle.DARK) {
