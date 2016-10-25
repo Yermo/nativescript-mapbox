@@ -83,8 +83,36 @@ var Mapbox = (function (_super) {
     mapbox.addMarkers(args, this.native);
 	};
 
+	Mapbox.prototype.removeMarkers = function (args) {
+    mapbox.removeMarkers(args, this.native);
+	};
+
+	Mapbox.prototype.setCenter = function (args) {
+    mapbox.setCenter(args, this.native);
+	};
+
+	Mapbox.prototype.setZoomLevel = function (args) {
+    mapbox.setZoomLevel(args, this.native);
+	};
+
 	Mapbox.prototype.setViewport = function (args) {
     mapbox.setViewport(args, this.native);
+	};
+
+	Mapbox.prototype.setTilt = function (args) {
+    mapbox.setTilt(args, this.native);
+	};
+
+	Mapbox.prototype.animateCamera = function (args) {
+    mapbox.animateCamera(args, this.native);
+	};
+
+	Mapbox.prototype.addPolygon = function (args) {
+    mapbox.addPolygon(args, this.native);
+	};
+
+	Mapbox.prototype.addPolyline = function (args) {
+    mapbox.addPolyline(args, this.native);
 	};
 
   // properties that can be set from XML
