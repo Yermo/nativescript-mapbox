@@ -186,9 +186,10 @@ mapbox.unhide = function (arg) {
   });
 };
 
-mapbox.removeMarkers = function (ids) {
+mapbox.removeMarkers = function (ids, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
+      var theMap = nativeMap || mapbox.mapView;
       var markersToRemove = [];
       for (var m in mapbox._markers) {
         var marker = mapbox._markers[m];
@@ -197,7 +198,7 @@ mapbox.removeMarkers = function (ids) {
         }
       }
       if (markersToRemove.length > 0) {
-        mapbox.mapView.removeAnnotations(markersToRemove);
+        theMap.removeAnnotations(markersToRemove);
       }
       resolve();
     } catch (ex) {
@@ -221,6 +222,11 @@ mapbox.addMarkers = function (markers, nativeMap) {
 
 mapbox._addMarkers = function(markers, nativeMap) {
   if (!markers) {
+    console.log("No markers passed");
+    return;
+  }
+  if (!Array.isArray(markers)) {
+    console.log("markers must be passed as an Array: [{title:'foo'}]");
     return;
   }
   var theMap = nativeMap || mapbox.mapView;
@@ -238,14 +244,15 @@ mapbox._addMarkers = function(markers, nativeMap) {
   }
 };
 
-mapbox.setCenter = function (arg) {
+mapbox.setCenter = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
+      var theMap = nativeMap || mapbox.mapView;
       var animated = arg.animated === undefined  || arg.animated;
       var lat = arg.lat;
       var lng = arg.lng;
       var coordinate = CLLocationCoordinate2DMake(lat, lng);
-      mapbox.mapView.setCenterCoordinateAnimated(coordinate, animated);
+      theMap.setCenterCoordinateAnimated(coordinate, animated);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.setCenter: " + ex);
@@ -269,13 +276,14 @@ mapbox.getCenter = function () {
   });
 };
 
-mapbox.setZoomLevel = function (arg) {
+mapbox.setZoomLevel = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
+      var theMap = nativeMap || mapbox.mapView;
       var animated = arg.animated === undefined  || arg.animated;
       var level = arg.level;
       if (level >=0 && level <= 20) {
-        mapbox.mapView.setZoomLevelAnimated(level, animated);
+        theMap.setZoomLevelAnimated(level, animated);
         resolve();
       } else {
         reject("invalid zoomlevel, use any double value from 0 to 20 (like 8.3)");
@@ -299,10 +307,10 @@ mapbox.getZoomLevel = function () {
   });
 };
 
-mapbox.setTilt = function (arg) {
+mapbox.setTilt = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      reject("Not implemented for iOS");
+      reject("Not (yet) implemented for iOS");
     } catch (ex) {
       console.log("Error in mapbox.setTilt: " + ex);
       reject(ex);
@@ -321,9 +329,10 @@ mapbox.getTilt = function () {
   });
 };
 
-mapbox.animateCamera = function (arg) {
+mapbox.animateCamera = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
+      var theMap = nativeMap || mapbox.mapView;
       
       var target = arg.target;
       if (target === undefined) {
@@ -349,7 +358,7 @@ mapbox.animateCamera = function (arg) {
 
       var duration = arg.duration ? (arg.duration / 1000) : 10;
 
-      mapbox.mapView.setCameraWithDurationAnimationTimingFunction(
+      theMap.setCameraWithDurationAnimationTimingFunction(
         cam,
         duration,
         CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut));
@@ -362,30 +371,68 @@ mapbox.animateCamera = function (arg) {
   });
 };
 
-mapbox.addPolygon = function (arg) {
+mapbox.addPolyline = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
+      var theMap = nativeMap || mapbox.mapView;
       var points = arg.points;
       if (points === undefined) {
         reject("Please set the 'points' parameter");
         return;
       }
 
+      // TODO
+
+      reject("not implemented for iOS (yet)");
+    } catch (ex) {
+      console.log("Error in mapbox.addPolyline: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.addPolygon = function (arg, nativeMap) {
+  return new Promise(function (resolve, reject) {
+    try {
       /*
-      TODO 'sizeof' is not valid in {N}, but we need it for this:
-      var coordinates = malloc(points.length * sizeof(CLLocationCoordinate2D));
-      for (var i=0; i<points.length; i++) {
-        var point = points[i];
-        coordinates[i] = CLLocationCoordinate2DMake(point.lat, point.lng);
+      var theMap = nativeMap || mapbox.mapView;
+
+      var points = arg.points;
+      if (points === undefined) {
+        reject("Please set the 'points' parameter");
+        return;
       }
 
+      // TODO see http://docs.nativescript.org/runtimes/ios/types/C-Pointers.html#interopsizeof
+      var coordinates = []; // malloc(points.length * interop.sizeof(CLLocationCoordinate2D));
+      console.log(1);
+      for (var i=0; i<points.length; i++) {
+      console.log(2);
+        var point = points[i];
+      console.log(3);
+        coordinates.push(CLLocationCoordinate2DMake(point.lat, point.lng));
+      }
+      console.log(4);
+
+      var numberOfCoordinates = points.length / interop.sizeof(CLLocationCoordinate2D);
+      console.log(5);
+
+      // TODO check doc.. bounds?
       var polygon = MGLPolygon.polygonWithCoordinatesCount(
         coordinates,
-        points.length);
+        numberOfCoordinates);
 
-      mapbox.mapView.addAnnotation(polygon);
+      console.log(6);
+
+      console.log("-- polygon: " + polygon);
+
+        // TODO optional
+      // free(coordinates);
+
+      theMap.addAnnotation(polygon);
       */
 
+      // resolve();
       reject("not implemented for iOS (yet)");
     } catch (ex) {
       console.log("Error in mapbox.addPolygon: " + ex);

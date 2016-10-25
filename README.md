@@ -132,9 +132,11 @@ function onMapReady(args) {
 exports.onMapReady = onMapReady;
 ```
 
-Note that at the moment these are the only two of the methods listed below
-you can use with the XML-rendered map API. It's very easy to add other methods though,
-so please open an issue on GitHub if you need to fi get the zoom level in a similar way.
+Other methods you can invoke like this from an XML-declared map are:
+`removeMarkers`, `setCenter`, `setZoomLevel`, `setViewport`, `setTilt`,
+`animateCamera`, `addPolygon` and `addPolyline`.
+
+Check out the usage details on the functions below.
 
 ## Declaring a map programmatically
 
