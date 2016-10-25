@@ -1,5 +1,17 @@
 # Change Log
 
+## [2.1.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.1.1) (2016-10-25)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.1.0...2.1.1)
+
+**Implemented enhancements:**
+
+- Enhancement: expose other methods to XML map [\#44](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/44)
+
+**Closed issues:**
+
+- showUserLocation="true" is not working in Android [\#46](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/46)
+- Does Mapbox measure this plugin's usage as a native app? [\#42](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/42)
+
 ## [2.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.1.0) (2016-10-15)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.0.0...2.1.0)
 
