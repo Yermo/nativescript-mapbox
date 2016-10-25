@@ -5,7 +5,7 @@
 
 **Implemented enhancements:**
 
-- Enhancement: expose other methods to XML map [\#44](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/44)
+- Enhancement: expnose other methods to XML map [\#44](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/44)
 
 **Closed issues:**
 
