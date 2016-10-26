@@ -1,15 +1,31 @@
 # Change Log
 
+## [2.2.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.2.0) (2016-10-26)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.1.1...2.2.0)
+
+**Implemented enhancements:**
+
+- Question: remove the polyline [\#47](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/47)
+- Allow to use icon path from resource [\#43](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/43)
+
+**Fixed bugs:**
+
+- ShowUserLocation not working [\#31](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/31)
+- Request: change Position of Markers without removing them first [\#48](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/48)
+
+**Closed issues:**
+
+- showUserLocation="true" is not working in Android [\#46](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/46)
+
 ## [2.1.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.1.1) (2016-10-25)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.1.0...2.1.1)
 
 **Implemented enhancements:**
 
-- Enhancement: expnose other methods to XML map [\#44](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/44)
+- Enhancement: expose other methods to XML map [\#44](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/44)
 
 **Closed issues:**
 
-- showUserLocation="true" is not working in Android [\#46](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/46)
 - Does Mapbox measure this plugin's usage as a native app? [\#42](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/42)
 
 ## [2.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.1.0) (2016-10-15)
