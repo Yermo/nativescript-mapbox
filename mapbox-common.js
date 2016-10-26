@@ -115,6 +115,10 @@ var Mapbox = (function (_super) {
     mapbox.addPolyline(args, this.native);
 	};
 
+	Mapbox.prototype.removePolylines = function (args) {
+    mapbox.removePolylines(args, this.native);
+	};
+
   // properties that can be set from XML
 	Object.defineProperty(Mapbox.prototype, "accessToken", {
 			set: function (value) {

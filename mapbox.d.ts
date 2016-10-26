@@ -22,6 +22,22 @@ declare module "nativescript-mapbox" {
       points: LatLng[];
     }
 
+    export interface AddPolylineOptions {
+      /**
+       * Set this in case you want to later pass it to 'removePolylines'.
+       */
+      id?: any;
+      /**
+       * Width of the line, default 5.
+       */
+      width?: number;
+      /**
+       * Color of the lone, default black (0xff000000).
+       */
+      color?: any;
+      points: LatLng[];
+    }
+
     export interface AddMarkersOption extends LatLng {
       /**
        * Set this in case you want to later pass it to 'removeMarker'.
@@ -217,6 +233,8 @@ declare module "nativescript-mapbox" {
     export function getTilt(): Promise<number>;
 
     export function addPolygon(arg: AddPolygonOptions): Promise<any>;
+    export function addPolyline(arg: AddPolylineOptions): Promise<any>;
+    export function removePolylines(arg?: any): Promise<any>;
 
     export function animateCamera(arg: AnimateCameraOptions): Promise<any>;
 

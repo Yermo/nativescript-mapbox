@@ -134,7 +134,7 @@ exports.onMapReady = onMapReady;
 
 Other methods you can invoke like this from an XML-declared map are:
 `removeMarkers`, `setCenter`, `setZoomLevel`, `setViewport`, `setTilt`,
-`animateCamera`, `addPolygon` and `addPolyline`.
+`animateCamera`, `addPolygon`, `addPolyline` and `removePolylines`.
 
 Check out the usage details on the functions below.
 
@@ -399,6 +399,18 @@ Draw a polyline. Connect the points given as parameters.
           }
       ]
   });
+```
+
+### removePolylines (Android)
+You can either remove all polylines by not passing in an argument,
+or remove specific polyline id's (which you specified previously). 
+
+```js
+  // remove all polylines
+  mapbox.removePolylines();
+  
+  // remove specific polylines by id
+  mapbox.removePolylines([1, 2]);
 ```
 
 ## Offline maps

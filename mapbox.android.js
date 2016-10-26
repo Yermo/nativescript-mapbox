@@ -4,6 +4,7 @@ var frame = require("ui/frame");
 var fs = require("file-system");
 var mapbox = require("./mapbox-common");
 mapbox._markers = [];
+mapbox._polylines = [];
 var ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
 
 mapbox.locationServices = null;
@@ -174,6 +175,7 @@ mapbox.show = function(arg) {
                 // mapbox.mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
                 // mapbox.mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
 
+                mapbox._polylines = [];
                 mapbox._markers = [];
                 mapbox._addMarkers(settings.markers);
 
@@ -344,7 +346,6 @@ mapbox.removeMarkers = function (ids, nativeMap) {
 
 mapbox._removeMarkers = function (ids, nativeMap) {
   var theMap = nativeMap || mapbox;
-  var markersToRemove = [];
   for (var m in mapbox._markers) {
     var marker = mapbox._markers[m];
     if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
@@ -412,7 +413,6 @@ mapbox._addMarkers = function(markers, nativeMap) {
         console.log("Marker icon not found, using the default instead. Requested full path: " + iconFullPath);
       }
     }
-    // marker.android = markerOptions;
     marker.android = theMap.mapboxMap.addMarker(markerOptions);
   }
 };
@@ -603,16 +603,35 @@ mapbox.addPolyline = function (arg, nativeMap) {
       }
 
       var polylineOptions = new com.mapbox.mapboxsdk.annotations.PolylineOptions();
-      polylineOptions.width(arg.width || 5); //Default width 5
-      polylineOptions.color(arg.color || 0xff000000); //Default color black
+      polylineOptions.width(arg.width || 5); // default 5
+      polylineOptions.color(arg.color || 0xff000000); // default black
       for (var p in points) {
         var point = points[p];
         polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
       }
-      theMap.mapboxMap.addPolyline(polylineOptions);
+      arg.android = theMap.mapboxMap.addPolyline(polylineOptions);
+      mapbox._polylines.push(arg);
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.addPolyline: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.removePolylines = function (ids, nativeMap) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var theMap = nativeMap || mapbox;
+      for (var p in mapbox._polylines) {
+        var polyline = mapbox._polylines[p];
+        if (!ids || (polyline.id && ids.indexOf(polyline.id) > -1)) {
+          theMap.mapboxMap.removePolyline(polyline.android);
+        }
+      }
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.removePolylines: " + ex);
       reject(ex);
     }
   });

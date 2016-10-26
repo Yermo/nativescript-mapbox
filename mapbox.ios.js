@@ -392,6 +392,20 @@ mapbox.addPolyline = function (arg, nativeMap) {
   });
 };
 
+mapbox.removePolylines = function (arg, nativeMap) {
+  return new Promise(function (resolve, reject) {
+    try {
+      // TODO
+      // var theMap = nativeMap || mapbox.mapView;
+
+      reject("not implemented for iOS (yet)");
+    } catch (ex) {
+      console.log("Error in mapbox.removePolylines: " + ex);
+      reject(ex);
+    }
+  });
+};
+
 mapbox.addPolygon = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
