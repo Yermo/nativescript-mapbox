@@ -382,6 +382,7 @@ Draw a polyline. Connect the points given as parameters.
 ```js
   // Draw a two segment line near Amsterdam Central Station
   mapbox.addPolyline({
+      id: 1, // optional, can be used in 'removePolylines'
       color: 0xff29a025, //Set the color of the line (default black)
       width: 7, //Set the width of the line (default 5)
       points: [
