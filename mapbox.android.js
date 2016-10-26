@@ -179,30 +179,6 @@ mapbox.show = function(arg) {
                 mapbox._markers = [];
                 mapbox._addMarkers(settings.markers);
 
-                mapbox.mapboxMap.setOnMarkerClickListener(
-                    new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
-                      onMarkerClick: function (marker) {
-                        var cachedMarker = mapbox._getClickedMarkerDetails(marker);
-                        if (cachedMarker && cachedMarker.onTap) {
-                          cachedMarker.onTap(cachedMarker);
-                        }
-                        return false;
-                      }
-                    })
-                );
-
-                mapbox.mapboxMap.setOnInfoWindowClickListener(
-                    new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
-                      onInfoWindowClick: function (marker) {
-                        var cachedMarker = mapbox._getClickedMarkerDetails(marker);
-                        if (cachedMarker && cachedMarker.onCalloutTap) {
-                          cachedMarker.onCalloutTap(cachedMarker);
-                        }
-                        return true;
-                      }
-                    })
-                );
-
                 if (settings.showUserLocation) {
                   if (mapbox._fineLocationPermissionGranted()) {
                     mapbox.locationServices = com.mapbox.mapboxsdk.location.LocationServices.getLocationServices(application.android.context);
@@ -379,6 +355,33 @@ mapbox._addMarkers = function(markers, nativeMap) {
     return;
   }
   var theMap = nativeMap || mapbox;
+
+  theMap.mapboxMap.setOnMarkerClickListener(
+      new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
+        onMarkerClick: function (marker) {
+          console.log("-- marker click");
+          var cachedMarker = mapbox._getClickedMarkerDetails(marker);
+          if (cachedMarker && cachedMarker.onTap) {
+            cachedMarker.onTap(cachedMarker);
+          }
+          return false;
+        }
+      })
+  );
+
+  theMap.mapboxMap.setOnInfoWindowClickListener(
+      new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
+        onInfoWindowClick: function (marker) {
+          console.log("-- info click");
+          var cachedMarker = mapbox._getClickedMarkerDetails(marker);
+          if (cachedMarker && cachedMarker.onCalloutTap) {
+            cachedMarker.onCalloutTap(cachedMarker);
+          }
+          return true;
+        }
+      })
+  );
+
   var iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
   for (var m in markers) {
     var marker = markers[m];
@@ -392,7 +395,6 @@ mapbox._addMarkers = function(markers, nativeMap) {
         var resourcename = marker.icon.substring(6);
         var res = utils.ad.getApplicationContext().getResources();
         var identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
-        console.log("-- loc identifier: " + identifier);
 
         if (identifier === 0) {
           console.log("No icon found for this device desity for icon " + marker.icon + ", using default");
