@@ -238,9 +238,10 @@ mapbox._addMarkers = function(markers, nativeMap) {
     point.coordinate = CLLocationCoordinate2DMake(lat, lng);
     point.title = marker.title;
     point.subtitle = marker.subtitle;
+    // needs to be done before adding to the map, otherwise the delegate method 'mapViewImageForAnnotation' can't use it
+    mapbox._markers.push(marker);
     theMap.addAnnotation(point);
     marker.ios = point;
-    mapbox._markers.push(marker);
   }
 };
 
