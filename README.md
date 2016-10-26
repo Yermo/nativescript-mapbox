@@ -174,6 +174,7 @@ Check out the usage details on the functions below.
         lng: 4.8941680, // mandatory
         title: 'Nice location', // recommended to pass in
         subtitle: 'Really really nice location', // one line is available on iOS, multiple on Android
+        icon: 'res://cool_marker', // use either this preferred way (to grab a density-independent marker from app resources), or:
         iconPath: 'res/markers/green_pin_marker.png', // anywhere in your app folder
         onTap: function(marker) { console.log("This marker was tapped"); },
         onCalloutTap: function(marker) { console.log("The callout of this marker was tapped"); }
@@ -220,6 +221,7 @@ instead of redrawing it (which is a lot slower and you loose the viewport positi
       lng: 4.8891680, // mandatory
       title: 'One-line title here', // no popup unless set
       subtitle: 'Infamous subtitle!',
+      icon: 'res://cool_marker', // preferred way, otherwise use:
       iconPath: 'res/markers/home_marker.png',
       onTap: onTap,
       onCalloutTap: onCalloutTap

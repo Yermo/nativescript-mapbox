@@ -203,29 +203,34 @@ mapbox.show = function(arg) {
 
                 if (settings.showUserLocation) {
                   if (mapbox._fineLocationPermissionGranted()) {
-                    /*
-                     mapbox.locationServices = com.mapbox.mapboxsdk.location.LocationServices.getLocationServices(application.android.context);
+                    mapbox.locationServices = com.mapbox.mapboxsdk.location.LocationServices.getLocationServices(application.android.context);
 
-                     mapbox.locationServices.addLocationListener(new com.mapbox.mapboxsdk.location.LocationListener({
-                     onLocationChanged: function(location) {
-                     if (location !== null) {
-                     if (mapbox._locationMarkerAdded) {
-                     mapbox._removeMarkers([999999]);
-                     } else {
-                     mapbox._locationMarkerAdded = true;
-                     }
-                     mapbox._addMarkers([{
-                     id: 999999,
-                     // TODO find a nice marker resource and bundle with the plugin for now
-                     icon: "res://location",
-                     lat: location.getLatitude(),
-                     lng: location.getLongitude()
-                     }]);
-                     }
-                     }
-                     })
-                     );
-                     */
+                    mapbox.locationServices.addLocationListener(new com.mapbox.mapboxsdk.location.LocationListener({
+                          onLocationChanged: function (location) {
+                            if (location !== null) {
+                              if (mapbox._locationMarkerAdded) {
+                                mapbox._removeMarkers([999997, 999998]);
+                              } else {
+                                mapbox._locationMarkerAdded = true;
+                              }
+                              mapbox._addMarkers([
+                                {
+                                  id: 999997,
+                                  icon: "res://ic_mylocationview_normal",
+                                  lat: location.getLatitude(),
+                                  lng: location.getLongitude()
+                                },
+                                {
+                                  id: 999998,
+                                  icon: "res://ic_mylocationview_background",
+                                  lat: location.getLatitude(),
+                                  lng: location.getLongitude()
+                                }
+                              ]);
+                            }
+                          }
+                        })
+                    );
                     mapbox.mapboxMap.setMyLocationEnabled(true);
 
                   } else {
@@ -233,7 +238,6 @@ mapbox.show = function(arg) {
                     console.log("Mapbox plugin: not showing the user location on this device because persmission was not requested/granted");
                   }
                 }
-
                 resolve();
               }
             })
@@ -344,7 +348,10 @@ mapbox._removeMarkers = function (ids, nativeMap) {
   for (var m in mapbox._markers) {
     var marker = mapbox._markers[m];
     if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
-      theMap.mapboxMap.removeAnnotation(marker.android);
+      // don't remove the location markers in case 'removeAll' was invoked
+      if (ids || (marker.id != 999997 && marker.id != 999998)) {
+        theMap.mapboxMap.removeAnnotation(marker.android);
+      }
     }
   }
 };
@@ -371,6 +378,7 @@ mapbox._addMarkers = function(markers, nativeMap) {
     return;
   }
   var theMap = nativeMap || mapbox;
+  var iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
   for (var m in markers) {
     var marker = markers[m];
     mapbox._markers.push(marker);
@@ -385,26 +393,21 @@ mapbox._addMarkers = function(markers, nativeMap) {
         var identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
         console.log("-- loc identifier: " + identifier);
 
-        var iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
-        console.log("-- loc iconDrawable: " + iconDrawable);
-
-        var iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
-        var icon = iconFactory.fromDrawable(iconDrawable);
-
-        markerOptions.setIcon(icon);
+        if (identifier === 0) {
+          console.log("No icon found for this device desity for icon " + marker.icon + ", using default");
+        } else {
+          var iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
+          markerOptions.setIcon(iconFactory.fromDrawable(iconDrawable));
+        }
       } else {
         console.log("Please use res://resourcename, or iconPath to use a local path");
       }
     } else if (marker.iconPath) {
-      // TODO these bits can be cached
-      var iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
-      var appPath = fs.knownFolders.currentApp().path;
-      var iconFullPath = appPath + "/" + marker.iconPath;
+      var iconFullPath = fs.knownFolders.currentApp().path + "/" + marker.iconPath;
       // if the file doesn't exist the app will crash, so checking it
       if (fs.File.exists(iconFullPath)) {
-        var icon = iconFactory.fromPath(iconFullPath);
-        // TODO (future) width, height, retina, see https://github.com/Telerik-Verified-Plugins/Mapbox/pull/42/files?diff=unified&short_path=1c65267
-        markerOptions.setIcon(icon);
+        // could set width, height, retina, see https://github.com/Telerik-Verified-Plugins/Mapbox/pull/42/files?diff=unified&short_path=1c65267, but that's what the marker.icon param is for..
+        markerOptions.setIcon(iconFactory.fromPath(iconFullPath));
       } else {
         console.log("Marker icon not found, using the default instead. Requested full path: " + iconFullPath);
       }
