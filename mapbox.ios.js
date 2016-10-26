@@ -334,7 +334,7 @@ mapbox.animateCamera = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
       var theMap = nativeMap || mapbox.mapView;
-      
+
       var target = arg.target;
       if (target === undefined) {
         reject("Please set the 'target' parameter");
@@ -342,7 +342,7 @@ mapbox.animateCamera = function (arg, nativeMap) {
       }
 
       var cam = MGLMapCamera.camera();
-      
+
       cam.centerCoordinate = CLLocationCoordinate2DMake(target.lat, target.lng);
 
       if (arg.altitude) {
@@ -495,7 +495,7 @@ mapbox.setViewport = function (arg, nativeMap) {
         reject("No map has been loaded");
         return;
       }
-      
+
       var swCoordinate = CLLocationCoordinate2DMake(arg.bounds.south, arg.bounds.west);
       var neCoordinate = CLLocationCoordinate2DMake(arg.bounds.north, arg.bounds.east);
       var bounds = MGLCoordinateBounds;
@@ -701,17 +701,28 @@ var MGLMapViewDelegateImpl = (function (_super) {
   // fired when the marker icon is about to be rendered - return null for the default icon
   MGLMapViewDelegateImpl.prototype.mapViewImageForAnnotation = function(mapView, annotation) {
     var cachedMarker = _getTappedMarkerDetails(annotation);
-    if (cachedMarker && cachedMarker.iconPath) {
+    if (cachedMarker) {
       if (cachedMarker.reuseIdentifier) {
-        return mapView.dequeueReusableAnnotationImageWithIdentifier(cachedMarker.reuseIdentifier);
+        var reusedImage = mapView.dequeueReusableAnnotationImageWithIdentifier(cachedMarker.reuseIdentifier);
+        if (reusedImage) {
+          return reusedImage;
+        }
       }
-      var appPath = fs.knownFolders.currentApp().path;
-      var iconFullPath = appPath + "/" + cachedMarker.iconPath;
-      if (fs.File.exists(iconFullPath)) {
-        var image = imgSrc.fromFile(iconFullPath).ios;
-        // TODO (future) add resize options for nice retina rendering
-        cachedMarker.reuseIdentifier = cachedMarker.iconPath;
-        return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(image, cachedMarker.reuseIdentifier);
+
+      if (cachedMarker.icon) {
+        var resourcename = cachedMarker.icon.substring(6);
+        var imageSource = imgSrc.fromResource(resourcename);
+        cachedMarker.reuseIdentifier = cachedMarker.icon;
+        return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(imageSource.ios, cachedMarker.reuseIdentifier);
+      } else if (cachedMarker.iconPath) {
+        var appPath = fs.knownFolders.currentApp().path;
+        var iconFullPath = appPath + "/" + cachedMarker.iconPath;
+        if (fs.File.exists(iconFullPath)) {
+          var image = imgSrc.fromFile(iconFullPath).ios;
+          // perhaps add resize options for nice retina rendering (although you can now use the 'icon' param instead)
+          cachedMarker.reuseIdentifier = cachedMarker.iconPath;
+          return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(image, cachedMarker.reuseIdentifier);
+        }
       }
     }
     return null;

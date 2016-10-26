@@ -30,6 +30,13 @@ declare module "nativescript-mapbox" {
       title?: string;
       subtitle?: string;
       /**
+       * Prefix with 'res://' and load a file from the resources folder.
+       * Details on how 'res://' is used can be found here: https://docs.nativescript.org/ui/images#load-images-from-resource
+       * Example: "res://iconfile"
+       */
+      icon?: string;
+      /**
+       * The preferred way is using the 'icon' property, but you can still reference a local file directly.
        * Example: "res/markers/green_pin_marker.png"
        */
       iconPath?: string;
