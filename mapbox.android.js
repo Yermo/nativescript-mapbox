@@ -2,6 +2,7 @@ var utils = require("utils/utils");
 var application = require("application");
 var frame = require("ui/frame");
 var fs = require("file-system");
+var Color = require("color").Color;
 var mapbox = require("./mapbox-common");
 mapbox._markers = [];
 mapbox._polylines = [];
@@ -606,7 +607,16 @@ mapbox.addPolyline = function (arg, nativeMap) {
 
       var polylineOptions = new com.mapbox.mapboxsdk.annotations.PolylineOptions();
       polylineOptions.width(arg.width || 5); // default 5
-      polylineOptions.color(arg.color || 0xff000000); // default black
+      
+      // Create android color && default black
+      var androidColor;
+      if (arg.color && Color.isValid(arg.color)) {
+          androidColor = arg.color ? new Color(arg.color).android : new Color('#000').android;
+      } else {
+        androidColor = new Color('#000').android;
+      }
+      
+      polylineOptions.color(androidColor);
       for (var p in points) {
         var point = points[p];
         polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
