@@ -32,9 +32,9 @@ declare module "nativescript-mapbox" {
        */
       width?: number;
       /**
-       * Color of the lone, default black (0xff000000).
+       * Color of the line, default black.
        */
-      color?: any;
+      color?: string;
       points: LatLng[];
     }
 
