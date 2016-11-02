@@ -36,8 +36,20 @@ var Mapbox = (function (_super) {
         }
 
         MGLAccountManager.setAccessToken(settings.accessToken);
+
+        if (settings.delay) {
+          this._ios = UIView.new();
+          var that = this;
+          setTimeout(function() {
+            that.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, that._ios.frame.size.width, that._ios.frame.size.height), mapbox._getMapStyle(settings.style));
+            mapbox._setMapboxMapOptions(that.mapView, settings);
+            that._ios.addSubview(that.mapView);
+          }, settings.delay);
+
+        } else {
         this._ios = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, 1, 1), mapbox._getMapStyle(settings.style));
         mapbox._setMapboxMapOptions(this._ios, settings);
+      }
       }
       return this._ios;
     },
@@ -47,7 +59,7 @@ var Mapbox = (function (_super) {
 
 	Object.defineProperty(Mapbox.prototype, "native", {
     get: function () {
-      return this._ios;
+      return this.mapView;
     },
     enumerable: true,
     configurable: true

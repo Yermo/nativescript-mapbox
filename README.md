@@ -72,6 +72,7 @@ All currently supported options for your XML based map are:
 |option|default|description
 |---|---|---
 |`accesstoken`|-|see 'Prerequisites' above
+|`delay`|0|A delay in milliseconds - you can set this to have better control over when Mapbox is invoked so it won't clash with other computations your app may need to perform. 
 |`mapStyle`|streets|streets, light, dark, emerald, hybrid, satellite
 |`latitude `|-|Set the center of the map by passing this in
 |`longitude`|-|.. and this as well

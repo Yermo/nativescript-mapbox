@@ -30,21 +30,30 @@ var Mapbox = (function (_super) {
 
     com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
 
-    this._android = new com.mapbox.mapboxsdk.maps.MapView(
+    var context = application.android.currentContext;
+
+    this._android = new android.widget.FrameLayout(context);
+
+    var that = this;
+
+    function drawMap() {
+      that.mapView = new com.mapbox.mapboxsdk.maps.MapView(
         application.android.context,
         mapbox._getMapboxMapOptions(settings));
 
-    var that = this;
-    this._android.getMapAsync(
+      that.mapView.getMapAsync(
         new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
           onMapReady: function (mbMap) {
-            that._android.mapboxMap = mbMap;
+              that.mapView.mapboxMap = mbMap;
             that.notifyMapReady();
           }
         })
     );
+      that._android.addView(that.mapView);
+      that.mapView.onCreate(null);
+    }
 
-    this._android.onCreate(null);
+    setTimeout(drawMap, settings.delay);
   };
 
   Object.defineProperty(Mapbox.prototype, "android", {
@@ -56,7 +65,7 @@ var Mapbox = (function (_super) {
   });
   Object.defineProperty(Mapbox.prototype, "native", {
     get: function () {
-      return this._android;
+      return this.mapView;
     },
     enumerable: true,
     configurable: true
