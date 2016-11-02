@@ -125,6 +125,11 @@ var Mapbox = (function (_super) {
         this.config.accessToken = value;
 			}
 	});
+	Object.defineProperty(Mapbox.prototype, "delay", {
+			set: function (value) {
+        this.config.delay = parseInt(value) || 0;
+			}
+	});
 	Object.defineProperty(Mapbox.prototype, "mapStyle", {
 			set: function (value) {
         this.config.style = value;
