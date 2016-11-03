@@ -238,6 +238,8 @@ declare module "nativescript-mapbox" {
 
     export function animateCamera(arg: AnimateCameraOptions): Promise<any>;
 
+    export function setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
+
     export function requestFineLocationPermission(): Promise<any>;
     export function hasFineLocationPermission(): Promise<boolean>;
 

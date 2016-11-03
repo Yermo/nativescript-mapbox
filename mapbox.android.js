@@ -38,17 +38,17 @@ var Mapbox = (function (_super) {
 
     function drawMap() {
       that.mapView = new com.mapbox.mapboxsdk.maps.MapView(
-        application.android.context,
-        mapbox._getMapboxMapOptions(settings));
+          application.android.context,
+          mapbox._getMapboxMapOptions(settings));
 
       that.mapView.getMapAsync(
-        new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
-          onMapReady: function (mbMap) {
+          new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
+            onMapReady: function (mbMap) {
               that.mapView.mapboxMap = mbMap;
-            that.notifyMapReady();
-          }
-        })
-    );
+              that.notifyMapReady();
+            }
+          })
+      );
       that._android.addView(that.mapView);
       that.mapView.onCreate(null);
     }
@@ -620,7 +620,7 @@ mapbox.addPolyline = function (arg, nativeMap) {
       // Create android color && default black
       var androidColor;
       if (arg.color && Color.isValid(arg.color)) {
-          androidColor = arg.color ? new Color(arg.color).android : new Color('#000').android;
+        androidColor = arg.color ? new Color(arg.color).android : new Color('#000').android;
       } else {
         androidColor = new Color('#000').android;
       }
@@ -709,6 +709,35 @@ mapbox.setViewport = function (arg, nativeMap) {
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.setViewport: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.setOnMapClickListener = function (listener, nativeMap) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var theMap = nativeMap || mapbox;
+
+      if (!theMap) {
+        reject("No map has been loaded");
+        return;
+      }
+
+      theMap.mapboxMap.setOnMapClickListener(
+          new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener ({
+            onMapClick: function (point) {
+              listener({
+                lat: point.getLatitude(),
+                lng: point.getLongitude()
+              });
+            }
+          })
+      );
+
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.setOnMapClickListener: " + ex);
       reject(ex);
     }
   });

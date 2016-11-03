@@ -99,6 +99,10 @@ var Mapbox = (function (_super) {
     mapbox.setViewport(args, this.native);
 	};
 
+	Mapbox.prototype.setOnMapClickListener = function (args) {
+    mapbox.setOnMapClickListener(args, this.native);
+	};
+
 	Mapbox.prototype.setTilt = function (args) {
     mapbox.setTilt(args, this.native);
 	};
