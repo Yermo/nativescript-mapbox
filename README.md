@@ -135,7 +135,7 @@ exports.onMapReady = onMapReady;
 
 Other methods you can invoke like this from an XML-declared map are:
 `removeMarkers`, `setCenter`, `setZoomLevel`, `setViewport`, `setTilt`,
-`animateCamera`, `addPolygon`, `addPolyline` and `removePolylines`.
+`animateCamera`, `addPolygon`, `addPolyline`, `removePolylines` and `setOnMapClickListener`.
 
 Check out the usage details on the functions below.
 
@@ -413,6 +413,15 @@ or remove specific polyline id's (which you specified previously).
   
   // remove specific polylines by id
   mapbox.removePolylines([1, 2]);
+```
+
+### setOnMapClickListener (Android)
+Add a listener to retrieve lat and lng when the user taps the map (not a marker).
+
+```js
+  mapbox.setOnMapClickListener(function(point) {
+    console.log("Map clicked at latitude: " + point.lat + ", longitude: " + point.lng);
+  });
 ```
 
 ## Offline maps

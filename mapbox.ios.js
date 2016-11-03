@@ -47,9 +47,9 @@ var Mapbox = (function (_super) {
           }, settings.delay);
 
         } else {
-        this._ios = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, 1, 1), mapbox._getMapStyle(settings.style));
-        mapbox._setMapboxMapOptions(this._ios, settings);
-      }
+          this._ios = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, 1, 1), mapbox._getMapStyle(settings.style));
+          mapbox._setMapboxMapOptions(this._ios, settings);
+        }
       }
       return this._ios;
     },
@@ -535,6 +535,26 @@ mapbox.setViewport = function (arg, nativeMap) {
       resolve();
     } catch (ex) {
       console.log("Error in mapbox.setViewport: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.setOnMapClickListener = function (listener, nativeMap) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var theMap = nativeMap || mapbox;
+
+      if (!theMap) {
+        reject("No map has been loaded");
+        return;
+      }
+
+      // TODO not implemented for iOS yet (it's rather tricky) -- https://github.com/EddyVerbruggen/nativescript-mapbox/issues/51
+
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.setOnMapClickListener: " + ex);
       reject(ex);
     }
   });
