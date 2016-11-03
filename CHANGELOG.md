@@ -1,5 +1,23 @@
 # Change Log
 
+## [2.2.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.2.2) (2016-11-03)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.2.1...2.2.2)
+
+**Implemented enhancements:**
+
+- Enhancement/Request: timeout when loading XML map [\#52](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/52)
+
+**Merged pull requests:**
+
+- Improve the addPolyline color option [\#50](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/50) ([bradmartin](https://github.com/bradmartin))
+
+## [2.2.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.2.1) (2016-10-26)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.2.0...2.2.1)
+
+**Fixed bugs:**
+
+- onTap/onCalloutTap not working from XML declared map [\#49](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/49)
+
 ## [2.2.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.2.0) (2016-10-26)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.1.1...2.2.0)
 
