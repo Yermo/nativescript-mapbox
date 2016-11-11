@@ -134,7 +134,7 @@ exports.onMapReady = onMapReady;
 ```
 
 Other methods you can invoke like this from an XML-declared map are:
-`removeMarkers`, `setCenter`, `setZoomLevel`, `setViewport`, `setTilt`,
+`removeMarkers`, `setCenter`, `setZoomLevel`, `setViewport`, `setTilt`, `setMapStyle`,
 `animateCamera`, `addPolygon`, `addPolyline`, `removePolylines` and `setOnMapClickListener`.
 
 Check out the usage details on the functions below.
@@ -204,6 +204,13 @@ instead of redrawing it (which is a lot slower and you loose the viewport positi
 
 ```js
   mapbox.unhide();
+```
+
+### setMapStyle
+You can update the map style after you've loaded it. How neat is that!?
+
+```js
+  mapbox.setMapStyle(mapbox.MapStyle.DARK);
 ```
 
 ### addMarkers

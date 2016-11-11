@@ -12,7 +12,8 @@ mapbox.locationServices = null;
 
 /*************** XML definition START ****************/
 var Mapbox = (function (_super) {
-  __extends(Mapbox, _super);
+  global.__extends(Mapbox, _super);
+
   function Mapbox() {
     _super.call(this);
     this.config = {};
@@ -313,6 +314,19 @@ mapbox.unhide = function (arg) {
       }
     } catch (ex) {
       console.log("Error in mapbox.unhide: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.setMapStyle = function (style, nativeMap) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var theMap = nativeMap || mapbox;
+      theMap.mapboxMap.setStyleUrl(mapbox._getMapStyle(style));
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.setMapStyle: " + ex);
       reject(ex);
     }
   });
