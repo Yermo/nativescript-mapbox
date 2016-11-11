@@ -1,5 +1,17 @@
 # Change Log
 
+## [2.2.3](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.2.3) (2016-11-11)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.2.2...2.2.3)
+
+**Implemented enhancements:**
+
+- Change map style method [\#53](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/53)
+
+**Closed issues:**
+
+- iOS accessToken in XML not working [\#54](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/54)
+- Angular 2 registerElement XML not setting property [\#45](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/45)
+
 ## [2.2.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.2.2) (2016-11-03)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.2.1...2.2.2)
 
