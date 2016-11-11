@@ -220,6 +220,8 @@ declare module "nativescript-mapbox" {
     export function hide(): Promise<any>;
     export function unhide(): Promise<any>;
 
+    export function setMapStyle(style: string): Promise<any>;
+
     export function addMarkers(markers: AddMarkersOption[]): Promise<any>;
     export function removeMarkers(arg?: any): Promise<any>;
 

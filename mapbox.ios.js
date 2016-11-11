@@ -12,7 +12,8 @@ mapbox._markers = [];
 
 /*************** XML definition START ****************/
 var Mapbox = (function (_super) {
-	__extends(Mapbox, _super);
+	global.__extends(Mapbox, _super);
+
 	function Mapbox() {
     _super.call(this);
     this.config = {};
@@ -47,7 +48,7 @@ var Mapbox = (function (_super) {
           }, settings.delay);
 
         } else {
-          this._ios = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, 1, 1), mapbox._getMapStyle(settings.style));
+          this._ios = this.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, 1, 1), mapbox._getMapStyle(settings.style));
           mapbox._setMapboxMapOptions(this._ios, settings);
         }
       }
@@ -193,6 +194,19 @@ mapbox.unhide = function (arg) {
       }
     } catch (ex) {
       console.log("Error in mapbox.unhide: " + ex);
+      reject(ex);
+    }
+  });
+};
+
+mapbox.setMapStyle = function (style, nativeMap) {
+  return new Promise(function (resolve, reject) {
+    try {
+      var theMap = nativeMap || mapbox.mapView;
+      theMap.styleURL = mapbox._getMapStyle(style);
+      resolve();
+    } catch (ex) {
+      console.log("Error in mapbox.setMapStyle: " + ex);
       reject(ex);
     }
   });

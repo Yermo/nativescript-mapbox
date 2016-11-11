@@ -62,10 +62,10 @@ mapbox.hasFineLocationPermission = function () {
 
 /*************** XML definition START ****************/
 var Mapbox = (function (_super) {
-  __extends(Mapbox, _super);
+  global.__extends(Mapbox, _super);
 
   function Mapbox() {
-      _super.apply(this, arguments);
+      _super.call(this);
   }
 
   Mapbox.mapReadyEvent = "mapReady";
@@ -121,6 +121,10 @@ var Mapbox = (function (_super) {
 
 	Mapbox.prototype.removePolylines = function (args) {
     mapbox.removePolylines(args, this.native);
+	};
+
+	Mapbox.prototype.setMapStyle = function (args) {
+    mapbox.setMapStyle(args, this.native);
 	};
 
   // properties that can be set from XML
