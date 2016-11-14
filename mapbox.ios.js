@@ -21,8 +21,6 @@ var Mapbox = (function (_super) {
 
 	Mapbox.prototype.onLoaded = function () {
     _super.prototype.onLoaded.call(this);
-    this._ios.delegate = this._delegate = MGLMapViewDelegateImpl.new().initWithCallback(function() {});
-    this.notifyMapReady();
   };
 
 	Object.defineProperty(Mapbox.prototype, "ios", {
@@ -43,13 +41,17 @@ var Mapbox = (function (_super) {
           var that = this;
           setTimeout(function() {
             that.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, that._ios.frame.size.width, that._ios.frame.size.height), mapbox._getMapStyle(settings.style));
+            that.mapView.delegate = that._delegate = MGLMapViewDelegateImpl.new().initWithCallback(function() {});
             mapbox._setMapboxMapOptions(that.mapView, settings);
             that._ios.addSubview(that.mapView);
+            that.notifyMapReady();
           }, settings.delay);
 
         } else {
           this._ios = this.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, 1, 1), mapbox._getMapStyle(settings.style));
+          this._ios.delegate = this._delegate = MGLMapViewDelegateImpl.new().initWithCallback(function() {});
           mapbox._setMapboxMapOptions(this._ios, settings);
+          this.notifyMapReady();
         }
       }
       return this._ios;
