@@ -26,33 +26,24 @@ var Mapbox = (function (_super) {
 	Object.defineProperty(Mapbox.prototype, "ios", {
     get: function () {
       if (!this._ios) {
+        this._ios = UIView.new();
+      }
+      if (!this.mapView && this.config.accessToken) {
         var settings = mapbox.merge(this.config, mapbox.defaults);
-        if (settings.accessToken === undefined) {
-          setTimeout(function() {
-            var dialogs = require("ui/dialogs");
-            dialogs.alert("Please set the 'accessToken' property because now the map will be entirely black :)");
-          }, 0);
-        }
 
         MGLAccountManager.setAccessToken(settings.accessToken);
 
-        if (settings.delay) {
-          this._ios = UIView.new();
-          var that = this;
-          setTimeout(function() {
-            that.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, that._ios.frame.size.width, that._ios.frame.size.height), mapbox._getMapStyle(settings.style));
-            that.mapView.delegate = that._delegate = MGLMapViewDelegateImpl.new().initWithCallback(function() {});
-            mapbox._setMapboxMapOptions(that.mapView, settings);
-            that._ios.addSubview(that.mapView);
-            that.notifyMapReady();
-          }, settings.delay);
+        var that = this;
 
-        } else {
-          this._ios = this.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, 1, 1), mapbox._getMapStyle(settings.style));
-          this._ios.delegate = this._delegate = MGLMapViewDelegateImpl.new().initWithCallback(function() {});
-          mapbox._setMapboxMapOptions(this._ios, settings);
-          this.notifyMapReady();
-        }
+        var drawMap = function() {
+          that.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, that._ios.frame.size.width, that._ios.frame.size.height), mapbox._getMapStyle(settings.style));
+          that.mapView.delegate = that._delegate = MGLMapViewDelegateImpl.new().initWithCallback(function() {});
+          mapbox._setMapboxMapOptions(that.mapView, settings);
+          that._ios.addSubview(that.mapView);
+          that.notifyMapReady();
+        };
+
+        setTimeout(drawMap, settings.delay);
       }
       return this._ios;
     },

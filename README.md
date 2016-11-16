@@ -68,7 +68,7 @@ Could be rendered by a definition like this:
 </Page>
 ```
 
-All currently supported options for your XML based map are (__don't__ use other properties!):
+All currently supported options for your XML based map are (__don't__ use other properties - if you need styling wrap the map in a `ContentView` and apply things like `width` to that container!):
 
 |option|default|description
 |---|---|---
