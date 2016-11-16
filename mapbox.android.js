@@ -388,7 +388,6 @@ mapbox._addMarkers = function(markers, nativeMap) {
   theMap.mapboxMap.setOnMarkerClickListener(
       new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
         onMarkerClick: function (marker) {
-          console.log("-- marker click");
           var cachedMarker = mapbox._getClickedMarkerDetails(marker);
           if (cachedMarker && cachedMarker.onTap) {
             cachedMarker.onTap(cachedMarker);
@@ -401,7 +400,6 @@ mapbox._addMarkers = function(markers, nativeMap) {
   theMap.mapboxMap.setOnInfoWindowClickListener(
       new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
         onInfoWindowClick: function (marker) {
-          console.log("-- info click");
           var cachedMarker = mapbox._getClickedMarkerDetails(marker);
           if (cachedMarker && cachedMarker.onCalloutTap) {
             cachedMarker.onCalloutTap(cachedMarker);
