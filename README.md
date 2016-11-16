@@ -177,6 +177,7 @@ Check out the usage details on the functions below.
         title: 'Nice location', // recommended to pass in
         subtitle: 'Really really nice location', // one line is available on iOS, multiple on Android
         icon: 'res://cool_marker', // use either this preferred way (to grab a density-independent marker from app resources), or:
+        icon: 'http(s)://my-remote-image', // an image from the interwebs, or:
         iconPath: 'res/markers/green_pin_marker.png', // anywhere in your app folder
         onTap: function(marker) { console.log("This marker was tapped"); },
         onCalloutTap: function(marker) { console.log("The callout of this marker was tapped"); }
@@ -231,6 +232,7 @@ You can update the map style after you've loaded it. How neat is that!?
       title: 'One-line title here', // no popup unless set
       subtitle: 'Infamous subtitle!',
       icon: 'res://cool_marker', // preferred way, otherwise use:
+      icon: 'http(s)://website/coolimage.png', // from the internet, or:
       iconPath: 'res/markers/home_marker.png',
       onTap: onTap,
       onCalloutTap: onCalloutTap
