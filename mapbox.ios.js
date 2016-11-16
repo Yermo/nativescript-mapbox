@@ -2,7 +2,10 @@ var mapbox = require("./mapbox-common");
 var fs = require("file-system");
 var imgSrc = require("image-source");
 var utils = require("utils/utils");
+var http = require("http");
+
 mapbox._markers = [];
+mapbox._markerIconDownloadCache = [];
 
 (function() {
   // need to kick this off otherwise offline stuff won't work without first showing a map
@@ -239,6 +242,46 @@ mapbox.addMarkers = function (markers, nativeMap) {
   });
 };
 
+function downloadImage(marker) {
+  return new Promise(function (resolve, reject) {
+    // to cache..
+    if (mapbox._markerIconDownloadCache[marker.icon]) {
+      marker.iconDownloaded = mapbox._markerIconDownloadCache[marker.icon];
+      resolve(marker);
+      return;
+    }
+    // ..or not to cache
+    http.getImage(marker.icon).then(
+      function (output) {
+        marker.iconDownloaded = output.ios;
+        mapbox._markerIconDownloadCache[marker.icon] = marker.iconDownloaded;
+        resolve(marker);
+      }, function (e) {
+        console.log("Download failed from " + marker.icon + " with error: " + e);
+        resolve(marker);
+      });
+  });
+}
+
+function downloadMarkerImages(markers) {
+  var iterations = [];
+  var result = [];
+  for (var i = 0; i < markers.length; i++) {
+    var marker = markers[i];
+    if (marker.icon && marker.icon.startsWith("http")) {
+      var p = downloadImage(marker).then(function(mark) {
+        result.push(mark);
+      });
+      iterations.push(p);
+    } else {
+      result.push(marker);
+    }
+  }
+  return Promise.all(iterations).then(function(output) {
+    return result;
+  });
+}
+
 mapbox._addMarkers = function(markers, nativeMap) {
   if (!markers) {
     console.log("No markers passed");
@@ -249,19 +292,22 @@ mapbox._addMarkers = function(markers, nativeMap) {
     return;
   }
   var theMap = nativeMap || mapbox.mapView;
-  for (var m in markers) {
-    var marker = markers[m];
-    var lat = marker.lat;
-    var lng = marker.lng;
-    var point = MGLPointAnnotation.new();
-    point.coordinate = CLLocationCoordinate2DMake(lat, lng);
-    point.title = marker.title;
-    point.subtitle = marker.subtitle;
-    // needs to be done before adding to the map, otherwise the delegate method 'mapViewImageForAnnotation' can't use it
-    mapbox._markers.push(marker);
-    theMap.addAnnotation(point);
-    marker.ios = point;
-  }
+
+  downloadMarkerImages(markers).then(function(updatedMarkers) {
+    for (var m in updatedMarkers) {
+      var marker = updatedMarkers[m];
+      var lat = marker.lat;
+      var lng = marker.lng;
+      var point = MGLPointAnnotation.new();
+      point.coordinate = CLLocationCoordinate2DMake(lat, lng);
+      point.title = marker.title;
+      point.subtitle = marker.subtitle;
+      // needs to be done before adding to the map, otherwise the delegate method 'mapViewImageForAnnotation' can't use it
+      mapbox._markers.push(marker);
+      theMap.addAnnotation(point);
+      marker.ios = point;
+    }
+  });
 };
 
 mapbox.setCenter = function (arg, nativeMap) {
@@ -763,10 +809,19 @@ var MGLMapViewDelegateImpl = (function (_super) {
       }
 
       if (cachedMarker.icon) {
-        var resourcename = cachedMarker.icon.substring(6);
-        var imageSource = imgSrc.fromResource(resourcename);
-        cachedMarker.reuseIdentifier = cachedMarker.icon;
-        return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(imageSource.ios, cachedMarker.reuseIdentifier);
+        if (cachedMarker.icon.startsWith("res://")) {
+          var resourcename = cachedMarker.icon.substring("res://".length);
+          var imageSource = imgSrc.fromResource(resourcename);
+          cachedMarker.reuseIdentifier = cachedMarker.icon;
+          return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(imageSource.ios, cachedMarker.reuseIdentifier);
+        } else if (cachedMarker.icon.startsWith("http")) {
+          if (cachedMarker.iconDownloaded !== null) {
+            cachedMarker.reuseIdentifier = cachedMarker.icon;
+            return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(cachedMarker.iconDownloaded, cachedMarker.reuseIdentifier);
+          }
+        } else {
+          console.log("Please use res://resourcename, http(s)://imageurl or iconPath to use a local path");
+        }
       } else if (cachedMarker.iconPath) {
         var appPath = fs.knownFolders.currentApp().path;
         var iconFullPath = appPath + "/" + cachedMarker.iconPath;

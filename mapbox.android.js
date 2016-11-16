@@ -3,9 +3,11 @@ var application = require("application");
 var frame = require("ui/frame");
 var fs = require("file-system");
 var Color = require("color").Color;
+var http = require("http");
 var mapbox = require("./mapbox-common");
 mapbox._markers = [];
 mapbox._polylines = [];
+mapbox._markerIconDownloadCache = [];
 var ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
 
 mapbox.locationServices = null;
@@ -374,6 +376,46 @@ mapbox.addMarkers = function (markers, nativeMap) {
   });
 };
 
+function downloadImage(marker) {
+  return new Promise(function (resolve, reject) {
+    // to cache..
+    if (mapbox._markerIconDownloadCache[marker.icon]) {
+      marker.iconDownloaded = mapbox._markerIconDownloadCache[marker.icon];
+      resolve(marker);
+      return;
+    }
+    // ..or not to cache
+    http.getImage(marker.icon).then(
+      function (output) {
+        marker.iconDownloaded = output.android;
+        mapbox._markerIconDownloadCache[marker.icon] = marker.iconDownloaded;
+        resolve(marker);
+      }, function (e) {
+        console.log("Download failed from " + marker.icon + " with error: " + e);
+        resolve(marker);
+      });
+  });
+}
+
+function downloadMarkerImages(markers) {
+  var iterations = [];
+  var result = [];
+  for (var i = 0; i < markers.length; i++) {
+    var marker = markers[i];
+    if (marker.icon && marker.icon.startsWith("http")) {
+      var p = downloadImage(marker).then(function(mark) {
+        result.push(mark);
+      });
+      iterations.push(p);
+    } else {
+      result.push(marker);
+    }
+  }
+  return Promise.all(iterations).then(function(output) {
+    return result;
+  });
+}
+
 mapbox._addMarkers = function(markers, nativeMap) {
   if (!markers) {
     console.log("No markers passed");
@@ -410,40 +452,48 @@ mapbox._addMarkers = function(markers, nativeMap) {
   );
 
   var iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
-  for (var m in markers) {
-    var marker = markers[m];
-    mapbox._markers.push(marker);
-    var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
-    markerOptions.setTitle(marker.title);
-    markerOptions.setSnippet(marker.subtitle);
-    markerOptions.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(marker.lat, marker.lng));
-    if (marker.icon) {
-      if (marker.icon.startsWith("res://")) {
-        var resourcename = marker.icon.substring(6);
-        var res = utils.ad.getApplicationContext().getResources();
-        var identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
 
-        if (identifier === 0) {
-          console.log("No icon found for this device desity for icon " + marker.icon + ", using default");
+  // if any markers need to be downloaded from the web they need to be available synchronously, so fetch them first before looping
+  downloadMarkerImages(markers).then(function(updatedMarkers) {
+    for (var m in updatedMarkers) {
+      var marker = updatedMarkers[m];
+      mapbox._markers.push(marker);
+      var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
+      markerOptions.setTitle(marker.title);
+      markerOptions.setSnippet(marker.subtitle);
+      markerOptions.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(marker.lat, marker.lng));
+      if (marker.icon) {
+        // for markers from url see UrlMarker in https://github.com/mapbox/mapbox-gl-native/issues/5370
+        if (marker.icon.startsWith("res://")) {
+          var resourcename = marker.icon.substring(6);
+          var res = utils.ad.getApplicationContext().getResources();
+          var identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
+          if (identifier === 0) {
+            console.log("No icon found for this device desity for icon " + marker.icon + ", using default");
+          } else {
+            var iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
+            markerOptions.setIcon(iconFactory.fromDrawable(iconDrawable));
+          }
+        } else if (marker.icon.startsWith("http")) {
+          if (marker.iconDownloaded !== null) {
+            markerOptions.setIcon(iconFactory.fromBitmap(marker.iconDownloaded));
+          }
         } else {
-          var iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
-          markerOptions.setIcon(iconFactory.fromDrawable(iconDrawable));
+          console.log("Please use res://resourcename, http(s)://imageurl or iconPath to use a local path");
         }
-      } else {
-        console.log("Please use res://resourcename, or iconPath to use a local path");
+      } else if (marker.iconPath) {
+        var iconFullPath = fs.knownFolders.currentApp().path + "/" + marker.iconPath;
+        // if the file doesn't exist the app will crash, so checking it
+        if (fs.File.exists(iconFullPath)) {
+          // could set width, height, retina, see https://github.com/Telerik-Verified-Plugins/Mapbox/pull/42/files?diff=unified&short_path=1c65267, but that's what the marker.icon param is for..
+          markerOptions.setIcon(iconFactory.fromPath(iconFullPath));
+        } else {
+          console.log("Marker icon not found, using the default instead. Requested full path: " + iconFullPath);
+        }
       }
-    } else if (marker.iconPath) {
-      var iconFullPath = fs.knownFolders.currentApp().path + "/" + marker.iconPath;
-      // if the file doesn't exist the app will crash, so checking it
-      if (fs.File.exists(iconFullPath)) {
-        // could set width, height, retina, see https://github.com/Telerik-Verified-Plugins/Mapbox/pull/42/files?diff=unified&short_path=1c65267, but that's what the marker.icon param is for..
-        markerOptions.setIcon(iconFactory.fromPath(iconFullPath));
-      } else {
-        console.log("Marker icon not found, using the default instead. Requested full path: " + iconFullPath);
-      }
+      marker.android = theMap.mapboxMap.addMarker(markerOptions);
     }
-    marker.android = theMap.mapboxMap.addMarker(markerOptions);
-  }
+  });
 };
 
 mapbox.setCenter = function (arg, nativeMap) {
