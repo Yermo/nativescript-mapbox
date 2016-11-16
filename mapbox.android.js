@@ -20,41 +20,46 @@ var Mapbox = (function (_super) {
   }
 
   Mapbox.prototype._createUI = function () {
-    var settings = mapbox.merge(this.config, mapbox.defaults);
-    if (settings.accessToken === undefined) {
-      setTimeout(function() {
-        var dialogs = require("ui/dialogs");
-        dialogs.alert("Please set the 'accessToken' property because now there will be no map :)");
-      }, 0);
-      return;
-    }
-
-    com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
-
     var context = application.android.currentContext;
-
     this._android = new android.widget.FrameLayout(context);
 
     var that = this;
 
-    function drawMap() {
-      that.mapView = new com.mapbox.mapboxsdk.maps.MapView(
-          application.android.context,
-          mapbox._getMapboxMapOptions(settings));
+    var createUI = function() {
 
-      that.mapView.getMapAsync(
-          new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
-            onMapReady: function (mbMap) {
-              that.mapView.mapboxMap = mbMap;
-              that.notifyMapReady();
-            }
-          })
-      );
-      that._android.addView(that.mapView);
-      that.mapView.onCreate(null);
-    }
+      var settings = mapbox.merge(that.config, mapbox.defaults);
+      if (settings.accessToken === undefined) {
+        setTimeout(function() {
+          var dialogs = require("ui/dialogs");
+          dialogs.alert("Please set the 'accessToken' property because now there will be no map :)");
+        }, 0);
+        return;
+      }
 
-    setTimeout(drawMap, settings.delay);
+      com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
+
+      var drawMap = function() {
+        that.mapView = new com.mapbox.mapboxsdk.maps.MapView(
+            application.android.context,
+            mapbox._getMapboxMapOptions(settings));
+
+        that.mapView.getMapAsync(
+            new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
+              onMapReady: function (mbMap) {
+                that.mapView.mapboxMap = mbMap;
+                that.notifyMapReady();
+              }
+            })
+        );
+        that._android.addView(that.mapView);
+        that.mapView.onCreate(null);
+      };
+
+      setTimeout(drawMap, settings.delay);
+    };
+
+    // postpone drawing the map for cases where this plugin is used in an Angular-powered app
+    setTimeout(createUI, 0);
   };
 
   Object.defineProperty(Mapbox.prototype, "android", {
