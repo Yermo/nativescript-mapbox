@@ -1,12 +1,28 @@
 # Change Log
 
-## [2.2.4](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.2.4) (2016-11-16)
+## [2.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.3.0) (2016-11-16)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.2.4...2.3.0)
 
-[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.2.3...2.2.4)
+**Implemented enhancements:**
+
+- Cannot Place UI elements over viewport [\#37](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/37)
+- Support for Marker Image URLs [\#20](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/20)
 
 **Fixed bugs:**
 
 - Nativescript Angular 2 issue while using MapBox inside the HTML [\#56](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/56)
+
+**Closed issues:**
+
+- Unable to start activity ComponentInfo:Failed to find module 'Crypto' [\#39](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/39)
+- Not show map in demo [\#27](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/27)
+- Additional style for Markers [\#23](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/23)
+
+## [2.2.4](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.2.4) (2016-11-16)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.2.3...2.2.4)
+
+**Fixed bugs:**
+
 - Question: marker tap on iOS simulator [\#55](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/55)
 
 **Closed issues:**
