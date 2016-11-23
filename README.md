@@ -127,7 +127,7 @@ function onMapReady(args) {
           west: 4.6816
         },
         animated: true
-      }
+      }]
   );
 }
 
