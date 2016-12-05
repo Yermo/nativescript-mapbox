@@ -791,7 +791,9 @@ var MGLMapViewDelegateImpl = (function (_super) {
     return this;
   };
   MGLMapViewDelegateImpl.prototype.mapViewDidFinishLoadingMap = function(mapView) {
-    this._mapLoadedCallback();
+    if (this._mapLoadedCallback !== undefined) {
+      this._mapLoadedCallback();
+    }
   };
   MGLMapViewDelegateImpl.prototype.mapViewAnnotationCanShowCallout = function(mapView, annotation) {
     return true;
