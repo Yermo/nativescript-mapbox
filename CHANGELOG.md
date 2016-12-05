@@ -1,5 +1,22 @@
 # Change Log
 
+## [2.3.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.3.1) (2016-12-05)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.3.0...2.3.1)
+
+**Fixed bugs:**
+
+- Exception on Android with Mapbox in XML [\#62](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/62)
+- iOS crash - this.\_mapLoadedCallback is not a function [\#57](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/57)
+
+**Closed issues:**
+
+- Add more ignore  [\#60](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/60)
+- Set z-index programatically [\#59](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/59)
+
+**Merged pull requests:**
+
+- Update README.md [\#58](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/58) ([dogabudak](https://github.com/dogabudak))
+
 ## [2.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.3.0) (2016-11-16)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.2.4...2.3.0)
 
