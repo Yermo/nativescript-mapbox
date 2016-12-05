@@ -85,13 +85,6 @@ mapbox.Mapbox = Mapbox;
 
 
 mapbox._getMapboxMapOptions = function (settings) {
-  var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
-      .zoom(settings.zoomLevel);
-
-  if (settings.center && settings.center.lat && settings.center.lng) {
-    cameraPositionBuilder.target(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
-  }
-
   var mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
       .styleUrl(mapbox._getMapStyle(settings.style))
       .compassEnabled(!settings.hideCompass)
@@ -100,8 +93,23 @@ mapbox._getMapboxMapOptions = function (settings) {
       .tiltGesturesEnabled(!settings.disableTilt)
       .zoomGesturesEnabled(!settings.disableZoom)
       .attributionEnabled(!settings.hideAttribution)
-      .logoEnabled(!settings.hideLogo)
-      .camera(cameraPositionBuilder.build());
+      .logoEnabled(!settings.hideLogo);
+
+  // zoomlevel is not applied unless center is set
+  if (settings.zoomLevel && !settings.center) {
+    // Eiffel tower, Paris
+    settings.center = {
+      lat: 48.858093,
+      lng: 2.294694
+    }
+  }
+
+  if (settings.center && settings.center.lat && settings.center.lng) {
+    var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+        .zoom(settings.zoomLevel)
+        .target(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
+    mapboxMapOptions.camera(cameraPositionBuilder.build());
+  }
 
   return mapboxMapOptions;
 };
@@ -386,14 +394,14 @@ function downloadImage(marker) {
     }
     // ..or not to cache
     http.getImage(marker.icon).then(
-      function (output) {
-        marker.iconDownloaded = output.android;
-        mapbox._markerIconDownloadCache[marker.icon] = marker.iconDownloaded;
-        resolve(marker);
-      }, function (e) {
-        console.log("Download failed from " + marker.icon + " with error: " + e);
-        resolve(marker);
-      });
+        function (output) {
+          marker.iconDownloaded = output.android;
+          mapbox._markerIconDownloadCache[marker.icon] = marker.iconDownloaded;
+          resolve(marker);
+        }, function (e) {
+          console.log("Download failed from " + marker.icon + " with error: " + e);
+          resolve(marker);
+        });
   });
 }
 
@@ -461,7 +469,7 @@ mapbox._addMarkers = function(markers, nativeMap) {
       var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
       markerOptions.setTitle(marker.title);
       markerOptions.setSnippet(marker.subtitle);
-      markerOptions.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(marker.lat, marker.lng));
+      markerOptions.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(parseFloat(marker.lat), parseFloat(marker.lng)));
       if (marker.icon) {
         // for markers from url see UrlMarker in https://github.com/mapbox/mapbox-gl-native/issues/5370
         if (marker.icon.startsWith("res://")) {
@@ -500,8 +508,9 @@ mapbox.setCenter = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
       var theMap = nativeMap || mapbox;
-      var cameraPosition = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder().target(
-          new com.mapbox.mapboxsdk.geometry.LatLng(arg.lat, arg.lng)).build();
+      var cameraPosition = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+          .target(new com.mapbox.mapboxsdk.geometry.LatLng(arg.lat, arg.lng))
+          .build();
 
       if (arg.animated === true) {
         theMap.mapboxMap.animateCamera(
@@ -683,7 +692,7 @@ mapbox.addPolyline = function (arg, nativeMap) {
 
       var polylineOptions = new com.mapbox.mapboxsdk.annotations.PolylineOptions();
       polylineOptions.width(arg.width || 5); // default 5
-      
+
       // Create android color && default black
       var androidColor;
       if (arg.color && Color.isValid(arg.color)) {
@@ -691,7 +700,7 @@ mapbox.addPolyline = function (arg, nativeMap) {
       } else {
         androidColor = new Color('#000').android;
       }
-      
+
       polylineOptions.color(androidColor);
       for (var p in points) {
         var point = points[p];
