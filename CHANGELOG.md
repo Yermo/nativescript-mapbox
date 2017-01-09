@@ -1,5 +1,16 @@
 # Change Log
 
+## [2.3.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.3.2) (2017-01-09)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.3.1...2.3.2)
+
+**Fixed bugs:**
+
+- Convert custom url string to NSURL [\#70](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/70) ([ahalls](https://github.com/ahalls))
+
+**Closed issues:**
+
+- Custom Style URL,  Angular2 created in XML crashes on iOS  [\#69](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/69)
+
 ## [2.3.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.3.1) (2016-12-05)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.3.0...2.3.1)
 
