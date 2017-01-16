@@ -218,6 +218,12 @@ mapbox.removeMarkers = function (ids, nativeMap) {
           markersToRemove.push(marker.ios);
         }
       }
+	    
+      // remove markers from cache
+      mapbox._markers = mapbox._markers.filter(function (marker) {
+        return ids.indexOf(marker.id) < 0;
+      })    
+	    
       if (markersToRemove.length > 0) {
         theMap.removeAnnotations(markersToRemove);
       }
