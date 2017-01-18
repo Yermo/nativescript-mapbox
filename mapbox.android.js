@@ -8,7 +8,7 @@ var mapbox = require("./mapbox-common");
 mapbox._markers = [];
 mapbox._polylines = [];
 mapbox._markerIconDownloadCache = [];
-var ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
+var ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111; // irrelevant really, since we simply invoke onPermissionGranted
 
 mapbox.locationServices = null;
 
@@ -49,6 +49,13 @@ var Mapbox = (function (_super) {
             new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
               onMapReady: function (mbMap) {
                 that.mapView.mapboxMap = mbMap;
+
+                if (settings.showUserLocation) {
+                  mapbox.requestFineLocationPermission().then(function() {
+                    mapbox._showLocation(that.mapView, that);
+                  });
+                }
+
                 that.notifyMapReady();
               }
             })
@@ -130,15 +137,26 @@ mapbox.hasFineLocationPermission = function () {
 };
 
 mapbox.requestFineLocationPermission = function () {
-  return new Promise(function (resolve) {
+  return new Promise(function (resolve, reject) {
     if (!mapbox._fineLocationPermissionGranted()) {
-      // in a future version we could hook up the callback and change this flow a bit
+
+      // grab the permission dialog result
+      application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, function (args) {
+        for (var i = 0; i < args.permissions.length; i++) {
+          if (args.grantResults[i] === android.content.pm.PackageManager.PERMISSION_DENIED) {
+            reject("Permission denied");
+            return;
+          }
+        }
+        resolve();
+      });
+
+      // invoke the permission dialog
       android.support.v4.app.ActivityCompat.requestPermissions(
           application.android.foregroundActivity,
           [android.Manifest.permission.ACCESS_FINE_LOCATION],
           ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE);
-      // this is not the nicest solution as the user needs to initiate scanning again after granting permission,
-      // so enhance this in a future version, but it's ok for now
+    } else {
       resolve();
     }
   });
@@ -164,6 +182,38 @@ mapbox._getMapStyle = function(input) {
     // default
     return Style.MAPBOX_STREETS;
   }
+};
+
+mapbox._showLocation = function(theMapView, ownerObject) {
+  mapbox.locationServices = com.mapbox.mapboxsdk.location.LocationServices.getLocationServices(application.android.context);
+
+  mapbox.locationServices.addLocationListener(new com.mapbox.mapboxsdk.location.LocationListener({
+        onLocationChanged: function (location) {
+          if (location !== null) {
+            if (ownerObject._locationMarkerAdded) {
+              mapbox._removeMarkers([999997, 999998], theMapView);
+            } else {
+              ownerObject._locationMarkerAdded = true;
+            }
+            mapbox._addMarkers([
+              {
+                id: 999997,
+                icon: "res://ic_mylocationview_normal",
+                lat: location.getLatitude(),
+                lng: location.getLongitude()
+              },
+              {
+                id: 999998,
+                icon: "res://ic_mylocationview_background",
+                lat: location.getLatitude(),
+                lng: location.getLongitude()
+              }
+            ], theMapView);
+          }
+        }
+      })
+  );
+  theMapView.mapboxMap.setMyLocationEnabled(true);
 };
 
 mapbox.show = function(arg) {
@@ -198,49 +248,18 @@ mapbox.show = function(arg) {
             new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
               onMapReady: function (mbMap) {
                 mapbox.mapboxMap = mbMap;
+                mapbox.mapView.mapboxMap = mapbox.mapboxMap;
                 // mapbox.mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
                 // mapbox.mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
 
                 mapbox._polylines = [];
                 mapbox._markers = [];
-                mapbox._addMarkers(settings.markers);
+                mapbox._addMarkers(settings.markers, mapbox.mapView);
 
                 if (settings.showUserLocation) {
-                  if (mapbox._fineLocationPermissionGranted()) {
-                    mapbox.locationServices = com.mapbox.mapboxsdk.location.LocationServices.getLocationServices(application.android.context);
-
-                    mapbox.locationServices.addLocationListener(new com.mapbox.mapboxsdk.location.LocationListener({
-                          onLocationChanged: function (location) {
-                            if (location !== null) {
-                              if (mapbox._locationMarkerAdded) {
-                                mapbox._removeMarkers([999997, 999998]);
-                              } else {
-                                mapbox._locationMarkerAdded = true;
-                              }
-                              mapbox._addMarkers([
-                                {
-                                  id: 999997,
-                                  icon: "res://ic_mylocationview_normal",
-                                  lat: location.getLatitude(),
-                                  lng: location.getLongitude()
-                                },
-                                {
-                                  id: 999998,
-                                  icon: "res://ic_mylocationview_background",
-                                  lat: location.getLatitude(),
-                                  lng: location.getLongitude()
-                                }
-                              ]);
-                            }
-                          }
-                        })
-                    );
-                    mapbox.mapboxMap.setMyLocationEnabled(true);
-
-                  } else {
-                    // devs should ask permission upfront, otherwise enabling location will crash the app on Android 6
-                    console.log("Mapbox plugin: not showing the user location on this device because persmission was not requested/granted");
-                  }
+                  mapbox.requestFineLocationPermission().then(function() {
+                    mapbox._showLocation(mapbox.mapView, mapbox);
+                  });
                 }
                 resolve();
               }
@@ -361,6 +380,9 @@ mapbox.removeMarkers = function (ids, nativeMap) {
 
 mapbox._removeMarkers = function (ids, nativeMap) {
   var theMap = nativeMap || mapbox;
+  if (!theMap || !theMap.mapboxMap) {
+    return;
+  }
   for (var m in mapbox._markers) {
     var marker = mapbox._markers[m];
     if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
@@ -434,6 +456,9 @@ mapbox._addMarkers = function(markers, nativeMap) {
     return;
   }
   var theMap = nativeMap || mapbox;
+  if (!theMap || !theMap.mapboxMap) {
+    return;
+  }
 
   theMap.mapboxMap.setOnMarkerClickListener(
       new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
