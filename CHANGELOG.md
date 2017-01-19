@@ -1,5 +1,22 @@
 # Change Log
 
+## [2.4.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.4.0) (2017-01-19)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.3.2...2.4.0)
+
+**Implemented enhancements:**
+
+- user location by xml [\#68](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/68)
+
+**Closed issues:**
+
+- iOS onCalloutTap event stops working [\#71](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/71)
+- Mapbox crashing in Android version 7.1.1 [\#63](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/63)
+- Automatically handle Android 6+ permissions [\#73](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/73)
+
+**Merged pull requests:**
+
+- Remove markers from internal cache [\#72](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/72) ([vakrilov](https://github.com/vakrilov))
+
 ## [2.3.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.3.2) (2017-01-09)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.3.1...2.3.2)
 
