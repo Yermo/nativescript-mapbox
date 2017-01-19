@@ -534,6 +534,8 @@ You can remove regions you've previously downloaded. Any region(s) matching the 
 On Android 6 you need to request permission to be able to show the user's position on the map at runtime when targeting API level 23+.
 Even if the `uses-permission` tag for `ACCESS_FINE_LOCATION` is present in `AndroidManifest.xml`.
 
+**You don't need to do this with plugin version 2.4.0+ as permission is request when required while rendering the map. You're welcome :)**
+
 Note that `hasFineLocationPermission` will return true when:
 * You're running this on iOS, or
 * You're targeting an API level lower than 23, or
@@ -557,8 +559,7 @@ Note that `hasFineLocationPermission` will return true when:
 ```
 
 Note that the `show` function will also check for permission if you passed in `showUserLocation : true`.
-If you didn't request permission before showing the map, and permission was needed, then
-the location is not drawn on the map and the plugin will log an error to the console.
+If you didn't request permission before showing the map, and permission was needed, the plugin will ask the user permission while rendering the map.
 
 ## Using marker images from the internet
 If you specify `icon: 'http(s)://some-remote-image'`, then on iOS you'll need to whitelist
