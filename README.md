@@ -89,7 +89,7 @@ All currently supported options for your XML based map are (__don't__ use other 
 |`mapReady`|-|The name of a callback function you can declare to interact with the map after it has been drawn
 
 ### Want to add markers?
-This where that last option in the table above comes in - `mapReady`.
+This is where that last option in the table above comes in - `mapReady`.
 It allows you to interact with the map after it has been drawn to the page.
 
 Open `main-page.[js|ts]` and add this (see [`addMarkers`](#addmarkers) further below for the full marker API):
