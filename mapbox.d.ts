@@ -117,11 +117,23 @@ declare module "nativescript-mapbox" {
       name: string;
     }
 
-    export interface ListOfflineRegionsOptions {
+    export interface MapboxCluster {
+      points: number;
+      color: string;
+    }
+
+    export interface AddGeoJsonClusteredOptions {
       /**
-       * On Android you need to pass this in in case you haven't done so in a previous function (like 'show')
+       * A unique identifier, like: "earthquakes"
        */
-      accessToken?: string;
+      name: string;
+      /**
+       * URL, like: "https://www.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson"
+       */
+      data: string;
+      clusterMaxZoom?: number;
+      clusterRadius?: number;
+      clusters: Array<MapboxCluster>;
     }
 
     export interface OfflineRegion {
@@ -145,10 +157,6 @@ declare module "nativescript-mapbox" {
     }
 
     export interface DownloadOfflineRegionOptions extends OfflineRegion {
-      /**
-       * On Android you need to pass this in in case you haven't done so in a previous function (like 'show')
-       */
-      accessToken?: string;
       onProgress: (data: DownloadProgress) => void;
     }
 
@@ -249,6 +257,8 @@ declare module "nativescript-mapbox" {
     export function setViewport(arg: SetViewportOptions): Promise<any>;
 
     export function downloadOfflineRegion(arg: DownloadOfflineRegionOptions): Promise<any>;
-    export function listOfflineRegions(arg: ListOfflineRegionsOptions): Promise<Array<OfflineRegion>>;
+    export function listOfflineRegions(): Promise<Array<OfflineRegion>>;
     export function deleteOfflineRegion(arg: DeleteOfflineRegionOptions): Promise<any>;
+
+    export function addGeoJsonClustered(arg: AddGeoJsonClusteredOptions): Promise<any>;
 }

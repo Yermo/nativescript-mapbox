@@ -38,12 +38,14 @@ var Mapbox = (function (_super) {
         return;
       }
 
-      com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
+      com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, settings.accessToken);
 
       var drawMap = function() {
         that.mapView = new com.mapbox.mapboxsdk.maps.MapView(
             application.android.context,
             mapbox._getMapboxMapOptions(settings));
+
+        that.mapView.onCreate(null);
 
         that.mapView.getMapAsync(
             new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
@@ -61,7 +63,6 @@ var Mapbox = (function (_super) {
             })
         );
         that._android.addView(that.mapView);
-        that.mapView.onCreate(null);
       };
 
       setTimeout(drawMap, settings.delay);
@@ -237,12 +238,14 @@ mapbox.show = function(arg) {
         }
 
         mapbox._accessToken = settings.accessToken;
-        com.mapbox.mapboxsdk.MapboxAccountManager.start(application.android.context, settings.accessToken);
+        com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, settings.accessToken);
         var mapboxMapOptions = mapbox._getMapboxMapOptions(settings);
 
         mapbox.mapView = new com.mapbox.mapboxsdk.maps.MapView(
             application.android.context,
             mapboxMapOptions);
+
+        mapbox.mapView.onCreate(null);
 
         mapbox.mapView.getMapAsync(
             new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
@@ -266,8 +269,7 @@ mapbox.show = function(arg) {
             })
         );
 
-        mapbox.mapView.onResume();
-        mapbox.mapView.onCreate(null);
+        // mapbox.mapView.onResume();
 
         var topMostFrame = frame.topmost(),
             density = utils.layout.getDisplayDensity(),
@@ -860,7 +862,7 @@ mapbox.deleteOfflineRegion = function (arg) {
       }
 
       var pack = arg.name;
-      var offlineManager = mapbox._getOfflineManager(arg);
+      var offlineManager = mapbox._getOfflineManager();
 
       offlineManager.listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
         onError: function (errorString) {
@@ -901,15 +903,10 @@ mapbox.deleteOfflineRegion = function (arg) {
   });
 };
 
-mapbox.listOfflineRegions = function (arg) {
+mapbox.listOfflineRegions = function () {
   return new Promise(function (resolve, reject) {
     try {
-      if (!mapbox._accessToken && !arg.accessToken) {
-        reject("First show a map, or pass in an 'accessToken' param");
-        return;
-      }
-
-      var offlineManager = mapbox._getOfflineManager(arg);
+      var offlineManager = mapbox._getOfflineManager();
 
       offlineManager.listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
         onError: function (errorString) {
@@ -949,101 +946,87 @@ mapbox.listOfflineRegions = function (arg) {
   });
 };
 
-mapbox.downloadOfflineRegion = function (arg) {
+mapbox.addGeoJsonClustered = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      // TODO verify input of all params, and mark them mandatory in TS d.
+      var theMap = nativeMap || mapbox;
 
-      var styleURL = mapbox._getMapStyle(arg.style);
+      theMap.mapboxMap.addSource(
+          new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(arg.name,
+              new java.net.URL(arg.data),
+              new com.mapbox.mapboxsdk.style.sources.GeoJsonOptions()
+                  .withCluster(true)
+                  .withClusterMaxZoom(arg.clusterMaxZoom || 13)
+                  .withClusterRadius(arg.clusterRadius || 40)
+          )
+      );
 
-      var bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
-          .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.north, arg.bounds.east))
-          .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.south, arg.bounds.west))
-          .build();
-
-      var retinaFactor = utils.layout.getDisplayDensity();
-
-      var offlineRegionDefinition = new com.mapbox.mapboxsdk.offline.OfflineTilePyramidRegionDefinition(
-          styleURL,
-          bounds,
-          arg.minZoom,
-          arg.maxZoom,
-          retinaFactor);
-
-      var info = '{name:"' + arg.name + '"}';
-      var infoStr = new java.lang.String(info);
-      var encodedMetadata = infoStr.getBytes();
-
-      if (!mapbox._accessToken && !arg.accessToken) {
-        reject("First show a map, or pass in an 'accessToken' param");
-        return;
-      }
-      var offlineManager = mapbox._getOfflineManager(arg);
-
-      offlineManager.createOfflineRegion(offlineRegionDefinition, encodedMetadata, new com.mapbox.mapboxsdk.offline.OfflineManager.CreateOfflineRegionCallback({
-        onError: function (errorString) {
-          reject(errorString);
-        },
-
-        onCreate: function (offlineRegion) {
-          if (arg.onCreate) {
-            arg.onCreate(offlineRegion);
-          }
-
-          offlineRegion.setDownloadState(com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE);
-
-          // Monitor the download progress using setObserver
-          offlineRegion.setObserver(new com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionObserver({
-            onStatusChanged: function (status) {
-              // Calculate the download percentage and update the progress bar
-              var percentage = status.getRequiredResourceCount() >= 0 ?
-                  (100.0 * status.getCompletedResourceCount() / status.getRequiredResourceCount()) :
-                  0.0;
-
-              if (arg.onProgress) {
-                arg.onProgress({
-                  name: arg.name,
-                  completedSize: status.getCompletedResourceSize(),
-                  completed: status.getCompletedResourceCount(),
-                  expected: status.getRequiredResourceCount(),
-                  percentage: Math.round(percentage * 100) / 100,
-                  // downloading: status.getDownloadState() == com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE,
-                  complete: status.isComplete()
-                });
-              }
-
-              if (status.isComplete()) {
-                resolve();
-              } else if (status.isRequiredResourceCountPrecise()) {
-              }
-            },
-
-            onError: function (error) {
-              reject(error.getMessage() + ", reason: " + error.getReason());
-            },
-
-            mapboxTileCountLimitExceeded: function (limit) {
-              console.log("dl mapboxTileCountLimitExceeded: " + limit);
-            }
-          }));
+      var layers = [];
+      if (arg.clusters) {
+        for (var i = 0; i < arg.clusters.length; i++) {
+          layers.push([arg.clusters.points, new Color(arg.clusters.color).android]);
         }
-      }));
+      } else {
+        layers.push([150, new Color("red").android]);
+        layers.push([20, new Color("green").android]);
+        layers.push([2, new Color("blue").android]);
+      };
 
+      // for some reason unclustered doesn't show up :(
+      var unclustered = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("unclustered-points", "earthquakes");
+      unclustered.setProperties([
+        com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(new Color("red").android),
+        com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(20.0)),
+        com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
+      ]);
+      unclustered.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.neq("cluster", new java.lang.Boolean(true)));
+      theMap.mapboxMap.addLayer(unclustered, "building");
+
+      for (var i = 0; i < layers.length; i++) {
+        // Add some nice circles
+        var circles = new com.mapbox.mapboxsdk.style.layers.CircleLayer("cluster-" + i, "earthquakes");
+        circles.setProperties([
+              // com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage("icon")
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(layers[i][1]),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(70.0)),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(1.0))
+            ]
+        );
+
+        circles.setFilter(
+            i == 0
+                ? com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0]))
+                : com.mapbox.mapboxsdk.style.layers.Filter.all([
+                  com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0])),
+                  com.mapbox.mapboxsdk.style.layers.Filter.lt("point_count", new java.lang.Integer(layers[i - 1][0]))
+                ])
+        );
+
+        theMap.mapboxMap.addLayer(circles, "building");
+      }
+
+      // Add the count labels
+      var count = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("count", "earthquakes");
+      count.setProperties([
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField("{point_count}"),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(13.0)),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android)
+          ]
+      );
+      theMap.mapboxMap.addLayer(count);
+
+      resolve();
     } catch (ex) {
-      console.log("Error in mapbox.downloadOfflineRegion: " + ex);
+      console.log("Error in mapbox.addSource: " + ex);
       reject(ex);
     }
   });
 };
 
-mapbox._getOfflineManager = function (arg) {
+
+mapbox._getOfflineManager = function () {
   if (!mapbox._offlineManager) {
     mapbox._offlineManager = com.mapbox.mapboxsdk.offline.OfflineManager.getInstance(application.android.context);
-    if (arg.accessToken) {
-      mapbox._offlineManager.setAccessToken(arg.accessToken);
-    } else if (mapbox._accessToken) {
-      mapbox._offlineManager.setAccessToken(mapbox._accessToken);
-    }
   }
   return mapbox._offlineManager;
 };
