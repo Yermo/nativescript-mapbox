@@ -8,10 +8,11 @@ android {
 
 repositories {
     mavenCentral()
+    maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
 }
 
 dependencies {
-    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:4.1.1@aar'){
+    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:5.0.0-SNAPSHOT@aar'){
         transitive=true
     }
 }
