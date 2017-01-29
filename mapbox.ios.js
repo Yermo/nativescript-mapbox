@@ -663,7 +663,7 @@ mapbox.deleteOfflineRegion = function (arg) {
   });
 };
 
-mapbox.listOfflineRegions = function (arg) {
+mapbox.listOfflineRegions = function () {
   return new Promise(function (resolve, reject) {
     try {
       var packs = MGLOfflineStorage.sharedOfflineStorage().packs;
