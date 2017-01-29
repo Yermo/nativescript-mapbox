@@ -199,13 +199,13 @@ mapbox._showLocation = function(theMapView, ownerObject) {
             mapbox._addMarkers([
               {
                 id: 999997,
-                icon: "res://ic_mylocationview_normal",
+                icon: "res://mapbox_mylocation_icon_default",
                 lat: location.getLatitude(),
                 lng: location.getLongitude()
               },
               {
                 id: 999998,
-                icon: "res://ic_mylocationview_background",
+                icon: "res://mapbox_mylocation_bg_shape",
                 lat: location.getLatitude(),
                 lng: location.getLongitude()
               }
@@ -969,14 +969,14 @@ mapbox.addGeoJsonClustered = function (arg, nativeMap) {
       } else {
         layers.push([150, new Color("red").android]);
         layers.push([20, new Color("green").android]);
-        layers.push([2, new Color("blue").android]);
+        layers.push([0, new Color("blue").android]);
       };
 
       // for some reason unclustered doesn't show up :(
       var unclustered = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("unclustered-points", "earthquakes");
       unclustered.setProperties([
         com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(new Color("red").android),
-        com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(20.0)),
+        com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(18.0)),
         com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
       ]);
       unclustered.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.neq("cluster", new java.lang.Boolean(true)));
@@ -988,8 +988,8 @@ mapbox.addGeoJsonClustered = function (arg, nativeMap) {
         circles.setProperties([
               // com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage("icon")
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(layers[i][1]),
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(70.0)),
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(1.0))
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(22.0)),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
             ]
         );
 
@@ -1009,7 +1009,7 @@ mapbox.addGeoJsonClustered = function (arg, nativeMap) {
       var count = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("count", "earthquakes");
       count.setProperties([
             com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField("{point_count}"),
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(13.0)),
+          com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(12.0)),
             com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android)
           ]
       );
