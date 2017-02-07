@@ -118,7 +118,7 @@ exports.onMapReady = onMapReady;
 var mapbox = require("nativescript-mapbox");
 
 function onMapReady(args) {
-  args.map.setViewport([
+  args.map.setViewport(
       {
         bounds: {
           north: 52.4820,
@@ -127,7 +127,7 @@ function onMapReady(args) {
           west: 4.6816
         },
         animated: true
-      }]
+      }
   );
 }
 
