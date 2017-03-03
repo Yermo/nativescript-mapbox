@@ -93,6 +93,11 @@ mapbox.Mapbox = Mapbox;
 
 
 mapbox._getMapboxMapOptions = function (settings) {
+  var resourcename = "mapbox_mylocation_icon_default";
+  var res = utils.ad.getApplicationContext().getResources();
+  var identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
+  var iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
+
   var mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
       .styleUrl(mapbox._getMapStyle(settings.style))
       .compassEnabled(!settings.hideCompass)
@@ -101,6 +106,12 @@ mapbox._getMapboxMapOptions = function (settings) {
       .tiltGesturesEnabled(!settings.disableTilt)
       .zoomGesturesEnabled(!settings.disableZoom)
       .attributionEnabled(!settings.hideAttribution)
+      .myLocationForegroundDrawable(iconDrawable)
+      // .myLocationBackgroundDrawable(iconDrawable)
+      .myLocationForegroundTintColor(android.graphics.Color.rgb(135, 206, 250)) // "lightskyblue"
+      // .myLocationBackgroundTintColor(android.graphics.Color.YELLOW)
+      .myLocationAccuracyTint(android.graphics.Color.rgb(135, 206, 250)) // "lightskyblue"
+      .myLocationAccuracyAlpha(80)
       .logoEnabled(!settings.hideLogo);
 
   // zoomlevel is not applied unless center is set
@@ -186,35 +197,19 @@ mapbox._getMapStyle = function(input) {
 };
 
 mapbox._showLocation = function(theMapView, ownerObject) {
-  mapbox.locationServices = com.mapbox.mapboxsdk.location.LocationServices.getLocationServices(application.android.context);
-
-  mapbox.locationServices.addLocationListener(new com.mapbox.mapboxsdk.location.LocationListener({
-        onLocationChanged: function (location) {
-          if (location !== null) {
-            if (ownerObject._locationMarkerAdded) {
-              mapbox._removeMarkers([999997, 999998], theMapView);
-            } else {
-              ownerObject._locationMarkerAdded = true;
-            }
-            mapbox._addMarkers([
-              {
-                id: 999997,
-                icon: "res://mapbox_mylocation_icon_default",
-                lat: location.getLatitude(),
-                lng: location.getLongitude()
-              },
-              {
-                id: 999998,
-                icon: "res://mapbox_mylocation_bg_shape",
-                lat: location.getLatitude(),
-                lng: location.getLongitude()
-              }
-            ], theMapView);
-          }
-        }
-      })
-  );
+  mapbox.locationServices = com.mapbox.mapboxsdk.location.LocationSource.getLocationEngine(application.android.context);
+  /*
+   var locationEngineListener = new com.mapbox.services.android.telemetry.location.LocationEngineListener({
+       onConnected: function () {
+     },
+     onLocationChanged: function (location) {
+     }
+   });
+   mapbox.locationServices.addLocationEngineListener(locationEngineListener);
+   */
   theMapView.mapboxMap.setMyLocationEnabled(true);
+  mapbox.locationServices.activate();
+  mapbox.locationServices.requestLocationUpdates();
 };
 
 mapbox.show = function(arg) {
@@ -988,8 +983,8 @@ mapbox.addGeoJsonClustered = function (arg, nativeMap) {
         circles.setProperties([
               // com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage("icon")
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(layers[i][1]),
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(22.0)),
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(22.0)),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
             ]
         );
 
@@ -1009,7 +1004,7 @@ mapbox.addGeoJsonClustered = function (arg, nativeMap) {
       var count = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("count", "earthquakes");
       count.setProperties([
             com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField("{point_count}"),
-          com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(12.0)),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(12.0)),
             com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android)
           ]
       );
