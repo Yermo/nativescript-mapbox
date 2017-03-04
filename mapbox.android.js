@@ -321,13 +321,15 @@ mapbox._getClickedMarkerDetails = function (clicked) {
 mapbox.hide = function(arg) {
   return new Promise(function (resolve, reject) {
     try {
-      var viewGroup = mapbox.mapView.getParent();
-      if (viewGroup !== null) {
-        viewGroup.setVisibility(android.view.View.INVISIBLE);
+      if (mapbox.mapView) {
+        var viewGroup = mapbox.mapView.getParent();
+        if (viewGroup !== null) {
+          viewGroup.setVisibility(android.view.View.INVISIBLE);
+        }
       }
       resolve();
     } catch (ex) {
-      console.log("Error in mapbox.show: " + ex);
+      console.log("Error in mapbox.hide: " + ex);
       reject(ex);
     }
   });
@@ -346,6 +348,19 @@ mapbox.unhide = function (arg) {
     } catch (ex) {
       console.log("Error in mapbox.unhide: " + ex);
       reject(ex);
+    }
+  });
+};
+
+mapbox.destroy = function(arg) {
+  return new Promise(function (resolve, reject) {
+    if (mapbox.mapView) {
+      var viewGroup = mapbox.mapView.getParent();
+      if (viewGroup !== null) {
+        viewGroup.removeView(mapbox.mapView);
+      }
+      mapbox.mapView = null;
+      mapbox.mapboxMap = null;
     }
   });
 };

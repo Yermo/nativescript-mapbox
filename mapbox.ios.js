@@ -168,7 +168,9 @@ mapbox.show = function (arg) {
 mapbox.hide = function (arg) {
   return new Promise(function (resolve, reject) {
     try {
-      mapbox.mapView.removeFromSuperview();
+      if (mapbox.mapView) {
+        mapbox.mapView.removeFromSuperview();
+      }
       resolve("Done");
     } catch (ex) {
       console.log("Error in mapbox.hide: " + ex);
@@ -190,6 +192,16 @@ mapbox.unhide = function (arg) {
     } catch (ex) {
       console.log("Error in mapbox.unhide: " + ex);
       reject(ex);
+    }
+  });
+};
+
+mapbox.destroy = function(arg) {
+  return new Promise(function (resolve, reject) {
+    if (mapbox.mapView) {
+      mapbox.mapView.removeFromSuperview();
+      mapbox.mapView.delegate = null;
+      mapbox.mapView = null;
     }
   });
 };
