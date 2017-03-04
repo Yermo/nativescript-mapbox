@@ -227,6 +227,7 @@ declare module "nativescript-mapbox" {
     export function show(options: ShowOptions): Promise<any>;
     export function hide(): Promise<any>;
     export function unhide(): Promise<any>;
+    export function destroy(): Promise<any>;
 
     export function setMapStyle(style: string): Promise<any>;
 
