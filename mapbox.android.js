@@ -501,8 +501,7 @@ mapbox._addMarkers = function(markers, nativeMap) {
           if (identifier === 0) {
             console.log("No icon found for this device desity for icon " + marker.icon + ", using default");
           } else {
-            var iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
-            markerOptions.setIcon(iconFactory.fromDrawable(iconDrawable));
+            markerOptions.setIcon(iconFactory.fromResource(identifier));
           }
         } else if (marker.icon.startsWith("http")) {
           if (marker.iconDownloaded !== null) {
