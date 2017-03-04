@@ -940,6 +940,94 @@ mapbox.listOfflineRegions = function () {
   });
 };
 
+
+mapbox.downloadOfflineRegion = function (arg) {
+  return new Promise(function (resolve, reject) {
+    try {
+      // TODO verify input of all params, and mark them mandatory in TS d.
+
+      var styleURL = mapbox._getMapStyle(arg.style);
+
+      var bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
+          .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.north, arg.bounds.east))
+          .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.south, arg.bounds.west))
+          .build();
+
+      var retinaFactor = utils.layout.getDisplayDensity();
+
+      var offlineRegionDefinition = new com.mapbox.mapboxsdk.offline.OfflineTilePyramidRegionDefinition(
+          styleURL,
+          bounds,
+          arg.minZoom,
+          arg.maxZoom,
+          retinaFactor);
+
+      var info = '{name:"' + arg.name + '"}';
+      var infoStr = new java.lang.String(info);
+      var encodedMetadata = infoStr.getBytes();
+
+      if (!mapbox._accessToken && !arg.accessToken) {
+        reject("First show a map, or pass in an 'accessToken' param");
+        return;
+      }
+      var offlineManager = mapbox._getOfflineManager(arg);
+
+      offlineManager.createOfflineRegion(offlineRegionDefinition, encodedMetadata, new com.mapbox.mapboxsdk.offline.OfflineManager.CreateOfflineRegionCallback({
+        onError: function (errorString) {
+          reject(errorString);
+        },
+
+        onCreate: function (offlineRegion) {
+          if (arg.onCreate) {
+            arg.onCreate(offlineRegion);
+          }
+
+          offlineRegion.setDownloadState(com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE);
+
+          // Monitor the download progress using setObserver
+          offlineRegion.setObserver(new com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionObserver({
+            onStatusChanged: function (status) {
+              // Calculate the download percentage and update the progress bar
+              var percentage = status.getRequiredResourceCount() >= 0 ?
+                  (100.0 * status.getCompletedResourceCount() / status.getRequiredResourceCount()) :
+                  0.0;
+
+              if (arg.onProgress) {
+                arg.onProgress({
+                  name: arg.name,
+                  completedSize: status.getCompletedResourceSize(),
+                  completed: status.getCompletedResourceCount(),
+                  expected: status.getRequiredResourceCount(),
+                  percentage: Math.round(percentage * 100) / 100,
+                  // downloading: status.getDownloadState() == com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE,
+                  complete: status.isComplete()
+                });
+              }
+
+              if (status.isComplete()) {
+                resolve();
+              } else if (status.isRequiredResourceCountPrecise()) {
+              }
+            },
+
+            onError: function (error) {
+              reject(error.getMessage() + ", reason: " + error.getReason());
+            },
+
+            mapboxTileCountLimitExceeded: function (limit) {
+              console.log("dl mapboxTileCountLimitExceeded: " + limit);
+            }
+          }));
+        }
+      }));
+
+    } catch (ex) {
+      console.log("Error in mapbox.downloadOfflineRegion: " + ex);
+      reject(ex);
+    }
+  });
+};
+
 mapbox.addGeoJsonClustered = function (arg, nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
