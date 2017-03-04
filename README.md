@@ -210,6 +210,13 @@ instead of redrawing it (which is a lot slower and you loose the viewport positi
   mapbox.unhide();
 ```
 
+### destroy
+To clean up the map entirely you can destroy instead of hide it:
+
+```js
+  mapbox.destroy();
+```
+
 ### setMapStyle
 You can update the map style after you've loaded it. How neat is that!?
 
