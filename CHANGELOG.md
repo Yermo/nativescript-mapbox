@@ -1,5 +1,51 @@
 # Change Log
 
+## [2.5.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.5.2) (2017-03-04)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.5.1...2.5.2)
+
+**Implemented enhancements:**
+
+- Add a 'destroy' method [\#91](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/91)
+
+**Fixed bugs:**
+
+- Can't download offline region on Android [\#88](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/88)
+- Program failed to link at com.mapbox.mapboxsdk.maps.NativeMapView.nativeRender [\#87](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/87)
+- Unable to get markers to display [\#86](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/86)
+- Cannot read property 'getLocationServices' of undefined [\#80](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/80)
+
+**Closed issues:**
+
+- make sure you add the Telemetry service to your androidManifest.xml [\#90](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/90)
+- Custom marker tooltip [\#89](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/89)
+- MapBox plugin failing to install on angular-seed-advanced [\#79](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/79)
+- Zoom controls [\#76](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/76)
+
+**Merged pull requests:**
+
+- Update AndroidManifest.xml [\#82](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/82) ([Equisetum](https://github.com/Equisetum))
+- README.md--Deleted wrong \[\] sintax in setViewport [\#77](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/77) ([seros00](https://github.com/seros00))
+
+## [2.5.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.5.1) (2017-01-29)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.5.0...2.5.1)
+
+**Closed issues:**
+
+- Mapbox dissapear, when call routerExtensions.back\(\) [\#65](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/65)
+- iOS Marker added using addMarkers is jumpy when zoomin in/out [\#14](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/14)
+
+## [2.5.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.5.0) (2017-01-29)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.4.0...2.5.0)
+
+**Implemented enhancements:**
+
+- Will the Mapbox Directions api work with Nativescript? [\#28](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/28)
+
+**Closed issues:**
+
+- Can't use the component on Android 4.4.4 or lower [\#66](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/66)
+- \[performance\] Move to Mapbox-Android's 5.0 SDK [\#75](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/75)
+
 ## [2.4.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.4.0) (2017-01-19)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.3.2...2.4.0)
 
@@ -7,10 +53,14 @@
 
 - user location by xml [\#68](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/68)
 
+**Fixed bugs:**
+
+- user location by xml [\#68](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/68)
+
 **Closed issues:**
 
-- iOS onCalloutTap event stops working [\#71](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/71)
-- Mapbox crashing in Android version 7.1.1 [\#63](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/63)
+- \[IOS\] onCalloutTap event stops working [\#71](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/71)
+- MapBox crashing in Android version 7.1.1 [\#63](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/63)
 - Automatically handle Android 6+ permissions [\#73](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/73)
 
 **Merged pull requests:**
