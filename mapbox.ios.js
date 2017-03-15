@@ -382,10 +382,11 @@ mapbox.setZoomLevel = function (arg, nativeMap) {
   });
 };
 
-mapbox.getZoomLevel = function () {
+mapbox.getZoomLevel = function (nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      var level = mapbox.mapView.zoomLevel;
+      var theMap = nativeMap || mapbox;
+      var level = theMap.mapView.zoomLevel;
       resolve(level);
     } catch (ex) {
       console.log("Error in mapbox.getZoomLevel: " + ex);
