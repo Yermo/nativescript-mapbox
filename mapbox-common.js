@@ -80,51 +80,55 @@ var Mapbox = (function (_super) {
 
   // functions that can be called from the XML map's "mapReady" event
 	Mapbox.prototype.addMarkers = function (args) {
-    mapbox.addMarkers(args, this.native);
+    return mapbox.addMarkers(args, this.native);
 	};
 
 	Mapbox.prototype.removeMarkers = function (args) {
-    mapbox.removeMarkers(args, this.native);
+    return mapbox.removeMarkers(args, this.native);
 	};
 
 	Mapbox.prototype.setCenter = function (args) {
-    mapbox.setCenter(args, this.native);
+    return mapbox.setCenter(args, this.native);
 	};
 
 	Mapbox.prototype.setZoomLevel = function (args) {
-    mapbox.setZoomLevel(args, this.native);
+    return mapbox.setZoomLevel(args, this.native);
+	};
+	
+	Mapbox.prototype.getZoomLevel = function () {
+    return mapbox.getZoomLevel(this.native);
 	};
 
 	Mapbox.prototype.setViewport = function (args) {
-    mapbox.setViewport(args, this.native);
+    return mapbox.setViewport(args, this.native);
 	};
 
 	Mapbox.prototype.setOnMapClickListener = function (args) {
-    mapbox.setOnMapClickListener(args, this.native);
+    return mapbox.setOnMapClickListener(args, this.native);
 	};
 
 	Mapbox.prototype.setTilt = function (args) {
-    mapbox.setTilt(args, this.native);
+    return mapbox.setTilt(args, this.native);
 	};
 
 	Mapbox.prototype.animateCamera = function (args) {
-    mapbox.animateCamera(args, this.native);
+    return mapbox.animateCamera(args, this.native);
 	};
 
 	Mapbox.prototype.addPolygon = function (args) {
-    mapbox.addPolygon(args, this.native);
+    return mapbox.addPolygon(args, this.native);
 	};
 
 	Mapbox.prototype.addPolyline = function (args) {
-    mapbox.addPolyline(args, this.native);
+    return mapbox.addPolyline(args, this.native);
 	};
 
 	Mapbox.prototype.removePolylines = function (args) {
-    mapbox.removePolylines(args, this.native);
+    return mapbox.removePolylines(args, this.native);
 	};
 
 	Mapbox.prototype.setMapStyle = function (args) {
-    mapbox.setMapStyle(args, this.native);
+    return mapbox.setMapStyle(args, this.native);
 	};
 
   // properties that can be set from XML
