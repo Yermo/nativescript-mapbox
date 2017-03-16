@@ -385,8 +385,8 @@ mapbox.setZoomLevel = function (arg, nativeMap) {
 mapbox.getZoomLevel = function (nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      var theMap = nativeMap || mapbox;
-      var level = theMap.mapView.zoomLevel;
+      var theMap = nativeMap || mapbox.mapView;
+      var level = theMap.zoomLevel;
       resolve(level);
     } catch (ex) {
       console.log("Error in mapbox.getZoomLevel: " + ex);
