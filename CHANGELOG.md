@@ -7,10 +7,8 @@
 
 **Implemented enhancements:**
 
-- Added return statement to make the Mapbox.prototype.xxx functions [\#95](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/95)
-- Changes to work with XML-based maps #96 [\#96](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/96)
-- Changes to work with XML-based maps #97 [\#97](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/97)
-
+- [Feature request] support getCenter method for XML create maps [\#98](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/98)
+- setviewport bounds doesnt work [\#94](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/94)
 
 ## [2.5.3](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.5.3) (2017-03-16)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.5.2...2.5.3)
