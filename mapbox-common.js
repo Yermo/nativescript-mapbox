@@ -87,6 +87,10 @@ var Mapbox = (function (_super) {
     return mapbox.removeMarkers(args, this.native);
 	};
 
+	Mapbox.prototype.getCenter = function () {
+    return mapbox.getCenter(this.native);
+	};
+
 	Mapbox.prototype.setCenter = function (args) {
     return mapbox.setCenter(args, this.native);
 	};
@@ -97,6 +101,10 @@ var Mapbox = (function (_super) {
 	
 	Mapbox.prototype.getZoomLevel = function () {
     return mapbox.getZoomLevel(this.native);
+	};
+
+	Mapbox.prototype.getViewport = function () {
+    return mapbox.getViewport(this.native);
 	};
 
 	Mapbox.prototype.setViewport = function (args) {

@@ -565,10 +565,11 @@ mapbox.setCenter = function (arg, nativeMap) {
   });
 };
 
-mapbox.getCenter = function () {
+mapbox.getCenter = function (nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      var coordinate = mapbox.mapboxMap.getCameraPosition().target;
+      var theMap = nativeMap || mapbox;
+      var coordinate = theMap.mapboxMap.getCameraPosition().target;
       resolve({
         lat: coordinate.getLatitude(),
         lng: coordinate.getLongitude()
@@ -771,7 +772,7 @@ mapbox.removePolylines = function (ids, nativeMap) {
   });
 };
 
-mapbox.getViewport = function (arg) {
+mapbox.getViewport = function (nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
       if (!mapbox.mapboxMap) {
@@ -779,7 +780,8 @@ mapbox.getViewport = function (arg) {
         return;
       }
 
-      var bounds = mapbox.mapboxMap.getProjection().getVisibleRegion().latLngBounds;
+      var theMap = nativeMap || mapbox;
+      var bounds = theMap.mapboxMap.getProjection().getVisibleRegion().latLngBounds;
 
       resolve({
         bounds: {
@@ -788,7 +790,7 @@ mapbox.getViewport = function (arg) {
           south: bounds.getLatSouth(),
           west: bounds.getLonWest()
         },
-        zoomLevel: mapbox.mapboxMap.getCameraPosition().zoom
+        zoomLevel: theMap.mapboxMap.getCameraPosition().zoom
       });
     } catch (ex) {
       console.log("Error in mapbox.getViewport: " + ex);
@@ -1078,7 +1080,7 @@ mapbox.addGeoJsonClustered = function (arg, nativeMap) {
         com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
       ]);
       unclustered.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.neq("cluster", new java.lang.Boolean(true)));
-      theMap.mapboxMap.addLayer(unclustered, "building");
+      theMap.mapboxMap.addLayer(unclustered); //, "building");
 
       for (var i = 0; i < layers.length; i++) {
         // Add some nice circles
@@ -1100,7 +1102,7 @@ mapbox.addGeoJsonClustered = function (arg, nativeMap) {
                 ])
         );
 
-        theMap.mapboxMap.addLayer(circles, "building");
+        theMap.mapboxMap.addLayer(circles); //, "building");
       }
 
       // Add the count labels

@@ -137,8 +137,8 @@ exports.onMapReady = onMapReady;
 ```
 
 Other methods you can invoke like this from an XML-declared map are:
-`removeMarkers`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `setViewport`, `setTilt`, `setMapStyle`,
-`animateCamera`, `addPolygon`, `addPolyline`, `removePolylines` and `setOnMapClickListener`.
+`removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `setViewport`, `setTilt`,
+`setMapStyle`, `animateCamera`, `addPolygon`, `addPolyline`, `removePolylines` and `setOnMapClickListener`.
 
 Check out the usage details on the functions below.
 

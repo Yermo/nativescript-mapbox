@@ -1,5 +1,17 @@
 # Change Log
 
+## [2.6.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.6.0) (2017-03-22)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.5.3...2.6.0)
+
+**Make sure you have an up-to-date Android Repository (API level 25) - run `android` in a terminal and update outdated stuff.**
+
+**Implemented enhancements:**
+
+- Added return statement to make the Mapbox.prototype.xxx functions [\#95](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/95)
+- Changes to work with XML-based maps #96 [\#96](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/96)
+- Changes to work with XML-based maps #97 [\#97](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/97)
+
+
 ## [2.5.3](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.5.3) (2017-03-16)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.5.2...2.5.3)
 

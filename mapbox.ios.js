@@ -348,10 +348,11 @@ mapbox.setCenter = function (arg, nativeMap) {
   });
 };
 
-mapbox.getCenter = function () {
+mapbox.getCenter = function (nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
-      var coordinate = mapbox.mapView.centerCoordinate;
+      var theMap = nativeMap || mapbox.mapView;
+      var coordinate = theMap.centerCoordinate;
       resolve({
         lat: coordinate.latitude,
         lng: coordinate.longitude
@@ -561,7 +562,7 @@ mapbox._reportOfflineRegionDownloadProgress = function() {
   }
 };
 
-mapbox.getViewport = function (arg) {
+mapbox.getViewport = function (nativeMap) {
   return new Promise(function (resolve, reject) {
     try {
       if (!mapbox.mapView) {
@@ -569,7 +570,8 @@ mapbox.getViewport = function (arg) {
         return;
       }
 
-      var visibleBounds = mapbox.mapView.visibleCoordinateBounds;
+      var theMap = nativeMap || mapbox.mapView;
+      var visibleBounds = theMap.visibleCoordinateBounds;
       var bounds = {
         north: visibleBounds.ne.latitude,
         east: visibleBounds.ne.longitude,
@@ -578,7 +580,7 @@ mapbox.getViewport = function (arg) {
       };
       resolve({
         bounds: bounds,
-        zoomLevel: mapbox.mapView.zoomLevel
+        zoomLevel: theMap.zoomLevel
       });
     } catch (ex) {
       console.log("Error in mapbox.getViewport: " + ex);
