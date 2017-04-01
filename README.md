@@ -2,8 +2,6 @@
 
 Awesome native OpenGL-powered maps - by Mapbox
 
-> Note that version 1.5.0+ requires NativeScript 2.3.0.
-
 <img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
 ### Use when
@@ -138,7 +136,7 @@ exports.onMapReady = onMapReady;
 
 Other methods you can invoke like this from an XML-declared map are:
 `removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `setViewport`, `setTilt`,
-`setMapStyle`, `animateCamera`, `addPolygon`, `addPolyline`, `removePolylines` and `setOnMapClickListener`.
+`setMapStyle`, `animateCamera`, `addPolygon`, `addPolyline`, `removePolylines`, `setOnMapClickListener` and `destroy`.
 
 Check out the usage details on the functions below.
 

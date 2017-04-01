@@ -352,15 +352,16 @@ mapbox.unhide = function (arg) {
   });
 };
 
-mapbox.destroy = function(arg) {
+mapbox.destroy = function(arg, nativeMap) {
   return new Promise(function (resolve, reject) {
-    if (mapbox.mapView) {
-      var viewGroup = mapbox.mapView.getParent();
+    var theMap = nativeMap || mapbox;
+    if (theMap.mapView) {
+      var viewGroup = theMap.mapView.getParent();
       if (viewGroup !== null) {
-        viewGroup.removeView(mapbox.mapView);
+        viewGroup.removeView(theMap.mapView);
       }
-      mapbox.mapView = null;
-      mapbox.mapboxMap = null;
+      theMap.mapView = null;
+      theMap.mapboxMap = null;
     }
   });
 };

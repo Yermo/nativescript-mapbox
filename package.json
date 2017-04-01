@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox",
   "typings": "mapbox.d.ts",
@@ -8,6 +8,11 @@
     "platforms": {
       "android": "2.3.0",
       "ios": "2.3.0"
+    },
+    "plugin": {
+      "nan": true,
+      "pan": true,
+      "category": "Interface"
     }
   },
   "repository": {
