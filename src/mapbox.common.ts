@@ -262,7 +262,7 @@ export interface MapboxApi {
 
   addPolygon(options: AddPolygonOptions, nativeMap?: any): Promise<any>;
   addPolyline(options: AddPolylineOptions, nativeMap?: any): Promise<any>;
-  removePolylines(options?: any, nativeMap?: any): Promise<any>;
+  removePolylines(ids?: Array<any>, nativeMap?: any): Promise<any>;
 
   animateCamera(options: AnimateCameraOptions, nativeMap?: any): Promise<any>;
 
@@ -313,13 +313,13 @@ export abstract class MapboxCommon implements MapboxCommonApi {
       }
     }
     for (let i in obj2) { // add the remaining properties from object 2
-      if (i in result) { //conflict
+      if (i in result) { // conflict
         continue;
       }
       result[i] = obj2[i];
     }
     return result;
-  };
+  }
 
   requestFineLocationPermission(): Promise<boolean> {
     return new Promise((resolve) => {
@@ -351,7 +351,7 @@ export interface MapboxViewApi {
   setTilt(options: SetTiltOptions): Promise<any>;
   addPolygon(options: AddPolygonOptions): Promise<any>;
   addPolyline(options: AddPolylineOptions): Promise<any>;
-  removePolylines(options?: any): Promise<any>;
+  removePolylines(ids?: Array<any>): Promise<any>;
   animateCamera(options: AnimateCameraOptions): Promise<any>;
   destroy(): Promise<any>;
 }
@@ -363,11 +363,11 @@ export abstract class MapboxViewCommonBase extends View implements MapboxViewApi
 
   addMarkers(markers: MapboxMarker[]): Promise<any> {
     return this.mapbox.addMarkers(markers, this.getNativeMapView());
-  };
+  }
 
   removeMarkers(options?: any): Promise<any> {
     return this.mapbox.removeMarkers(options, this.getNativeMapView());
-  };
+  }
 
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any> {
     return this.mapbox.setOnMapClickListener(listener, this.getNativeMapView());
@@ -417,8 +417,8 @@ export abstract class MapboxViewCommonBase extends View implements MapboxViewApi
     return this.mapbox.addPolyline(options, this.getNativeMapView());
   }
 
-  removePolylines(options?: any): Promise<any> {
-    return this.mapbox.removePolylines(options, this.getNativeMapView());
+  removePolylines(ids?: Array<any>): Promise<any> {
+    return this.mapbox.removePolylines(ids, this.getNativeMapView());
   }
 
   animateCamera(options: AnimateCameraOptions): Promise<any> {
@@ -512,7 +512,7 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
   }
 
   [delayProperty.setNative](value: number) {
-    this.config.delay = parseInt(""+value);
+    this.config.delay = parseInt("" + value);
   }
 
   [latitudeProperty.setNative](value: number) {

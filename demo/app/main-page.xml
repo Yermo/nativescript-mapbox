@@ -4,7 +4,8 @@
 
       <TabViewItem title="By XML">
         <TabViewItem.view>
-          <GridLayout columns="*, *" rows="120, *, 120" horizontalAlignment="stretch" class="tab-content">
+          <!--<GridLayout columns="*, *" rows="120, *, 120" horizontalAlignment="stretch" class="tab-content">-->
+          <GridLayout columns="*" rows="*" horizontalAlignment="stretch" class="tab-content">
             <ContentView row="0">
               <map:MapboxView
                   latitude="52.3702160"
@@ -17,7 +18,7 @@
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="0" col="1">
+            <!--ContentView row="0" col="1">
               <map:MapboxView
                   delay="invalid"
                   latitude="52.3702160"
@@ -71,7 +72,7 @@
                   mapStyle="hybrid"
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
-            </ContentView>
+            </ContentView-->
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>

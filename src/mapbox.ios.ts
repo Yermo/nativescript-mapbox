@@ -15,8 +15,7 @@ import {
 } from "./mapbox.common";
 
 // Export the enums for devs not using TS
-exports.MapStyle = MapStyle;
-// export { MapStyle };
+export { MapStyle };
 
 (() => {
   // need to kick this off otherwise offline stuff won't work without first showing a map
@@ -29,7 +28,7 @@ let _mapView: MGLMapView;
 let _mapbox: any = {};
 let _delegate: any;
 
-let _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
+const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
   mapView.logoView.hidden = settings.hideLogo;
   mapView.attributionButton.hidden = settings.hideAttribution;
   mapView.showsUserLocation = settings.showUserLocation;
@@ -50,7 +49,7 @@ let _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
   mapView.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 };
 
-let _getMapStyle = (input: any) => {
+const _getMapStyle = (input: any) => {
   const version = 9;
 
   if (/^mapbox:\/\/styles/.test(input)) {
@@ -81,7 +80,7 @@ export class MapboxView extends MapboxViewBase {
 
   getNativeMapView(): any {
     return this.mapView;
-  };
+  }
 
   public createNativeView(): Object {
     let v = super.createNativeView();
@@ -172,7 +171,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         if (_mapbox.mapView) {
           _mapbox.mapView.removeFromSuperview();
         }
-        resolve("Done");
+        resolve();
       } catch (ex) {
         console.log("Error in mapbox.hide: " + ex);
         reject(ex);
@@ -203,7 +202,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       if (theMap) {
         theMap.removeFromSuperview();
         theMap.delegate = null;
-        _mapbox.mapView = null;
+        _mapbox = {};
       }
       resolve();
     });
@@ -304,7 +303,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         let theMap: MGLMapView = nativeMap || _mapbox.mapView;
         let animated = options.animated === undefined  || options.animated;
         let level = options.level;
-        if (level >=0 && level <= 20) {
+        if (level >= 0 && level <= 20) {
           theMap.setZoomLevelAnimated(level, animated);
           resolve();
         } else {
@@ -338,7 +337,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         cam.pitch = options.tilt;
 
-        let durationMs = options.duration ? options.duration : 5000;
+        const durationMs = options.duration ? options.duration : 5000;
 
         theMap.setCameraWithDurationAnimationTimingFunction(
             cam,
@@ -437,7 +436,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  removePolylines(options?: any, nativeMap?): Promise<any> {
+  removePolylines(ids?: Array<any>, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
         let theMap: MGLMapView = nativeMap || _mapbox.mapView;
@@ -519,12 +518,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   getViewport(nativeMap?): Promise<Viewport> {
     return new Promise((resolve, reject) => {
       try {
-        if (!_mapbox.mapView) {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
           reject("No map has been loaded");
           return;
         }
 
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
         let visibleBounds = theMap.visibleCoordinateBounds;
         let bounds = {
           north: visibleBounds.ne.latitude,
@@ -600,7 +600,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             let offlinePack = notification.object;
             let offlinePackProgress = offlinePack.progress;
             let userInfo = NSKeyedUnarchiver.unarchiveObjectWithData(offlinePack.context);
-            let complete = offlinePackProgress.countOfResourcesCompleted == offlinePackProgress.countOfResourcesExpected;
+            let complete = offlinePackProgress.countOfResourcesCompleted === offlinePackProgress.countOfResourcesExpected;
 
             options.onProgress({
               name: userInfo.objectForKey("name"),
@@ -696,7 +696,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         if (!options || !options.name) {
-          reject("Pass in the 'region' param");
+          reject("Pass in the 'name' param");
           return;
         }
 
@@ -731,7 +731,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  addGeoJsonClustered(arg: AddGeoJsonClusteredOptions): Promise<any> {
+  addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }
@@ -793,7 +793,7 @@ const _addMarkers = (markers, nativeMap?) => {
   }
   let theMap: MGLMapView = nativeMap || _mapbox.mapView;
 
-  _downloadMarkerImages(markers).then((updatedMarkers) => {
+  _downloadMarkerImages(markers).then((updatedMarkers: any) => {
     for (let m in updatedMarkers) {
       let marker = updatedMarkers[m];
       let lat = marker.lat;
@@ -832,11 +832,11 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
 
   mapViewAnnotationCanShowCallout(mapView: MGLMapView, annotation: MGLAnnotation): boolean {
     return true;
-  };
+  }
 
   mapViewDidFailLoadingMapWithError(mapView: MGLMapView, error: NSError): void {
     console.log("mapViewDidFailLoadingMapWithError: " + error);
-  };
+  }
 
   // fired when the marker icon is about to be rendered - return null for the default icon
   mapViewImageForAnnotation(mapView: MGLMapView, annotation: MGLAnnotation): MGLAnnotationImage {
@@ -881,7 +881,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
       }
     }
     return null;
-  };
+  }
 
   // fired when on of the callout's accessoryviews is tapped (not currently used)
   mapViewAnnotationCalloutAccessoryControlTapped(mapView: MGLMapView, annotation: MGLAnnotation, control: UIControl): void {
@@ -906,14 +906,12 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   private getTappedMarkerDetails(tapped): any {
     for (let m in _markers) {
       let cached = _markers[m];
-      if (cached.lat == tapped.coordinate.latitude &&
-          cached.lng == tapped.coordinate.longitude &&
-          cached.title == tapped.title &&
-          cached.subtitle == tapped.subtitle) {
+      if (cached.lat === tapped.coordinate.latitude &&
+          cached.lng === tapped.coordinate.longitude &&
+          cached.title === tapped.title &&
+          cached.subtitle === tapped.subtitle) {
         return cached;
       }
     }
   }
 }
-
-// module.exports = _mapbox;

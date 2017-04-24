@@ -21,7 +21,7 @@
     "demo.ios": "npm run preparedemo && cd ../demo && tns platform remove ios && tns run ios --emulator",
     "demo.ios.device": "npm run preparedemo && cd ../demo && tns platform remove ios && tns run ios",
     "demo.android": "npm run preparedemo && cd ../demo && tns platform remove android && tns run android --justlaunch",
-    "preparedemo": "npm run build && cd ../demo && tns plugin remove nativescript-mapbox && tns plugin add .. && tns install",
+    "preparedemo": "npm run build && cd ../demo && tns plugin remove nativescript-mapbox && tns plugin add ../src && tns install",
     "disabled-prepublish": "npm run build",
     "setup": "npm i && cd ../demo && npm i && cd ../src && npm run build",
     "tslint": "tslint *.ts",

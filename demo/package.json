@@ -9,7 +9,7 @@
     }
   },
   "dependencies": {
-    "nativescript-mapbox": "*",
+    "nativescript-mapbox": "file:///Users/eddyverbruggen/sandboxes/nativescript-mapbox/src",
     "nativescript-unit-test-runner": "^0.3.0",
     "tns-core-modules": "^3.0.0 || ^3.0.0-rc.1"
   },

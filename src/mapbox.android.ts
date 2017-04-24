@@ -5,24 +5,35 @@ import * as fs from "file-system";
 import { Color } from "color";
 import * as http from "http";
 
-const mapbox = require("./mapbox-common");
-
 import {
+  AddGeoJsonClusteredOptions,
+  MapboxMarker, AddPolygonOptions, AddPolylineOptions, AnimateCameraOptions, DeleteOfflineRegionOptions,
+  DownloadOfflineRegionOptions, LatLng,
+  MapboxApi,
   MapboxCommon,
   MapboxViewBase,
-  MapStyle
+  MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
+  Viewport
 } from "./mapbox.common";
 
 // Export the enums for devs not using TS
-exports.MapStyle = MapStyle;
+export { MapStyle };
 
-mapbox._markers = [];
-mapbox._polylines = [];
-mapbox._markerIconDownloadCache = [];
+declare const android, com, java, org: any;
+
+// let mapView;
+// let mapboxMap;
+
+let _mapbox: any = {};
+
+let _accessToken: string;
+let _markers = [];
+let _polylines = [];
+let _markerIconDownloadCache = [];
+let _locationServices = null;
 
 const ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111; // irrelevant really, since we simply invoke onPermissionGranted
 
-mapbox.locationServices = null;
 
 // TODO common and iOS are done, now this.. start without the XML version.
 
@@ -107,15 +118,36 @@ mapbox.Mapbox = Mapbox;
 */
 /*************** XML definition END ****************/
 
-/*
-mapbox._getMapboxMapOptions = function (settings) {
-  var resourcename = "mapbox_mylocation_icon_default";
-  var res = utils.ad.getApplicationContext().getResources();
-  var identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
-  var iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
+const _getMapStyle = (input: any) => {
+  const Style = com.mapbox.mapboxsdk.constants.Style;
+  // allow for a style URL to be passed
+  if (/^mapbox:\/\/styles/.test(input)) {
+    return input;
+  }
+  if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
+    return Style.LIGHT;
+  } else if (input === MapStyle.DARK || input === MapStyle.DARK.toString()) {
+    return Style.DARK;
+  } else if (input === MapStyle.OUTDOORS || input === MapStyle.OUTDOORS.toString()) {
+    return Style.OUTDOORS;
+  } else if (input === MapStyle.SATELLITE || input === MapStyle.SATELLITE.toString()) {
+    return Style.SATELLITE;
+  } else if (input === MapStyle.HYBRID || input === MapStyle.SATELLITE_STREETS || input === MapStyle.HYBRID.toString() || input === MapStyle.SATELLITE_STREETS.toString()) {
+    return Style.SATELLITE_STREETS;
+  } else {
+    // default
+    return Style.MAPBOX_STREETS;
+  }
+};
 
-  var mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
-      .styleUrl(mapbox._getMapStyle(settings.style))
+const _getMapboxMapOptions = (settings) => {
+  const resourcename = "mapbox_mylocation_icon_default";
+  const res = utils.ad.getApplicationContext().getResources();
+  const identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
+  const iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
+
+  const mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
+      .styleUrl(_getMapStyle(settings.style))
       .compassEnabled(!settings.hideCompass)
       .rotateGesturesEnabled(!settings.disableRotation)
       .scrollGesturesEnabled(!settings.disableScroll)
@@ -136,11 +168,11 @@ mapbox._getMapboxMapOptions = function (settings) {
     settings.center = {
       lat: 48.858093,
       lng: 2.294694
-    }
+    };
   }
 
   if (settings.center && settings.center.lat && settings.center.lng) {
-    var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+    const cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
         .zoom(settings.zoomLevel)
         .target(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
     mapboxMapOptions.camera(cameraPositionBuilder.build());
@@ -149,28 +181,218 @@ mapbox._getMapboxMapOptions = function (settings) {
   return mapboxMapOptions;
 };
 
-mapbox._fineLocationPermissionGranted = function () {
-  var hasPermission = android.os.Build.VERSION.SDK_INT < 23; // Android M. (6.0)
+const _fineLocationPermissionGranted = () => {
+  let hasPermission = android.os.Build.VERSION.SDK_INT < 23; // Android M. (6.0)
   if (!hasPermission) {
-    hasPermission = android.content.pm.PackageManager.PERMISSION_GRANTED ==
+    hasPermission = android.content.pm.PackageManager.PERMISSION_GRANTED ===
         android.support.v4.content.ContextCompat.checkSelfPermission(application.android.foregroundActivity, android.Manifest.permission.ACCESS_FINE_LOCATION);
   }
   return hasPermission;
 };
 
-mapbox.hasFineLocationPermission = function () {
-  return new Promise(function (resolve) {
-    resolve(mapbox._fineLocationPermissionGranted());
+const _showLocation = (theMapView) => {
+  _locationServices = com.mapbox.mapboxsdk.location.LocationSource.getLocationEngine(application.android.context);
+  // var locationEngineListener = new com.mapbox.services.android.telemetry.location.LocationEngineListener({
+  //     onConnected: function () {
+  //   },
+  //   onLocationChanged: function (location) {
+  //   }
+  // });
+  // mapbox.locationServices.addLocationEngineListener(locationEngineListener);
+  theMapView.mapboxMap.setMyLocationEnabled(true);
+  _locationServices.activate();
+  _locationServices.requestLocationUpdates();
+};
+
+const _getClickedMarkerDetails = (clicked) => {
+  for (let m in _markers) {
+    let cached = _markers[m];
+    if (cached.lat === clicked.getPosition().getLatitude() &&
+        cached.lng === clicked.getPosition().getLongitude() &&
+        cached.title === clicked.getTitle() &&
+        cached.subtitle === clicked.getSnippet()) {
+      return cached;
+    }
+  }
+};
+
+const _downloadImage = (marker) => {
+  return new Promise(function (resolve, reject) {
+    // to cache..
+    if (_markerIconDownloadCache[marker.icon]) {
+      marker.iconDownloaded = _markerIconDownloadCache[marker.icon];
+      resolve(marker);
+      return;
+    }
+    // ..or not to cache
+    http.getImage(marker.icon).then(
+        (output) => {
+          marker.iconDownloaded = output.android;
+          _markerIconDownloadCache[marker.icon] = marker.iconDownloaded;
+          resolve(marker);
+        }, (e) => {
+          console.log(`Download failed for ' ${marker.icon}' with error: ${e}`);
+          resolve(marker);
+        });
   });
 };
 
-mapbox.requestFineLocationPermission = function () {
-  return new Promise(function (resolve, reject) {
-    if (!mapbox._fineLocationPermissionGranted()) {
+const _downloadMarkerImages = (markers) => {
+  let iterations = [];
+  let result = [];
+  for (let i = 0; i < markers.length; i++) {
+    let marker = markers[i];
+    if (marker.icon && marker.icon.startsWith("http")) {
+      let p = _downloadImage(marker).then((mark) => {
+        result.push(mark);
+      });
+      iterations.push(p);
+    } else {
+      result.push(marker);
+    }
+  }
+  return Promise.all(iterations).then((output) => {
+    return result;
+  });
+};
+
+const _addMarkers = (markers, nativeMap?) => {
+  if (!markers) {
+    console.log("No markers passed");
+    return;
+  }
+  if (!Array.isArray(markers)) {
+    console.log("markers must be passed as an Array: [{title:'foo'}]");
+    return;
+  }
+  const theMap = nativeMap || _mapbox;
+  if (!theMap || !theMap.mapboxMap) {
+    return;
+  }
+
+  theMap.mapboxMap.setOnMarkerClickListener(
+      new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
+        onMarkerClick: (marker) => {
+          let cachedMarker = _getClickedMarkerDetails(marker);
+          if (cachedMarker && cachedMarker.onTap) {
+            cachedMarker.onTap(cachedMarker);
+          }
+          return false;
+        }
+      })
+  );
+
+  theMap.mapboxMap.setOnInfoWindowClickListener(
+      new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
+        onInfoWindowClick: (marker) => {
+          let cachedMarker = _getClickedMarkerDetails(marker);
+          if (cachedMarker && cachedMarker.onCalloutTap) {
+            cachedMarker.onCalloutTap(cachedMarker);
+          }
+          return true;
+        }
+      })
+  );
+
+  const iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
+
+  // if any markers need to be downloaded from the web they need to be available synchronously, so fetch them first before looping
+  _downloadMarkerImages(markers).then((updatedMarkers) => {
+    for (let m in updatedMarkers) {
+      let marker: any = updatedMarkers[m];
+      _markers.push(marker);
+      let markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
+      markerOptions.setTitle(marker.title);
+      markerOptions.setSnippet(marker.subtitle);
+      markerOptions.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(parseFloat(marker.lat), parseFloat(marker.lng)));
+
+      if (marker.icon) {
+        // for markers from url see UrlMarker in https://github.com/mapbox/mapbox-gl-native/issues/5370
+        if (marker.icon.startsWith("res://")) {
+          let resourcename = marker.icon.substring(6);
+          let res = utils.ad.getApplicationContext().getResources();
+          let identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
+          if (identifier === 0) {
+            console.log(`No icon found for this device density for icon ' ${marker.icon}'. Falling back to the default icon.`);
+          } else {
+            markerOptions.setIcon(iconFactory.fromResource(identifier));
+          }
+        } else if (marker.icon.startsWith("http")) {
+          if (marker.iconDownloaded !== null) {
+            markerOptions.setIcon(iconFactory.fromBitmap(marker.iconDownloaded));
+          }
+        } else {
+          console.log("Please use res://resourcename, http(s)://imageurl or iconPath to use a local path");
+        }
+
+      } else if (marker.iconPath) {
+        let iconFullPath = fs.knownFolders.currentApp().path + "/" + marker.iconPath;
+        // if the file doesn't exist the app will crash, so checking it
+        if (fs.File.exists(iconFullPath)) {
+          // could set width, height, retina, see https://github.com/Telerik-Verified-Plugins/Mapbox/pull/42/files?diff=unified&short_path=1c65267, but that's what the marker.icon param is for..
+          markerOptions.setIcon(iconFactory.fromPath(iconFullPath));
+        } else {
+          console.log(`Marker icon not found, using the default instead. Requested full path: '" + ${iconFullPath}'.`);
+        }
+      }
+      marker.android = theMap.mapboxMap.addMarker(markerOptions);
+    }
+  });
+};
+
+const _removeMarkers = (ids, nativeMap?) => {
+  const theMap = nativeMap || _mapbox;
+  if (!theMap || !theMap.mapboxMap) {
+    return;
+  }
+  for (let m in _markers) {
+    let marker = _markers[m];
+    if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
+      // don't remove the location markers in case 'removeAll' was invoked
+      if (ids || (marker.id !== 999997 && marker.id !== 999998)) {
+        theMap.mapboxMap.removeAnnotation(marker.android);
+      }
+    }
+  }
+};
+
+const _getRegionName = (offlineRegion) => {
+  const metadata = offlineRegion.getMetadata();
+  const jsonStr = new java.lang.String(metadata, "UTF-8");
+  const jsonObj = new org.json.JSONObject(jsonStr);
+  return jsonObj.getString("name");
+};
+
+const _getOfflineManager = () => {
+  if (!_mapbox.offlineManager) {
+    _mapbox.offlineManager = com.mapbox.mapboxsdk.offline.OfflineManager.getInstance(application.android.context);
+  }
+  return _mapbox.offlineManager;
+};
+
+
+export class Mapbox extends MapboxCommon implements MapboxApi {
+  hasFineLocationPermission(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(_fineLocationPermissionGranted());
+      } catch (ex) {
+        console.log("Error in mapbox.show: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  requestFineLocationPermission(): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      if (_fineLocationPermissionGranted()) {
+        resolve();
+        return;
+      }
 
       // grab the permission dialog result
-      application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, function (args) {
-        for (var i = 0; i < args.permissions.length; i++) {
+      application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, (args: any) => {
+        for (let i = 0; i < args.permissions.length; i++) {
           if (args.grantResults[i] === android.content.pm.PackageManager.PERMISSION_DENIED) {
             reject("Permission denied");
             return;
@@ -184,970 +406,766 @@ mapbox.requestFineLocationPermission = function () {
           application.android.foregroundActivity,
           [android.Manifest.permission.ACCESS_FINE_LOCATION],
           ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE);
-    } else {
+    });
+  }
+
+  show(options: ShowOptions): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const showIt = () => {
+          const settings = Mapbox.merge(options, Mapbox.defaults);
+
+          // if no accessToken was set the app may crash
+          if (settings.accessToken === undefined) {
+            reject("Please set the 'accessToken' parameter");
+            return;
+          }
+
+          // if already added, make sure it's removed first
+          if (_mapbox.mapView) {
+            let viewGroup = _mapbox.mapView.getParent();
+            if (viewGroup !== null) {
+              viewGroup.removeView(_mapbox.mapView);
+            }
+          }
+
+          _accessToken = settings.accessToken;
+          com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, _accessToken);
+          let mapboxMapOptions = _getMapboxMapOptions(settings);
+
+          _mapbox.mapView = new com.mapbox.mapboxsdk.maps.MapView(
+              application.android.context,
+              mapboxMapOptions);
+
+          _mapbox.mapView.onCreate(null);
+
+          _mapbox.mapView.getMapAsync(
+              new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
+                onMapReady: (mbMap) => {
+                  _mapbox.mapboxMap = mbMap;
+                  _mapbox.mapView.mapboxMap = mbMap;
+                  // mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
+                  // mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
+
+                  _polylines = [];
+                  _markers = [];
+                  _addMarkers(settings.markers, _mapbox.mapView);
+
+                  if (settings.showUserLocation) {
+                    this.requestFineLocationPermission().then((granted: boolean) => {
+                      _showLocation(_mapbox.mapView);
+                    });
+                  }
+                  resolve();
+                }
+              })
+          );
+
+          // mapView.onResume();
+
+          const topMostFrame = frame.topmost(),
+              context = application.android.currentContext,
+              mapViewLayout = new android.widget.FrameLayout(context),
+              density = utils.layout.getDisplayDensity(),
+              left = settings.margins.left * density,
+              right = settings.margins.right * density,
+              top = settings.margins.top * density,
+              bottom = settings.margins.bottom * density,
+              viewWidth = topMostFrame.currentPage.android.getWidth(),
+              viewHeight = topMostFrame.currentPage.android.getHeight(),
+              params = new android.widget.FrameLayout.LayoutParams(viewWidth - left - right, viewHeight - top - bottom);
+
+          params.setMargins(left, top, right, bottom);
+          _mapbox.mapView.setLayoutParams(params);
+
+          if (settings.center) {
+            // TODO use jumpTo?
+            // mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
+          }
+
+          // TODO see https://github.com/mapbox/mapbox-gl-native/issues/4216
+          // mapView.setZoomLevel(settings.zoomLevel);
+
+          mapViewLayout.addView(_mapbox.mapView);
+          if (topMostFrame.currentPage.android.getParent()) {
+            topMostFrame.currentPage.android.getParent().addView(mapViewLayout);
+          } else {
+            topMostFrame.currentPage.android.addView(mapViewLayout);
+          }
+        };
+
+        // if the map is invoked immediately after launch this delay will prevent an error
+        setTimeout(showIt, 200);
+
+      } catch (ex) {
+        console.log("Error in mapbox.show: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  hide(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (_mapbox.mapView) {
+          const viewGroup = _mapbox.mapView.getParent();
+          if (viewGroup !== null) {
+            viewGroup.setVisibility(android.view.View.INVISIBLE);
+          }
+        }
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.hide: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  unhide(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (_mapbox.mapView) {
+          _mapbox.mapView.getParent().setVisibility(android.view.View.VISIBLE);
+          resolve();
+        } else {
+          reject("No map found");
+        }
+      } catch (ex) {
+        console.log("Error in mapbox.unhide: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  destroy(nativeMap?: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const theMap = nativeMap || _mapbox;
+      if (theMap.mapView) {
+        const viewGroup = theMap.mapView.getParent();
+        if (viewGroup !== null) {
+          viewGroup.removeView(theMap.mapView);
+        }
+        theMap.mapView = null;
+        theMap.mapboxMap = null;
+        _mapbox = {};
+      }
       resolve();
-    }
-  });
-};
-
-// TODO make this work with either string or MapStyle (like iOS)
-mapbox._getMapStyle = (input: any) => {
-  var Style = com.mapbox.mapboxsdk.constants.Style;
-  // allow for a style URL to be passed
-  if (/^mapbox:\/\/styles/.test(input)) {
-    return input;
+    });
   }
-  if (input === mapbox.MapStyle.LIGHT) {
-    return Style.LIGHT;
-  } else if (input === mapbox.MapStyle.DARK) {
-    return Style.DARK;
-  } else if (input === mapbox.MapStyle.OUTDOORS) {
-    return Style.OUTDOORS;
-  } else if (input === mapbox.MapStyle.SATELLITE) {
-    return Style.SATELLITE;
-  } else if (input === mapbox.MapStyle.HYBRID || mapbox.MapStyle.SATELLITE_STREETS) {
-    return Style.SATELLITE_STREETS;
-  } else {
-    // default
-    return Style.MAPBOX_STREETS;
+
+  setMapStyle(style: string | MapStyle, nativeMap?: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        theMap.mapboxMap.setStyleUrl(_getMapStyle(style));
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setMapStyle: " + ex);
+        reject(ex);
+      }
+    });
   }
-};
 
-mapbox._showLocation = function(theMapView, ownerObject) {
-  mapbox.locationServices = com.mapbox.mapboxsdk.location.LocationSource.getLocationEngine(application.android.context);
-   // var locationEngineListener = new com.mapbox.services.android.telemetry.location.LocationEngineListener({
-   //     onConnected: function () {
-   //   },
-   //   onLocationChanged: function (location) {
-   //   }
-   // });
-   // mapbox.locationServices.addLocationEngineListener(locationEngineListener);
-  theMapView.mapboxMap.setMyLocationEnabled(true);
-  mapbox.locationServices.activate();
-  mapbox.locationServices.requestLocationUpdates();
-};
+  addMarkers(markers: MapboxMarker[], nativeMap?: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        _addMarkers(markers, nativeMap);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addMarkers: " + ex);
+        reject(ex);
+      }
+    });
+  }
 
-mapbox.show = function(arg) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var showIt = function() {
-        var settings = mapbox.merge(arg, mapbox.defaults);
+  removeMarkers(ids?: any, nativeMap?: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        _removeMarkers(ids, nativeMap);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.removeMarkers: " + ex);
+        reject(ex);
+      }
+    });
+  }
 
-        // if no accessToken was set the app may crash
-        if (settings.accessToken === undefined) {
-          reject("Please set the 'accessToken' parameter");
+  setCenter(options: SetCenterOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const cameraPosition = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+            .target(new com.mapbox.mapboxsdk.geometry.LatLng(options.lat, options.lng))
+            .build();
+
+        if (options.animated === true) {
+          theMap.mapboxMap.animateCamera(
+              com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPosition),
+              1000,
+              null);
+        } else {
+          theMap.mapboxMap.setCameraPosition(cameraPosition);
+        }
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setCenter: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  getCenter(nativeMap?): Promise<LatLng> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const coordinate = theMap.mapboxMap.getCameraPosition().target;
+
+        resolve({
+          lat: coordinate.getLatitude(),
+          lng: coordinate.getLongitude()
+        });
+      } catch (ex) {
+        console.log("Error in mapbox.getCenter: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  setZoomLevel(options: SetZoomLevelOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const animated = options.animated === undefined  || options.animated;
+        const level = options.level;
+
+        if (level >= 0 && level <= 20) {
+          const cameraUpdate = com.mapbox.mapboxsdk.camera.CameraUpdateFactory.zoomTo(level);
+          if (animated) {
+            theMap.mapboxMap.easeCamera(cameraUpdate);
+          } else {
+            theMap.mapboxMap.moveCamera(cameraUpdate);
+          }
+          resolve();
+        } else {
+          reject("invalid zoomlevel, use any double value from 0 to 20 (like 8.3)");
+        }
+      } catch (ex) {
+        console.log("Error in mapbox.setZoomLevel: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  getZoomLevel(nativeMap?): Promise<number> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const level = theMap.mapboxMap.getCameraPosition().zoom;
+        resolve(level);
+      } catch (ex) {
+        console.log("Error in mapbox.getZoomLevel: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  setTilt(options: SetTiltOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const tilt = options.tilt ? options.tilt : 30;
+
+        const cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+            .tilt(tilt);
+
+        const cameraUpdate = com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build());
+        const durationMs = options.duration ? options.duration : 5000;
+
+        theMap.mapboxMap.easeCamera(cameraUpdate, durationMs);
+
+        setTimeout(() => {
+          resolve();
+        }, durationMs);
+      } catch (ex) {
+        console.log("Error in mapbox.setTilt: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  getTilt(nativeMap?): Promise<number> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const tilt = theMap.mapboxMap.getCameraPosition().tilt;
+        resolve(tilt);
+      } catch (ex) {
+        console.log("Error in mapbox.getTilt: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  addPolygon(options: AddPolygonOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const points = options.points;
+        if (points === undefined) {
+          reject("Please set the 'points' parameter");
           return;
         }
 
-        // if already added, make sure it's removed first
-        if (mapbox.mapView) {
-          var viewGroup = mapbox.mapView.getParent();
-          if (viewGroup !== null) {
-            viewGroup.removeView(mapbox.mapView);
-          }
+        const polygonOptions = new com.mapbox.mapboxsdk.annotations.PolygonOptions();
+        for (let p in points) {
+          let point = points[p];
+          polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
+        }
+        theMap.mapboxMap.addPolygon(polygonOptions);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addPolygon: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  addPolyline(options: AddPolylineOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const points = options.points;
+        if (points === undefined) {
+          reject("Please set the 'points' parameter");
+          return;
         }
 
-        mapbox._accessToken = settings.accessToken;
-        com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, settings.accessToken);
-        var mapboxMapOptions = mapbox._getMapboxMapOptions(settings);
+        const polylineOptions = new com.mapbox.mapboxsdk.annotations.PolylineOptions();
+        polylineOptions.width(options.width || 5); // default 5
 
-        mapbox.mapView = new com.mapbox.mapboxsdk.maps.MapView(
-            application.android.context,
-            mapboxMapOptions);
+        // Create android color && default black
+        let androidColor;
+        // TODO color can be a Color object as well now
+        if (options.color && Color.isValid(options.color)) {
+          androidColor = new Color("" + options.color).android;
+        } else {
+          androidColor = new Color('#000').android;
+        }
 
-        mapbox.mapView.onCreate(null);
+        polylineOptions.color(androidColor);
+        for (let p in points) {
+          let point = points[p];
+          polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
+        }
+        _polylines.push({
+          id: options.id,
+          android: theMap.mapboxMap.addPolyline(polylineOptions)
+        });
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addPolyline: " + ex);
+        reject(ex);
+      }
+    });
+  }
 
-        mapbox.mapView.getMapAsync(
-            new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
-              onMapReady: function (mbMap) {
-                mapbox.mapboxMap = mbMap;
-                mapbox.mapView.mapboxMap = mapbox.mapboxMap;
-                // mapbox.mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
-                // mapbox.mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
+  removePolylines(ids?: Array<any>, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        for (let p in _polylines) {
+          let polyline = _polylines[p];
+          if (!ids || (polyline.id && ids.indexOf(polyline.id) > -1)) {
+            theMap.mapboxMap.removePolyline(polyline.android);
+          }
+        }
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.removePolylines: " + ex);
+        reject(ex);
+      }
+    });
+  }
 
-                mapbox._polylines = [];
-                mapbox._markers = [];
-                mapbox._addMarkers(settings.markers, mapbox.mapView);
+  animateCamera(options: AnimateCameraOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const target = options.target;
+        if (target === undefined) {
+          reject("Please set the 'target' parameter");
+          return;
+        }
 
-                if (settings.showUserLocation) {
-                  mapbox.requestFineLocationPermission().then(function() {
-                    mapbox._showLocation(mapbox.mapView, mapbox);
-                  });
-                }
-                resolve();
+        const cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+            .target(new com.mapbox.mapboxsdk.geometry.LatLng(target.lat, target.lng));
+
+        if (options.bearing) {
+          cameraPositionBuilder.bearing(options.bearing);
+        }
+
+        if (options.tilt) {
+          cameraPositionBuilder.tilt(options.tilt);
+        }
+
+        if (options.zoomLevel) {
+          cameraPositionBuilder.zoom(options.zoomLevel);
+        }
+
+        const durationMs = options.duration ? options.duration : 10000;
+
+        theMap.mapboxMap.animateCamera(
+            com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build()),
+            durationMs,
+            null);
+
+        setTimeout(() => {
+          resolve();
+        }, durationMs);
+      } catch (ex) {
+        console.log("Error in mapbox.animateCamera: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        theMap.mapboxMap.setOnMapClickListener(
+            new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener ({
+              onMapClick: (point) => {
+                listener({
+                  lat: point.getLatitude(),
+                  lng: point.getLongitude()
+                });
               }
             })
         );
 
-        // mapbox.mapView.onResume();
-
-        var topMostFrame = frame.topmost(),
-            density = utils.layout.getDisplayDensity(),
-            left = settings.margins.left * density,
-            right = settings.margins.right * density,
-            top = settings.margins.top * density,
-            bottom = settings.margins.bottom * density,
-            viewWidth = topMostFrame.currentPage.android.getWidth(),
-            viewHeight = topMostFrame.currentPage.android.getHeight();
-
-        var params = new android.widget.FrameLayout.LayoutParams(viewWidth - left - right, viewHeight - top - bottom);
-        params.setMargins(left, top, right, bottom);
-        mapbox.mapView.setLayoutParams(params);
-
-        if (settings.center) {
-          // TODO use jumpTo?
-          // mapbox.mapView.setCenterCoordinate(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
-        }
-        // TODO see https://github.com/mapbox/mapbox-gl-native/issues/4216
-        // mapbox.mapView.setZoomLevel(settings.zoomLevel);
-
-        var context = application.android.currentContext;
-        var mapViewLayout = new android.widget.FrameLayout(context);
-        mapViewLayout.addView(mapbox.mapView);
-        if (topMostFrame.currentPage.android.getParent()) {
-          topMostFrame.currentPage.android.getParent().addView(mapViewLayout);
-        } else {
-          topMostFrame.currentPage.android.addView(mapViewLayout);
-        }
-      };
-
-      // if the map is invoked immediately after launch this delay will prevent an error
-      setTimeout(showIt, 200);
-
-    } catch (ex) {
-      console.log("Error in mapbox.show: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox._getClickedMarkerDetails = function (clicked) {
-  for (var m in mapbox._markers) {
-    var cached = mapbox._markers[m];
-    if (cached.lat == clicked.getPosition().getLatitude() &&
-        cached.lng == clicked.getPosition().getLongitude() &&
-        cached.title == clicked.getTitle() &&
-        cached.subtitle == clicked.getSnippet()) {
-      return cached;
-    }
-  }
-};
-
-mapbox.hide = function(arg) {
-  return new Promise(function (resolve, reject) {
-    try {
-      if (mapbox.mapView) {
-        var viewGroup = mapbox.mapView.getParent();
-        if (viewGroup !== null) {
-          viewGroup.setVisibility(android.view.View.INVISIBLE);
-        }
-      }
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.hide: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.unhide = function (arg) {
-  return new Promise(function (resolve, reject) {
-    try {
-      if (mapbox.mapView) {
-        var viewGroup = mapbox.mapView.getParent();
-        viewGroup.setVisibility(android.view.View.VISIBLE);
         resolve();
-      } else {
-        reject("No map found");
+      } catch (ex) {
+        console.log("Error in mapbox.setOnMapClickListener: " + ex);
+        reject(ex);
       }
-    } catch (ex) {
-      console.log("Error in mapbox.unhide: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.destroy = function(arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    var theMap = nativeMap || mapbox;
-    if (theMap.mapView) {
-      var viewGroup = theMap.mapView.getParent();
-      if (viewGroup !== null) {
-        viewGroup.removeView(theMap.mapView);
-      }
-      theMap.mapView = null;
-      theMap.mapboxMap = null;
-    }
-  });
-};
-
-mapbox.setMapStyle = function (style, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      theMap.mapboxMap.setStyleUrl(mapbox._getMapStyle(style));
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.setMapStyle: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.removeMarkers = function (ids, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      mapbox._removeMarkers(ids, nativeMap);
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.removeMarkers: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox._removeMarkers = function (ids, nativeMap) {
-  var theMap = nativeMap || mapbox;
-  if (!theMap || !theMap.mapboxMap) {
-    return;
+    });
   }
-  for (var m in mapbox._markers) {
-    var marker = mapbox._markers[m];
-    if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
-      // don't remove the location markers in case 'removeAll' was invoked
-      if (ids || (marker.id != 999997 && marker.id != 999998)) {
-        theMap.mapboxMap.removeAnnotation(marker.android);
-      }
-    }
-  }
-};
 
-mapbox.addMarkers = function (markers, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      mapbox._addMarkers(markers, nativeMap);
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.addMarkers: " + ex);
-      reject(ex);
-    }
-  });
-};
+  getViewport(nativeMap?): Promise<Viewport> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
 
-function downloadImage(marker) {
-  return new Promise(function (resolve, reject) {
-    // to cache..
-    if (mapbox._markerIconDownloadCache[marker.icon]) {
-      marker.iconDownloaded = mapbox._markerIconDownloadCache[marker.icon];
-      resolve(marker);
-      return;
-    }
-    // ..or not to cache
-    http.getImage(marker.icon).then(
-        function (output) {
-          marker.iconDownloaded = output.android;
-          mapbox._markerIconDownloadCache[marker.icon] = marker.iconDownloaded;
-          resolve(marker);
-        }, function (e) {
-          console.log("Download failed from " + marker.icon + " with error: " + e);
-          resolve(marker);
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        const bounds = theMap.mapboxMap.getProjection().getVisibleRegion().latLngBounds;
+
+        resolve({
+          bounds: {
+            north: bounds.getLatNorth(),
+            east: bounds.getLonEast(),
+            south: bounds.getLatSouth(),
+            west: bounds.getLonWest()
+          },
+          zoomLevel: theMap.mapboxMap.getCameraPosition().zoom
         });
-  });
-}
-
-function downloadMarkerImages(markers) {
-  var iterations = [];
-  var result = [];
-  for (var i = 0; i < markers.length; i++) {
-    var marker = markers[i];
-    if (marker.icon && marker.icon.startsWith("http")) {
-      var p = downloadImage(marker).then(function(mark) {
-        result.push(mark);
-      });
-      iterations.push(p);
-    } else {
-      result.push(marker);
-    }
-  }
-  return Promise.all(iterations).then(function(output) {
-    return result;
-  });
-}
-
-mapbox._addMarkers = function(markers, nativeMap) {
-  if (!markers) {
-    console.log("No markers passed");
-    return;
-  }
-  if (!Array.isArray(markers)) {
-    console.log("markers must be passed as an Array: [{title:'foo'}]");
-    return;
-  }
-  var theMap = nativeMap || mapbox;
-  if (!theMap || !theMap.mapboxMap) {
-    return;
+      } catch (ex) {
+        console.log("Error in mapbox.getViewport: " + ex);
+        reject(ex);
+      }
+    });
   }
 
-  theMap.mapboxMap.setOnMarkerClickListener(
-      new com.mapbox.mapboxsdk.maps.MapboxMap.OnMarkerClickListener ({
-        onMarkerClick: function (marker) {
-          var cachedMarker = mapbox._getClickedMarkerDetails(marker);
-          if (cachedMarker && cachedMarker.onTap) {
-            cachedMarker.onTap(cachedMarker);
-          }
-          return false;
+  setViewport(options: SetViewportOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
         }
-      })
-  );
 
-  theMap.mapboxMap.setOnInfoWindowClickListener(
-      new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener ({
-        onInfoWindowClick: function (marker) {
-          var cachedMarker = mapbox._getClickedMarkerDetails(marker);
-          if (cachedMarker && cachedMarker.onCalloutTap) {
-            cachedMarker.onCalloutTap(cachedMarker);
-          }
-          return true;
+        const bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.north, options.bounds.east))
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.south, options.bounds.west))
+            .build();
+
+        const padding = 25,
+            animated = options.animated === undefined || options.animated,
+            durationMs = animated ? 1000 : 0;
+
+        theMap.mapboxMap.easeCamera(
+            com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bounds, padding),
+            durationMs);
+
+        setTimeout(() => {
+          resolve();
+        }, durationMs);
+      } catch (ex) {
+        console.log("Error in mapbox.setViewport: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  downloadOfflineRegion(options: DownloadOfflineRegionOptions): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const styleURL = _getMapStyle(options.style);
+
+        const bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.north, options.bounds.east))
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.south, options.bounds.west))
+            .build();
+
+        const retinaFactor = utils.layout.getDisplayDensity();
+
+        const offlineRegionDefinition = new com.mapbox.mapboxsdk.offline.OfflineTilePyramidRegionDefinition(
+            styleURL,
+            bounds,
+            options.minZoom,
+            options.maxZoom,
+            retinaFactor);
+
+        const info = '{name:"' + options.name + '"}';
+        const infoStr = new java.lang.String(info);
+        const encodedMetadata = infoStr.getBytes();
+
+        if (!_accessToken && !options.accessToken) {
+          reject("First show a map, or pass in an 'accessToken' param");
+          return;
         }
-      })
-  );
 
-  var iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
+        _getOfflineManager().createOfflineRegion(offlineRegionDefinition, encodedMetadata, new com.mapbox.mapboxsdk.offline.OfflineManager.CreateOfflineRegionCallback({
+          onError: (error: string) => {
+            reject(error);
+          },
 
-  // if any markers need to be downloaded from the web they need to be available synchronously, so fetch them first before looping
-  downloadMarkerImages(markers).then(function(updatedMarkers) {
-    for (var m in updatedMarkers) {
-      var marker = updatedMarkers[m];
-      mapbox._markers.push(marker);
-      var markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
-      markerOptions.setTitle(marker.title);
-      markerOptions.setSnippet(marker.subtitle);
-      markerOptions.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(parseFloat(marker.lat), parseFloat(marker.lng)));
-      if (marker.icon) {
-        // for markers from url see UrlMarker in https://github.com/mapbox/mapbox-gl-native/issues/5370
-        if (marker.icon.startsWith("res://")) {
-          var resourcename = marker.icon.substring(6);
-          var res = utils.ad.getApplicationContext().getResources();
-          var identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
-          if (identifier === 0) {
-            console.log("No icon found for this device desity for icon " + marker.icon + ", using default");
-          } else {
-            markerOptions.setIcon(iconFactory.fromResource(identifier));
-          }
-        } else if (marker.icon.startsWith("http")) {
-          if (marker.iconDownloaded !== null) {
-            markerOptions.setIcon(iconFactory.fromBitmap(marker.iconDownloaded));
-          }
-        } else {
-          console.log("Please use res://resourcename, http(s)://imageurl or iconPath to use a local path");
-        }
-      } else if (marker.iconPath) {
-        var iconFullPath = fs.knownFolders.currentApp().path + "/" + marker.iconPath;
-        // if the file doesn't exist the app will crash, so checking it
-        if (fs.File.exists(iconFullPath)) {
-          // could set width, height, retina, see https://github.com/Telerik-Verified-Plugins/Mapbox/pull/42/files?diff=unified&short_path=1c65267, but that's what the marker.icon param is for..
-          markerOptions.setIcon(iconFactory.fromPath(iconFullPath));
-        } else {
-          console.log("Marker icon not found, using the default instead. Requested full path: " + iconFullPath);
-        }
-      }
-      marker.android = theMap.mapboxMap.addMarker(markerOptions);
-    }
-  });
-};
+          onCreate: function (offlineRegion) {
+            // if (options.onCreate) {
+            //   options.onCreate(offlineRegion);
+            // }
 
-mapbox.setCenter = function (arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var cameraPosition = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
-          .target(new com.mapbox.mapboxsdk.geometry.LatLng(arg.lat, arg.lng))
-          .build();
+            offlineRegion.setDownloadState(com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE);
 
-      if (arg.animated === true) {
-        theMap.mapboxMap.animateCamera(
-            com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPosition),
-            1000,
-            null);
-      } else {
-        theMap.mapboxMap.setCameraPosition(cameraPosition);
-      }
+            // Monitor the download progress using setObserver
+            offlineRegion.setObserver(new com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionObserver({
+              onStatusChanged: (status) => {
+                // Calculate the download percentage and update the progress bar
+                let percentage = status.getRequiredResourceCount() >= 0 ?
+                    (100.0 * status.getCompletedResourceCount() / status.getRequiredResourceCount()) :
+                    0.0;
 
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.setCenter: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.getCenter = function (nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var coordinate = theMap.mapboxMap.getCameraPosition().target;
-      resolve({
-        lat: coordinate.getLatitude(),
-        lng: coordinate.getLongitude()
-      });
-    } catch (ex) {
-      console.log("Error in mapbox.getCenter: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.setZoomLevel = function (arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var animated = arg.animated === undefined  || arg.animated;
-      var level = arg.level;
-      if (level >=0 && level <= 20) {
-        var cameraUpdate = com.mapbox.mapboxsdk.camera.CameraUpdateFactory.zoomTo(level);
-        if (animated) {
-          theMap.mapboxMap.easeCamera(cameraUpdate);
-        } else {
-          theMap.mapboxMap.moveCamera(cameraUpdate);
-        }
-        resolve();
-      } else {
-        reject("invalid zoomlevel, use any double value from 0 to 20 (like 8.3)");
-      }
-    } catch (ex) {
-      console.log("Error in mapbox.setZoomLevel: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.getZoomLevel = function (nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var level = theMap.mapboxMap.getCameraPosition().zoom;
-      resolve(level);
-    } catch (ex) {
-      console.log("Error in mapbox.getZoomLevel: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.setTilt = function (arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var tilt = 30;
-
-      if (arg.tilt) {
-        tilt = arg.tilt;
-      } else if (arg.pitch) {
-        tilt = arg.pitch;
-      }
-
-      var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
-          .tilt(tilt);
-
-      var cameraUpdate = com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build());
-
-      theMap.mapboxMap.easeCamera(cameraUpdate, arg.duration || 5000);
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.setTilt: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.getTilt = function (nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var tilt = theMap.mapboxMap.getCameraPosition().tilt;
-      resolve(tilt);
-    } catch (ex) {
-      console.log("Error in mapbox.getTilt: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.animateCamera = function (arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var target = arg.target;
-      if (target === undefined) {
-        reject("Please set the 'target' parameter");
-        return;
-      }
-
-      var cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
-          .target(new com.mapbox.mapboxsdk.geometry.LatLng(target.lat, target.lng));
-
-      if (arg.bearing) {
-        cameraPositionBuilder.bearing(arg.bearing);
-      }
-
-      if (arg.tilt) {
-        cameraPositionBuilder.tilt(arg.tilt);
-      }
-
-      if (arg.zoomLevel) {
-        cameraPositionBuilder.zoom(arg.zoomLevel);
-      }
-
-      theMap.mapboxMap.animateCamera(
-          com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition(cameraPositionBuilder.build()),
-          arg.duration ? arg.duration : 10000, // default 10 seconds
-          null);
-
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.animateCamera: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.addPolygon = function (arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var points = arg.points;
-      if (points === undefined) {
-        reject("Please set the 'points' parameter");
-        return;
-      }
-
-      var polygonOptions = new com.mapbox.mapboxsdk.annotations.PolygonOptions();
-      for (var p in points) {
-        var point = points[p];
-        polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
-      }
-      theMap.mapboxMap.addPolygon(polygonOptions);
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.addPolygon: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.addPolyline = function (arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      var points = arg.points;
-      if (points === undefined) {
-        reject("Please set the 'points' parameter");
-        return;
-      }
-
-      var polylineOptions = new com.mapbox.mapboxsdk.annotations.PolylineOptions();
-      polylineOptions.width(arg.width || 5); // default 5
-
-      // Create android color && default black
-      var androidColor;
-      // TODO color can be a Color object as well now
-      if (arg.color && Color.isValid(arg.color)) {
-        androidColor = arg.color ? new Color(arg.color).android : new Color('#000').android;
-      } else {
-        androidColor = new Color('#000').android;
-      }
-
-      polylineOptions.color(androidColor);
-      for (var p in points) {
-        var point = points[p];
-        polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
-      }
-      arg.android = theMap.mapboxMap.addPolyline(polylineOptions);
-      mapbox._polylines.push(arg);
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.addPolyline: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.removePolylines = function (ids, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-      for (var p in mapbox._polylines) {
-        var polyline = mapbox._polylines[p];
-        if (!ids || (polyline.id && ids.indexOf(polyline.id) > -1)) {
-          theMap.mapboxMap.removePolyline(polyline.android);
-        }
-      }
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.removePolylines: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.getViewport = function (nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      if (!mapbox.mapboxMap) {
-        reject("No map has been loaded");
-        return;
-      }
-
-      var theMap = nativeMap || mapbox;
-      var bounds = theMap.mapboxMap.getProjection().getVisibleRegion().latLngBounds;
-
-      resolve({
-        bounds: {
-          north: bounds.getLatNorth(),
-          east: bounds.getLonEast(),
-          south: bounds.getLatSouth(),
-          west: bounds.getLonWest()
-        },
-        zoomLevel: theMap.mapboxMap.getCameraPosition().zoom
-      });
-    } catch (ex) {
-      console.log("Error in mapbox.getViewport: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.setViewport = function (arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-
-      if (!theMap) {
-        reject("No map has been loaded");
-        return;
-      }
-
-      var bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
-          .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.north, arg.bounds.east))
-          .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.south, arg.bounds.west))
-          .build();
-
-      var animated = arg.animated === undefined  || arg.animated;
-      var padding = 25;
-
-      theMap.mapboxMap.easeCamera(
-          com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bounds, padding),
-          animated ? 1000 : 0);
-
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.setViewport: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.setOnMapClickListener = function (listener, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
-
-      if (!theMap) {
-        reject("No map has been loaded");
-        return;
-      }
-
-      theMap.mapboxMap.setOnMapClickListener(
-          new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener ({
-            onMapClick: function (point) {
-              listener({
-                lat: point.getLatitude(),
-                lng: point.getLongitude()
-              });
-            }
-          })
-      );
-
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.setOnMapClickListener: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox._getRegionName = function (offlineRegion) {
-  var metadata = offlineRegion.getMetadata();
-  var jsonStr = new java.lang.String(metadata, "UTF-8");
-  var jsonObj = new org.json.JSONObject(jsonStr);
-  return jsonObj.getString("name");
-};
-
-mapbox.deleteOfflineRegion = function (arg) {
-  return new Promise(function (resolve, reject) {
-    try {
-      if (!arg || !arg.name) {
-        reject("Pass in the 'region' param");
-        return;
-      }
-
-      var pack = arg.name;
-      var offlineManager = mapbox._getOfflineManager();
-
-      offlineManager.listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
-        onError: function (errorString) {
-          reject(errorString);
-        },
-        onList: function (offlineRegions) {
-          var regions = [];
-          var found = false;
-          if (offlineRegions !== null) {
-            for (var i=0; i< offlineRegions.length; i++) {
-              var offlineRegion = offlineRegions[i];
-              var name = mapbox._getRegionName(offlineRegion);
-              if (name === pack) {
-                found = true;
-                offlineRegion.delete(new com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionDeleteCallback({
-                  onError: function (errorString) {
-                    reject(errorString);
-                  },
-                  onDelete: function () {
-                    resolve();
-                    // don't return, see note below
-                  }
-                }));
-                // don't break the loop as there may be multiple packs with the same name
-              }
-            }
-          }
-          if (!found) {
-            reject("Region not found");
-          }
-        }
-      }));
-
-    } catch (ex) {
-      console.log("Error in mapbox.listOfflineRegions: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-mapbox.listOfflineRegions = function () {
-  return new Promise(function (resolve, reject) {
-    try {
-      var offlineManager = mapbox._getOfflineManager();
-
-      offlineManager.listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
-        onError: function (errorString) {
-          reject(errorString);
-        },
-        onList: function (offlineRegions) {
-          var regions = [];
-          if (offlineRegions !== null) {
-            for (var i=0; i < offlineRegions.length; i++) {
-              var offlineRegion = offlineRegions[i];
-              var name = mapbox._getRegionName(offlineRegion);
-              var offlineRegionDefinition = offlineRegion.getDefinition();
-              var bounds = offlineRegionDefinition.getBounds();
-
-              regions.push({
-                name: name,
-                style: offlineRegionDefinition.getStyleURL(),
-                minZoom: offlineRegionDefinition.getMinZoom() ,
-                maxZoom: offlineRegionDefinition.getMaxZoom() ,
-                bounds: {
-                  north: bounds.getLatNorth(),
-                  east: bounds.getLonEast(),
-                  south: bounds.getLatSouth(),
-                  west: bounds.getLonWest()
+                if (options.onProgress) {
+                  options.onProgress({
+                    name: options.name,
+                    completedSize: status.getCompletedResourceSize(),
+                    completed: status.getCompletedResourceCount(),
+                    expected: status.getRequiredResourceCount(),
+                    percentage: Math.round(percentage * 100) / 100,
+                    // downloading: status.getDownloadState() == com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE,
+                    complete: status.isComplete()
+                  });
                 }
-              });
-            }
+
+                if (status.isComplete()) {
+                  resolve();
+                } else if (status.isRequiredResourceCountPrecise()) {
+                }
+              },
+
+              onError: function (error) {
+                reject(`${error.getMessage()}, reason: ${error.getReason()}`);
+              },
+
+              mapboxTileCountLimitExceeded: function (limit) {
+                console.log(`dl mapboxTileCountLimitExceeded: ${limit}`);
+              }
+            }));
           }
-          resolve(regions);
-        }
-      }));
-
-    } catch (ex) {
-      console.log("Error in mapbox.listOfflineRegions: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-
-mapbox.downloadOfflineRegion = function (arg) {
-  return new Promise(function (resolve, reject) {
-    try {
-      // TODO verify input of all params, and mark them mandatory in TS d.
-
-      var styleURL = mapbox._getMapStyle(arg.style);
-
-      var bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
-          .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.north, arg.bounds.east))
-          .include(new com.mapbox.mapboxsdk.geometry.LatLng(arg.bounds.south, arg.bounds.west))
-          .build();
-
-      var retinaFactor = utils.layout.getDisplayDensity();
-
-      var offlineRegionDefinition = new com.mapbox.mapboxsdk.offline.OfflineTilePyramidRegionDefinition(
-          styleURL,
-          bounds,
-          arg.minZoom,
-          arg.maxZoom,
-          retinaFactor);
-
-      var info = '{name:"' + arg.name + '"}';
-      var infoStr = new java.lang.String(info);
-      var encodedMetadata = infoStr.getBytes();
-
-      if (!mapbox._accessToken && !arg.accessToken) {
-        reject("First show a map, or pass in an 'accessToken' param");
-        return;
+        }));
+      } catch (ex) {
+        console.log("Error in mapbox.downloadOfflineRegion: " + ex);
+        reject(ex);
       }
-      var offlineManager = mapbox._getOfflineManager(arg);
+    });
+  }
 
-      offlineManager.createOfflineRegion(offlineRegionDefinition, encodedMetadata, new com.mapbox.mapboxsdk.offline.OfflineManager.CreateOfflineRegionCallback({
-        onError: function (errorString) {
-          reject(errorString);
-        },
+  listOfflineRegions(): Promise<OfflineRegion[]> {
+    return new Promise((resolve, reject) => {
+      try {
+        _getOfflineManager().listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
+          onError: (error: string) => {
+            reject(error);
+          },
+          onList: function (offlineRegions) {
+            const regions = [];
+            if (offlineRegions !== null) {
+              for (let i = 0; i < offlineRegions.length; i++) {
+                let offlineRegion = offlineRegions[i];
+                let name = _getRegionName(offlineRegion);
+                let offlineRegionDefinition = offlineRegion.getDefinition();
+                let bounds = offlineRegionDefinition.getBounds();
 
-        onCreate: function (offlineRegion) {
-          if (arg.onCreate) {
-            arg.onCreate(offlineRegion);
-          }
-
-          offlineRegion.setDownloadState(com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE);
-
-          // Monitor the download progress using setObserver
-          offlineRegion.setObserver(new com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionObserver({
-            onStatusChanged: function (status) {
-              // Calculate the download percentage and update the progress bar
-              var percentage = status.getRequiredResourceCount() >= 0 ?
-                  (100.0 * status.getCompletedResourceCount() / status.getRequiredResourceCount()) :
-                  0.0;
-
-              if (arg.onProgress) {
-                arg.onProgress({
-                  name: arg.name,
-                  completedSize: status.getCompletedResourceSize(),
-                  completed: status.getCompletedResourceCount(),
-                  expected: status.getRequiredResourceCount(),
-                  percentage: Math.round(percentage * 100) / 100,
-                  // downloading: status.getDownloadState() == com.mapbox.mapboxsdk.offline.OfflineRegion.STATE_ACTIVE,
-                  complete: status.isComplete()
+                regions.push({
+                  name: name,
+                  style: offlineRegionDefinition.getStyleURL(),
+                  minZoom: offlineRegionDefinition.getMinZoom() ,
+                  maxZoom: offlineRegionDefinition.getMaxZoom() ,
+                  bounds: {
+                    north: bounds.getLatNorth(),
+                    east: bounds.getLonEast(),
+                    south: bounds.getLatSouth(),
+                    west: bounds.getLonWest()
+                  }
                 });
               }
-
-              if (status.isComplete()) {
-                resolve();
-              } else if (status.isRequiredResourceCountPrecise()) {
-              }
-            },
-
-            onError: function (error) {
-              reject(error.getMessage() + ", reason: " + error.getReason());
-            },
-
-            mapboxTileCountLimitExceeded: function (limit) {
-              console.log("dl mapboxTileCountLimitExceeded: " + limit);
             }
-          }));
+            resolve(regions);
+          }
+        }));
+
+      } catch (ex) {
+        console.log("Error in mapbox.listOfflineRegions: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  deleteOfflineRegion(options: DeleteOfflineRegionOptions): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        if (!options || !options.name) {
+          reject("Pass in the 'name' param");
+          return;
         }
-      }));
 
-    } catch (ex) {
-      console.log("Error in mapbox.downloadOfflineRegion: " + ex);
-      reject(ex);
-    }
-  });
-};
+        _getOfflineManager().listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
+          onError: function (errorString) {
+            reject(errorString);
+          },
+          onList: function (offlineRegions) {
+            const regions = [];
+            let found = false;
+            if (offlineRegions !== null) {
+              for (let i = 0; i < offlineRegions.length; i++) {
+                let offlineRegion = offlineRegions[i];
+                let name = _getRegionName(offlineRegion);
+                if (name === options.name) {
+                  found = true;
+                  offlineRegion.delete(new com.mapbox.mapboxsdk.offline.OfflineRegion.OfflineRegionDeleteCallback({
+                    onError: (error: string) => {
+                      reject(error);
+                    },
+                    onDelete: () => {
+                      resolve();
+                      // don't return, see note below
+                    }
+                  }));
+                  // don't break the loop as there may be multiple packs with the same name
+                }
+              }
+            }
+            if (!found) {
+              reject("Region not found");
+            }
+          }
+        }));
 
-mapbox.addGeoJsonClustered = function (arg, nativeMap) {
-  return new Promise(function (resolve, reject) {
-    try {
-      var theMap = nativeMap || mapbox;
+      } catch (ex) {
+        console.log("Error in mapbox.listOfflineRegions: " + ex);
+        reject(ex);
+      }
+    });
+  }
 
-      theMap.mapboxMap.addSource(
-          new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(arg.name,
-              new java.net.URL(arg.data),
-              new com.mapbox.mapboxsdk.style.sources.GeoJsonOptions()
-                  .withCluster(true)
-                  .withClusterMaxZoom(arg.clusterMaxZoom || 13)
-                  .withClusterRadius(arg.clusterRadius || 40)
-          )
-      );
+  addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
 
-      var layers = [];
-      if (arg.clusters) {
-        for (var i = 0; i < arg.clusters.length; i++) {
-          layers.push([arg.clusters.points, new Color(arg.clusters.color).android]);
+        theMap.mapboxMap.addSource(
+            new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(options.name,
+                new java.net.URL(options.data),
+                new com.mapbox.mapboxsdk.style.sources.GeoJsonOptions()
+                    .withCluster(true)
+                    .withClusterMaxZoom(options.clusterMaxZoom || 13)
+                    .withClusterRadius(options.clusterRadius || 40)
+            )
+        );
+
+        const layers = [];
+        if (options.clusters) {
+          for (let i = 0; i < options.clusters.length; i++) {
+            // TODO also allow Color object
+            layers.push([options.clusters[i].points, new Color(options.clusters[i].color).android]);
+          }
+        } else {
+          layers.push([150, new Color("red").android]);
+          layers.push([20, new Color("green").android]);
+          layers.push([0, new Color("blue").android]);
         }
-      } else {
-        layers.push([150, new Color("red").android]);
-        layers.push([20, new Color("green").android]);
-        layers.push([0, new Color("blue").android]);
-      };
 
-      // for some reason unclustered doesn't show up :(
-      var unclustered = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("unclustered-points", "earthquakes");
-      unclustered.setProperties([
-        com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(new Color("red").android),
-        com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(18.0)),
-        com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
-      ]);
-      unclustered.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.neq("cluster", new java.lang.Boolean(true)));
-      theMap.mapboxMap.addLayer(unclustered); //, "building");
+        // for some reason unclustered doesn't show up :(
+        const unclustered = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("unclustered-points", "earthquakes");
+        unclustered.setProperties([
+          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(new Color("red").android),
+          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(18.0)),
+          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
+        ]);
+        unclustered.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.neq("cluster", new java.lang.Boolean(true)));
+        theMap.mapboxMap.addLayer(unclustered); // , "building");
 
-      for (var i = 0; i < layers.length; i++) {
-        // Add some nice circles
-        var circles = new com.mapbox.mapboxsdk.style.layers.CircleLayer("cluster-" + i, "earthquakes");
-        circles.setProperties([
-              // com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage("icon")
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(layers[i][1]),
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(22.0)),
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
+        for (let i = 0; i < layers.length; i++) {
+          // Add some nice circles
+          const circles = new com.mapbox.mapboxsdk.style.layers.CircleLayer("cluster-" + i, "earthquakes");
+          circles.setProperties([
+                // com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage("icon")
+                com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(layers[i][1]),
+                com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(22.0)),
+                com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
+              ]
+          );
+
+          circles.setFilter(
+              i === 0
+                  ? com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0]))
+                  : com.mapbox.mapboxsdk.style.layers.Filter.all([
+                com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0])),
+                com.mapbox.mapboxsdk.style.layers.Filter.lt("point_count", new java.lang.Integer(layers[i - 1][0]))
+              ])
+          );
+
+          theMap.mapboxMap.addLayer(circles); // , "building");
+        }
+
+        // Add the count labels
+        const count = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("count", "earthquakes");
+        count.setProperties([
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField("{point_count}"),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(12.0)),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android)
             ]
         );
+        theMap.mapboxMap.addLayer(count);
 
-        circles.setFilter(
-            i == 0
-                ? com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0]))
-                : com.mapbox.mapboxsdk.style.layers.Filter.all([
-                  com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0])),
-                  com.mapbox.mapboxsdk.style.layers.Filter.lt("point_count", new java.lang.Integer(layers[i - 1][0]))
-                ])
-        );
-
-        theMap.mapboxMap.addLayer(circles); //, "building");
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addGeoJsonClustered: " + ex);
+        reject(ex);
       }
-
-      // Add the count labels
-      var count = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("count", "earthquakes");
-      count.setProperties([
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField("{point_count}"),
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(12.0)),
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android)
-          ]
-      );
-      theMap.mapboxMap.addLayer(count);
-
-      resolve();
-    } catch (ex) {
-      console.log("Error in mapbox.addSource: " + ex);
-      reject(ex);
-    }
-  });
-};
-
-
-mapbox._getOfflineManager = function () {
-  if (!mapbox._offlineManager) {
-    mapbox._offlineManager = com.mapbox.mapboxsdk.offline.OfflineManager.getInstance(application.android.context);
+    });
   }
-  return mapbox._offlineManager;
-};
-*/
-
-module.exports = mapbox;
+}
