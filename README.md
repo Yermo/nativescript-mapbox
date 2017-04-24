@@ -1,5 +1,18 @@
 # NativeScript Mapbox
 
+[![Build Status][build-status]][build-url]
+[![NPM version][npm-image]][npm-url]
+[![Downloads][downloads-image]][npm-url]
+[![Twitter Follow][twitter-image]][twitter-url]
+
+[build-status]:https://travis-ci.org/EddyVerbruggen/nativescript-mapbox.svg?branch=master
+[build-url]:https://travis-ci.org/EddyVerbruggen/nativescript-mapbox
+[npm-image]:http://img.shields.io/npm/v/nativescript-mapbox.svg
+[npm-url]:https://npmjs.org/package/nativescript-mapbox
+[downloads-image]:http://img.shields.io/npm/dm/nativescript-mapbox.svg
+[twitter-image]:https://img.shields.io/twitter/follow/eddyverbruggen.svg?style=social&label=Follow%20me
+[twitter-url]:https://twitter.com/eddyverbruggen
+
 Awesome native OpenGL-powered maps - by Mapbox
 
 <img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
@@ -54,7 +67,7 @@ Could be rendered by a definition like this:
   <StackLayout>
     <Label text="Nice map, huh!" class="title"/>
     <ContentView height="240" width="240">
-      <map:Mapbox
+      <map:MapboxView
           accessToken="your_token"
           mapStyle="light"
           latitude="52.3702160"
@@ -135,7 +148,7 @@ exports.onMapReady = onMapReady;
 ```
 
 Other methods you can invoke like this from an XML-declared map are:
-`removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `setViewport`, `setTilt`,
+`removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `getTilt`, `setTilt`,
 `setMapStyle`, `animateCamera`, `addPolygon`, `addPolyline`, `removePolylines`, `setOnMapClickListener` and `destroy`.
 
 Check out the usage details on the functions below.
@@ -344,13 +357,13 @@ Here the promise callback makes sense, so adding it to the example:
     // this is where we animate to
     target: {
         lat: 52.3732160,
-        lng: 4.8941680,
+        lng: 4.8941680
     },
     zoomLevel: 17, // Android
     altitude: 2000, // iOS (meters from the ground)
     bearing: 270, // Where the camera is pointing, 0-360 (degrees)
     tilt: 50,
-    duration: 10000 // in milliseconds
+    duration: 5000 // default 10000 (milliseconds)
   })
 ```
 

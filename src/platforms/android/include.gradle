@@ -1,0 +1,18 @@
+android {
+    productFlavors {
+        "mapbox" {
+            dimension "mapbox"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// for other options (beta / snapshot) see https://www.mapbox.com/android-sdk/
+dependencies {
+    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:5.0.2@aar'){
+        transitive=true
+    }
+}

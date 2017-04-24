@@ -1,5 +1,7 @@
 # Change Log
 
+XML: Mapbox --> MapboxView
+
 ## [2.6.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.6.0) (2017-03-22)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.5.3...2.6.0)
 

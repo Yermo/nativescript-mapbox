@@ -1,0 +1,5 @@
+*.map
+*.ts
+!index.d.ts
+!*mapbox*.d.ts
+tsconfig.json

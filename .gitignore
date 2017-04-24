@@ -1,3 +1,13 @@
 .idea
 .vscode
+*.js
 *.log
+!demo/karma.conf.js
+!demo/app/tests/*.js
+demo/*.d.ts
+src/*.d.ts
+!src/index.d.ts
+!src/references.d.ts
+demo/lib
+demo/platforms
+node_modules

@@ -1,2 +1,0 @@
-pod 'Mapbox-iOS-SDK', '~> 3.4.1'
-#pod 'MapboxDirections.swift', :git => 'https://github.com/mapbox/MapboxDirections.swift.git', :tag => 'v0.6.0'

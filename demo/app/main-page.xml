@@ -1,0 +1,133 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" actionBarHidden="true" loaded="pageLoaded">
+  <TabView>
+    <TabView.items>
+
+      <TabViewItem title="By XML">
+        <TabViewItem.view>
+          <GridLayout columns="*, *" rows="120, *, 120" horizontalAlignment="stretch" class="tab-content">
+            <ContentView row="0">
+              <map:MapboxView
+                  latitude="52.3702160"
+                  longitude="4.8951680"
+                  zoomLevel="3"
+                  mapStyle="light"
+                  hideAttribution="true"
+                  showUserLocation="true"
+                  hideCompass="false"
+                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+              </map:MapboxView>
+            </ContentView>
+            <ContentView row="0" col="1">
+              <map:MapboxView
+                  delay="invalid"
+                  latitude="52.3702160"
+                  longitude="4.8951680"
+                  zoomLevel="6"
+                  mapStyle="dark"
+                  hideAttribution="true"
+                  hideLogo="true"
+                  hideCompass="true"
+                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+              </map:MapboxView>
+            </ContentView>
+            <ContentView row="1" colSpan="2">
+              <map:MapboxView
+                  delay="3000"
+                  latitude="52.3702160"
+                  longitude="4.8951680"
+                  zoomLevel="7"
+                  mapStyle="satellite"
+                  mapReady="onMapReady"
+                  showUserLocation="true"
+                  hideLogo="true"
+                  hideCompass="true"
+                  hideAttribution="true"
+                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+              </map:MapboxView>
+            </ContentView>
+            <ContentView row="2">
+              <map:MapboxView
+                  delay="6000"
+                  latitude="52.3702160"
+                  longitude="4.8951680"
+                  zoomLevel="12"
+                  mapStyle="streets"
+                  hideAttribution="true"
+                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+              </map:MapboxView>
+            </ContentView>
+            <ContentView row="2" col="1">
+              <map:MapboxView
+                  delay="8000"
+                  latitude="52.3702160"
+                  longitude="4.8951680"
+                  zoomLevel="13"
+                  disableZoom="true"
+                  disableRotation="true"
+                  disableScroll="true"
+                  disableTilt="true"
+                  showUserLocation="false"
+                  hideAttribution="true"
+                  mapStyle="hybrid"
+                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+              </map:MapboxView>
+            </ContentView>
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="By Code">
+        <TabViewItem.view>
+          <GridLayout columns="*, *, *, *" rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" horizontalAlignment="stretch" class="tab-content">
+
+            <Button row="0" col="0" text="show" tap="{{ doShow }}" class="button" />
+            <Button row="0" col="1"  text="hide" tap="{{ doHide }}" class="button" />
+            <Button row="0" col="2"  text="unhide" tap="{{ doUnhide }}" class="button" />
+            <Button row="0" col="3"  text="destroy" tap="{{ doDestroy }}" class="button" />
+
+            <Button row="1" col="0" text="center?" tap="{{ doGetCenter }}" class="button" />
+            <Button row="1" col="1" text="center!" tap="{{ doSetCenter }}" class="button" />
+            <Button row="1" col="2" text="zoom?" tap="{{ doGetZoomLevel }}" class="button" />
+            <Button row="1" col="3" text="zoom!" tap="{{ doSetZoomLevel }}" class="button" />
+
+            <Button row="2" col="0" text="tilt?" tap="{{ doGetTilt }}" class="button" />
+            <Button row="2" col="1" text="tilt!" tap="{{ doSetTilt }}" class="button" />
+            <Button row="2" col="2" text="viewport?" tap="{{ doGetViewport }}" class="button" />
+            <Button row="2" col="3" text="viewport!" tap="{{ doSetViewport }}" class="button" />
+
+            <Button row="3" colSpan="2" text="add 4 markers" tap="{{ doAddMarkers }}" class="button" />
+            <Button row="3" col="2" colSpan="2"  text="animate camera" tap="{{ doAnimateCamera }}" class="button" />
+
+            <Button row="4" colSpan="2" text="remove 2 markers" tap="{{ doRemove2Markers }}" class="button" />
+            <Button row="4" col="2" colSpan="2" text="remove all markers" tap="{{ doRemoveAllMarkers }}" class="button" />
+
+            <Android>
+              <Button row="6" colSpan="2" text="Polygon" tap="{{ doAddPolygon }}" class="button" />
+              <Button row="6" col="2" colSpan="2" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />
+            </Android>
+
+            <Button row="7" colSpan="2" text="DL Amsterdam" tap="{{ doDownloadAmsterdam }}" class="button button-offline" />
+            <Button row="7" col="2" colSpan="2"  text="DL current view" tap="{{ doDownloadCurrentViewportAsOfflineRegion }}" class="button button-offline" />
+
+            <Button row="8" colSpan="2" text="Del Amsterdam" tap="{{ doDeleteOfflineRegion }}" class="button button-offline" />
+            <Button row="8" col="2" colSpan="2"  text="List downloaded" tap="{{ doListOfflineRegions }}" class="button button-offline" />
+
+            <Button row="9" colSpan="2"  text="location perm?" tap="{{ doCheckHasFineLocationPermission }}" class="button button-permissions" />
+            <Button row="9" col="2" colSpan="2"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" class="button button-permissions" />
+
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+    <TabViewItem title="About">
+      <TabViewItem.view>
+        <ScrollView>
+          <StackLayout class="tab-content">
+            <Image margin="10" src="~/res/telerik-logo.png" />
+            <Label text="Mapbox plugin demo" class="title"/>
+            <Label text="Awesome platform independent OpenGL powered maps by Mapbox. Make sure you provide your own (free) ACCESS_TOKEN in main-view-model.ts or unexpected things will happen." textWrap="true"/>
+          </StackLayout>
+        </ScrollView>
+      </TabViewItem.view>
+    </TabViewItem>
+  </TabView>
+</Page>
