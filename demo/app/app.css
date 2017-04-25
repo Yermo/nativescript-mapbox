@@ -1,0 +1,39 @@
+﻿page {
+  background-color: #F4F4F4;
+}
+
+.tab-content {
+  color: #808080;
+  padding: 10;
+}
+
+.title {
+  font-size: 20;
+  margin: 0 0 10 0;
+  color: #3c3c3c;
+}
+
+label {
+  font-size: 16;
+}
+
+button {
+  background-color: #3598db;
+  padding: 2;
+  margin: 3 6;
+  font-size: 13;
+  border-radius: 3;
+  height: 30;
+}
+
+.button {
+  color: #FFFFFF;
+}
+
+.button-offline {
+  background-color: #A0A0A0;
+}
+
+.button-permissions {
+  background-color: #808080;
+}
