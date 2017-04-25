@@ -2,6 +2,7 @@ import * as observable from "data/observable";
 import * as pages from "ui/page";
 import { HelloWorldModel } from "./main-view-model";
 import { MapboxViewApi, MapStyle, LatLng } from "nativescript-mapbox";
+import { Color } from "color";
 
 // Event handler for Page 'loaded' event attached in main-page.xml
 export function pageLoaded(args: observable.EventData) {
@@ -11,7 +12,6 @@ export function pageLoaded(args: observable.EventData) {
 
 function onMapReady(args) {
   let map: MapboxViewApi = args.map;
-  console.log("***** map: " + map);
   map.addMarkers([
     {
       id: 2,
@@ -30,7 +30,6 @@ function onMapReady(args) {
   );
 
   setTimeout(() => {
-    console.log("***** map2: " + map);
     map.setOnMapClickListener((point: LatLng) => {
       console.log(`Map clicked: ${JSON.stringify(point)}`);
     });
@@ -55,7 +54,7 @@ function onMapReady(args) {
   setTimeout(() => {
     map.addPolyline({
       id: 10,
-      color: "#ff0000",
+      color: new Color("yellow"),
       points: [
         {
           lat: 52.4,

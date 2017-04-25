@@ -19,6 +19,8 @@ export interface LatLng {
 
 export interface AddPolygonOptions {
   points: LatLng[];
+  fillColor?: string | Color;
+  strokeColor?: string | Color;
 }
 
 export interface SetCenterOptions extends LatLng {
@@ -499,7 +501,7 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
   }
 
   [zoomLevelProperty.setNative](value: number) {
-    this.config.zoomLevel = value;
+    this.config.zoomLevel = +value;
   }
 
   [mapStyleProperty.setNative](value: string) {
@@ -517,12 +519,12 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
   [latitudeProperty.setNative](value: number) {
     this.config.center = this.config.center || {};
-    this.config.center.lat = value;
+    this.config.center.lat = +value;
   }
 
   [longitudeProperty.setNative](value: number) {
     this.config.center = this.config.center || {};
-    this.config.center.lng = value;
+    this.config.center.lng = +value;
   }
 
   [showUserLocationProperty.setNative](value: boolean) {

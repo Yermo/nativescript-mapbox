@@ -26,7 +26,7 @@
     "setup": "npm i && cd ../demo && npm i && cd ../src && npm run build",
     "tslint": "tslint *.ts",
     "tslint.demo": "tslint ../demo/app/*.ts",
-    "test": "npm run build && npm run tslint && npm run tslint.demo && tns build ios",
+    "test": "npm run build && npm run tslint && npm run tslint.demo && cd ../demo && tns build ios",
     "development.setup": "npm run setup && npm link && cd ../demo && npm link nativescript-mapbox && cd ../src"
   },
   "repository": {

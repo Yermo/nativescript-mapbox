@@ -1,4 +1,5 @@
 import { Observable } from "data/observable";
+import { Color } from "color";
 import { Mapbox, MapStyle, OfflineRegion, LatLng, Viewport, DownloadProgress, MapboxMarker } from "nativescript-mapbox";
 import { alert, AlertOptions } from "ui/dialogs";
 import * as platform from "platform";
@@ -17,11 +18,11 @@ export class HelloWorldModel extends Observable {
   public doShow(): void {
     this.mapbox.show({
       accessToken: ACCESS_TOKEN,
-      style: MapStyle.OUTDOORS,
+      style: MapStyle.LIGHT,
       margins: {
         left: 18,
         right: 18,
-        top: isIOS ? 400 : 424,
+        top: isIOS ? 360 : 424,
         bottom: isIOS ? 50 : 8
       },
       center: {
@@ -507,6 +508,8 @@ export class HelloWorldModel extends Observable {
 
   public doAddPolygon(): void {
     this.mapbox.addPolygon({
+      fillColor: new Color("red"),
+      strokeColor: new Color("blue"),
       points: [
         {
           lat: 52.3832160,

@@ -1,11 +1,21 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" actionBarHidden="true" loaded="pageLoaded">
   <TabView>
     <TabView.items>
+      <TabViewItem title="About">
+        <TabViewItem.view>
+          <ScrollView>
+            <StackLayout class="tab-content">
+              <Image margin="10" src="~/res/telerik-logo.png" />
+              <Label text="Mapbox plugin demo" class="title"/>
+              <Label text="Awesome platform independent OpenGL powered maps by Mapbox. Make sure you provide your own (free) ACCESS_TOKEN in main-view-model.ts or unexpected things will happen." textWrap="true"/>
+            </StackLayout>
+          </ScrollView>
+        </TabViewItem.view>
+      </TabViewItem>
 
       <TabViewItem title="By XML">
         <TabViewItem.view>
-          <!--<GridLayout columns="*, *" rows="120, *, 120" horizontalAlignment="stretch" class="tab-content">-->
-          <GridLayout columns="*" rows="*" horizontalAlignment="stretch" class="tab-content">
+          <GridLayout columns="*, *" rows="120, *, 120" horizontalAlignment="stretch" class="tab-content">
             <ContentView row="0">
               <map:MapboxView
                   latitude="52.3702160"
@@ -18,7 +28,7 @@
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <!--ContentView row="0" col="1">
+            <ContentView row="0" col="1">
               <map:MapboxView
                   delay="invalid"
                   latitude="52.3702160"
@@ -72,10 +82,11 @@
                   mapStyle="hybrid"
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
-            </ContentView-->
+            </ContentView>
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>
+
       <TabViewItem title="By Code">
         <TabViewItem.view>
           <GridLayout columns="*, *, *, *" rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" horizontalAlignment="stretch" class="tab-content">
@@ -119,16 +130,5 @@
         </TabViewItem.view>
       </TabViewItem>
     </TabView.items>
-    <TabViewItem title="About">
-      <TabViewItem.view>
-        <ScrollView>
-          <StackLayout class="tab-content">
-            <Image margin="10" src="~/res/telerik-logo.png" />
-            <Label text="Mapbox plugin demo" class="title"/>
-            <Label text="Awesome platform independent OpenGL powered maps by Mapbox. Make sure you provide your own (free) ACCESS_TOKEN in main-view-model.ts or unexpected things will happen." textWrap="true"/>
-          </StackLayout>
-        </ScrollView>
-      </TabViewItem.view>
-    </TabViewItem>
   </TabView>
 </Page>

@@ -87,7 +87,7 @@ export class MapboxView extends MapboxViewBase {
     this.nativeView = UIView.new();
     setTimeout(() => {
       this.initMap();
-    }, 0); // TODO as low as possible (0 is ok for simulator)
+    }, 0);
     return v;
   }
 
@@ -270,7 +270,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-        let animated = options.animated === undefined  || options.animated;
+        let animated = options.animated === undefined || options.animated;
         let coordinate = CLLocationCoordinate2DMake(options.lat, options.lng);
         theMap.setCenterCoordinateAnimated(coordinate, animated);
         resolve();
@@ -301,7 +301,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-        let animated = options.animated === undefined  || options.animated;
+        let animated = options.animated === undefined || options.animated;
         let level = options.level;
         if (level >= 0 && level <= 20) {
           theMap.setZoomLevelAnimated(level, animated);
@@ -368,86 +368,19 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   addPolygon(options: AddPolygonOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
-      try {
-         let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-
-        /*
-         let points = arg.points;
-         if (points === undefined) {
-         reject("Please set the 'points' parameter");
-         return;
-         }
-
-         // TODO see http://docs.nativescript.org/runtimes/ios/types/C-Pointers.html#interopsizeof
-         let coordinates = []; // malloc(points.length * interop.sizeof(CLLocationCoordinate2D));
-         console.log(1);
-         for (let i=0; i<points.length; i++) {
-         console.log(2);
-         let point = points[i];
-         console.log(3);
-         coordinates.push(CLLocationCoordinate2DMake(point.lat, point.lng));
-         }
-         console.log(4);
-
-         let numberOfCoordinates = points.length / interop.sizeof(CLLocationCoordinate2D);
-         console.log(5);
-
-         // TODO check doc.. bounds?
-         let polygon = MGLPolygon.polygonWithCoordinatesCount(
-         coordinates,
-         numberOfCoordinates);
-
-         console.log(6);
-
-         console.log("-- polygon: " + polygon);
-
-         // TODO optional
-         // free(coordinates);
-
-         theMap.addAnnotation(polygon);
-         */
-
-        // resolve();
-        reject("not implemented for iOS (yet)");
-      } catch (ex) {
-        console.log("Error in mapbox.addPolygon: " + ex);
-        reject(ex);
-      }
+      reject("not implemented for iOS");
     });
   }
 
   addPolyline(options: AddPolylineOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
-      try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-        let points = options.points;
-        if (points === undefined) {
-          reject("Please set the 'points' parameter");
-          return;
-        }
-
-        // TODO
-
-        reject("not implemented for iOS (yet)");
-      } catch (ex) {
-        console.log("Error in mapbox.addPolyline: " + ex);
-        reject(ex);
-      }
+      reject("not implemented for iOS");
     });
   }
 
   removePolylines(ids?: Array<any>, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
-      try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-
-        // TODO
-
-        reject("not implemented for iOS (yet)");
-      } catch (ex) {
-        console.log("Error in mapbox.removePolylines: " + ex);
-        reject(ex);
-      }
+      reject("not implemented for iOS");
     });
   }
 
@@ -558,7 +491,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           ne: CLLocationCoordinate2DMake(options.bounds.north, options.bounds.east)
         };
 
-        let animated = options.animated === undefined  || options.animated;
+        let animated = options.animated === undefined || options.animated;
 
         let padding: UIEdgeInsets = {
           top: 25,
@@ -634,7 +567,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         });
 
         // Store some data for identification purposes alongside the downloaded resources.
-        let userInfo = {"name": options.name };
+        let userInfo = {"name": options.name};
         let context = NSKeyedArchiver.archivedDataWithRootObject(userInfo);
 
         // Create and register an offline pack with the shared offline storage object.
