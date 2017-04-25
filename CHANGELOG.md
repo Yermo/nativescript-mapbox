@@ -1,6 +1,13 @@
 # Change Log
 
-XML: Mapbox --> MapboxView
+## [3.0.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.0) (2017-04-25)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.6.0...3.0.0)
+
+**XML layout tag changed: Mapbox --> MapboxView**
+
+**Implemented enhancements:**
+
+- NativeScript 3 support [\#104](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/104)
 
 ## [2.6.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/2.6.0) (2017-03-22)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.5.3...2.6.0)
