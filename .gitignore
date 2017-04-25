@@ -11,3 +11,4 @@ src/*.d.ts
 demo/lib
 demo/platforms
 node_modules
+publish/*.tgz
