@@ -75,7 +75,7 @@ Could be rendered by a definition like this:
           zoomLevel="3"
           showUserLocation="true"
           mapReady="onMapReady">
-      </map:Mapbox>
+      </map:MapboxView>
     </ContentView>
   </StackLayout>
 </Page>
