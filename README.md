@@ -67,6 +67,7 @@ Could be rendered by a definition like this:
   <StackLayout>
     <Label text="Nice map, huh!" class="title"/>
     <ContentView height="240" width="240">
+      <!-- IMPORTANT: plugin version 3 uses :MapboxView, lower versions use :Mapbox -->
       <map:MapboxView
           accessToken="your_token"
           mapStyle="light"
