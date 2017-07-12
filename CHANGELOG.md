@@ -1,5 +1,12 @@
 # Change Log
 
+## [3.0.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.0) (2017-07-12)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.0.0...3.0.1)
+
+**Fixed bugs:**
+
+- Icon and OnTap is working only in costructor [\#135](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/135)
+
 ## [3.0.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.0) (2017-04-25)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/2.6.0...3.0.0)
 
