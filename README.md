@@ -53,7 +53,9 @@ If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen
 It shows you how to draw a map in XML and JS with almost all possible options.
 
 
-## Declaring a map in XML (recommended approach)
+## Declaring a map in the view
+
+### XML
 You can instantiate a map from JS or TS but declaring it in XML has a few advantages. As the map is yet another view component it will play nice with any NativeScript layout you throw it in. You can also easily add multiple maps to the same page or to different pages in any layout you like.
 
 A simple layout could look like this:
@@ -82,6 +84,36 @@ Could be rendered by a definition like this:
 </Page>
 ```
 
+### Angular
+Component:
+
+```typescript
+import { registerElement } from "nativescript-angular/element-registry";
+registerElement("Mapbox", () => require("nativescript-mapbox").MapboxView);
+```
+
+View:
+
+```html
+  <ContentView height="100%" width="100%">
+    <Mapbox
+        accessToken="your_token"
+        mapStyle="dark"
+        latitude="50.467735"
+        longitude="13.427718"
+        hideCompass="true"
+        zoomLevel="18"
+        showUserLocation="false"
+        disableZoom="false"
+        disableRotation="false"
+        disableScroll="false"
+        disableTilt="false"
+        (mapReady)="onMapReady($event)">
+    </Mapbox>
+  </ContentView>
+```
+
+### Available XML/Angular options
 All currently supported options for your XML based map are (__don't__ use other properties - if you need styling wrap the map in a `ContentView` and apply things like `width` to that container!):
 
 |option|default|description
