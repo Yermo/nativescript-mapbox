@@ -67,6 +67,10 @@ export class MapboxView extends MapboxViewBase {
               onMapReady: (mbMap) => {
                 this.mapView.mapboxMap = mbMap;
 
+                // note that this is not multi-map friendly, but I don't think that's used in real apps anyway
+                _polylines = [];
+                _markers = [];
+
                 if (settings.showUserLocation) {
                   this.mapbox.requestFineLocationPermission().then(() => {
                     _showLocation(this.mapView);
@@ -345,7 +349,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       try {
         resolve(_fineLocationPermissionGranted());
       } catch (ex) {
-        console.log("Error in mapbox.show: " + ex);
+        console.log("Error in mapbox.hasFineLocationPermission: " + ex);
         reject(ex);
       }
     });

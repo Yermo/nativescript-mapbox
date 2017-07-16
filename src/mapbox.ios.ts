@@ -102,6 +102,7 @@ export class MapboxView extends MapboxViewBase {
           this.notifyMapReady();
         });
         _setMapboxMapOptions(this.mapView, settings);
+        _markers = [];
         this.nativeView.addSubview(this.mapView);
       };
       setTimeout(drawMap, settings.delay ? settings.delay : 0);
