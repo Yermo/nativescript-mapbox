@@ -144,14 +144,11 @@ export class HelloWorldModel extends Observable {
         onCalloutTap: onCalloutTap
       },
       {
+        // this is a marker without a popup (because no title/subtitle are set)
         id: 3,
         lat: 52.3602160,
         lng: 5,
-        title: 'One-line title here 2', // no popup unless set
-        subtitle: 'And a one-liner here as well.',
-        icon: 'http://www.bme.be/wp-content/uploads/2014/04/marker.png',
-        onTap: onTap,
-        onCalloutTap: onCalloutTap
+        icon: 'http://www.bme.be/wp-content/uploads/2014/04/marker.png'
       },
       {
         id: 4,
