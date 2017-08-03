@@ -375,7 +375,23 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   addPolyline(options: AddPolylineOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
-      reject("not implemented for iOS");
+      let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+      const points = options.points;
+      if (points === undefined) {
+        reject("Please set the 'points' parameter");
+        return;
+      }
+
+      // TODO this is not sufficient
+      for (let p in points) {
+        let point = points[p];
+        const coord = CLLocationCoordinate2DMake(point.lat, point.lng);
+        const coordRef = new interop.Reference<CLLocationCoordinate2D>(coord);
+        const polyline = MGLPolyline.polylineWithCoordinatesCount(coordRef, 1);
+        theMap.addAnnotation(polyline);
+      }
+
+      resolve();
     });
   }
 
