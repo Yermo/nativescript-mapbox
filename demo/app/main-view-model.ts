@@ -531,6 +531,63 @@ export class HelloWorldModel extends Observable {
     );
   }
 
+  public doAddPolyline(): void {
+    this.mapbox.addPolyline({
+      id: 1,
+      color: "#30BCFF",
+      width: 5,
+      opacity: 0.6,
+      points: [
+        {
+          lat: 52.3923633,
+          lng: 4.9026489
+        },
+        {
+          lat: 52.3709879,
+          lng: 4.9555206
+        },
+        {
+          lat: 52.3542155,
+          lng: 4.9308013
+        },
+        {
+          lat: 52.3537961,
+          lng: 4.8799896
+        },
+        {
+          lat: 52.3701494,
+          lng: 4.8360443
+        },
+        {
+          lat: 52.3864966,
+          lng: 4.8621368
+        },
+        {
+          lat: 52.3848202,
+          lng: 4.8868560
+        }
+      ]
+    }).then(
+        result => {
+          console.log("Mapbox addPolyline done");
+        },
+        (error: string) => {
+          console.log("mapbox addPolyline error: " + error);
+        }
+    );
+  }
+
+  public doRemovePolyline(): void {
+    this.mapbox.removePolylines([1]).then(
+        result => {
+          console.log("Mapbox removePolylines done");
+        },
+        (error: string) => {
+          console.log("mapbox removePolylines error: " + error);
+        }
+    );
+  }
+
   public doCheckHasFineLocationPermission(): void {
     this.mapbox.hasFineLocationPermission().then(
         (granted: boolean) => {

@@ -13,6 +13,7 @@ import {
   MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
   Viewport
 } from "./mapbox.common";
+import { Color } from "tns-core-modules/color";
 
 // Export the enums for devs not using TS
 export { MapStyle };
@@ -382,22 +383,59 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         return;
       }
 
-      // TODO this is not sufficient
+      let coordinateArray = [];
       for (let p in points) {
         let point = points[p];
-        const coord = CLLocationCoordinate2DMake(point.lat, point.lng);
-        const coordRef = new interop.Reference<CLLocationCoordinate2D>(coord);
-        const polyline = MGLPolyline.polylineWithCoordinatesCount(coordRef, 1);
-        theMap.addAnnotation(polyline);
+        // beware: lng, lat (not the other way around)
+        coordinateArray.push([point.lng, point.lat]);
       }
 
+      const polylineID = "polyline_" + options.id;
+
+      // this would otherwise crash the app
+      if (theMap.style.sourceWithIdentifier(polylineID)) {
+        reject("Remove the polyline with this id first with 'removePolylines': " + polylineID);
+        return;
+      }
+
+      const geoJSON = `{"type": "FeatureCollection", "features": [{"type": "Feature","properties": {},"geometry": {"type": "LineString", "coordinates": ${JSON.stringify(coordinateArray)}}}]}`;
+      const geoDataStr = NSString.stringWithString(geoJSON);
+      const geoData = geoDataStr.dataUsingEncoding(NSUTF8StringEncoding);
+      const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
+
+      const geo = NSData.alloc().initWithBase64EncodedStringOptions(geoDataBase64Enc, null);
+      const shape = MGLShape.shapeWithDataEncodingError(geo, NSUTF8StringEncoding);
+      const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions(polylineID, shape, null);
+      theMap.style.addSource(source);
+
+      const layer = MGLLineStyleLayer.alloc().initWithIdentifierSource(polylineID, source);
+      layer.lineColor = MGLStyleValue.valueWithRawValue(!options.color ? UIColor.blackColor : (options.color instanceof Color ? options.color.ios : new Color(options.color).ios));
+      layer.lineWidth = MGLStyleValue.valueWithRawValue(options.width || 5);
+      layer.lineOpacity = MGLStyleValue.valueWithRawValue(options.opacity === undefined ? 1 : options.opacity);
+
+      theMap.style.addLayer(layer);
       resolve();
     });
   }
 
+  private removePolylineById(theMap, id: any): void {
+    const polylineID = "polyline_" + id;
+    const layer = theMap.style.layerWithIdentifier(polylineID);
+    if (layer !== null) {
+      theMap.style.removeLayer(layer);
+    }
+    const source = theMap.style.sourceWithIdentifier(polylineID);
+    if (source !== null) {
+      console.log(">>> removing source " + polylineID);
+      theMap.style.removeSource(source);
+    }
+  }
+
   removePolylines(ids?: Array<any>, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
-      reject("not implemented for iOS");
+      let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+      ids.map(id => this.removePolylineById(theMap, id));
+      resolve();
     });
   }
 

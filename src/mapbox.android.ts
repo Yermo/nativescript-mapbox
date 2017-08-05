@@ -710,6 +710,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const polylineOptions = new com.mapbox.mapboxsdk.annotations.PolylineOptions();
         polylineOptions.width(options.width || 5); // default 5
         polylineOptions.color(Mapbox.getAndroidColor(options.color));
+        polylineOptions.alpha(options.opacity === undefined ? 1 : options.opacity);
         for (let p in points) {
           let point = points[p];
           polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));

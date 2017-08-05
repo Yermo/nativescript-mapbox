@@ -440,14 +440,15 @@ Draw a shape (like a line/route, or star). Just connect the dots like we did as 
   })
 ```
 
-### addPolyline (Android)
+### addPolyline
 Draw a polyline. Connect the points given as parameters.
 ```js
   // Draw a two segment line near Amsterdam Central Station
   mapbox.addPolyline({
       id: 1, // optional, can be used in 'removePolylines'
       color: '#336699', // Set the color of the line (default black)
-      width: 7, //Set the width of the line (default 5)
+      width: 7, // Set the width of the line (default 5)
+      opacity: 0.6, //Transparency / alpha, ranging 0-1. Default fully opaque (1).
       points: [
           {
               'lat': 52.3833160, // mandatory

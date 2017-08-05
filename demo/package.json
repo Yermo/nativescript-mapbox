@@ -1,17 +1,18 @@
 {
   "nativescript": {
     "id": "org.nativescript.mapbox",
-    "tns-android": {
-      "version": "3.1.1"
-    },
     "tns-ios": {
-      "version": "3.1.0"
+      "version": "3.2.0-2017-7-5-5"
+    },
+    "tns-android": {
+      "version": "3.2.0-next-2017-06-28-1901"
     }
   },
   "dependencies": {
-    "nativescript-mapbox": "file:../src",
+    "nativescript-mapbox": "file:///Users/eddyverbruggen/sandboxes/nativescript-mapbox/src",
     "nativescript-unit-test-runner": "^0.3.0",
-    "tns-core-modules": "~3.1.0"
+    "tns-core-modules": "~3.1.0",
+    "tns-ios": "3.2.0-2017-7-5-5"
   },
   "devDependencies": {
     "babel-traverse": "^6.24.1",

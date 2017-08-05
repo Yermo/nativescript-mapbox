@@ -89,7 +89,7 @@
 
       <TabViewItem title="By Code">
         <TabViewItem.view>
-          <GridLayout columns="*, *, *, *" rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" horizontalAlignment="stretch" class="tab-content">
+          <GridLayout columns="*, *, *, *" rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" horizontalAlignment="stretch" class="tab-content">
 
             <Button row="0" col="0" text="show" tap="{{ doShow }}" class="button" />
             <Button row="0" col="1"  text="hide" tap="{{ doHide }}" class="button" />
@@ -117,14 +117,17 @@
               <Button row="6" col="2" colSpan="2" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />
             </Android>
 
-            <Button row="7" colSpan="2" text="DL Amsterdam" tap="{{ doDownloadAmsterdam }}" class="button button-offline" />
-            <Button row="7" col="2" colSpan="2"  text="DL current view" tap="{{ doDownloadCurrentViewportAsOfflineRegion }}" class="button button-offline" />
+            <Button row="7" colSpan="2" text="Add polyline" tap="{{ doAddPolyline }}" class="button" />
+            <Button row="7" col="2" colSpan="2" text="Remove polyline" tap="{{ doRemovePolyline }}" class="button" />
 
-            <Button row="8" colSpan="2" text="Del Amsterdam" tap="{{ doDeleteOfflineRegion }}" class="button button-offline" />
-            <Button row="8" col="2" colSpan="2"  text="List downloaded" tap="{{ doListOfflineRegions }}" class="button button-offline" />
+            <Button row="8" colSpan="2" text="DL Amsterdam" tap="{{ doDownloadAmsterdam }}" class="button button-offline" />
+            <Button row="8" col="2" colSpan="2"  text="DL current view" tap="{{ doDownloadCurrentViewportAsOfflineRegion }}" class="button button-offline" />
 
-            <Button row="9" colSpan="2"  text="location perm?" tap="{{ doCheckHasFineLocationPermission }}" class="button button-permissions" />
-            <Button row="9" col="2" colSpan="2"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" class="button button-permissions" />
+            <Button row="9" colSpan="2" text="Del Amsterdam" tap="{{ doDeleteOfflineRegion }}" class="button button-offline" />
+            <Button row="9" col="2" colSpan="2"  text="List downloaded" tap="{{ doListOfflineRegions }}" class="button button-offline" />
+
+            <Button row="10" colSpan="2"  text="location perm?" tap="{{ doCheckHasFineLocationPermission }}" class="button button-permissions" />
+            <Button row="10" col="2" colSpan="2"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" class="button button-permissions" />
 
           </GridLayout>
         </TabViewItem.view>

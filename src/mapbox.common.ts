@@ -40,6 +40,11 @@ export interface AddPolylineOptions {
    * Color of the line, default black.
    */
   color?: string | Color;
+  /**
+   * Transparency / alpha, ranging from 0 to 1.
+   * Default fully opaque (1).
+   */
+  opacity?: number;
   points: LatLng[];
 }
 
