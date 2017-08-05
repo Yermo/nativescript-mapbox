@@ -1,6 +1,16 @@
 # Change Log
 
-## [3.0.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.0) (2017-07-12)
+## [3.0.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.2) (2017-08-05)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.0.1...3.0.2)
+
+**Implemented enhancements:**
+
+- Add support for Polyline in IOS [\#41](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/41)
+- A desperate request for addPolylines in iOS [\#152](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/152)
+- Possibility to disable marker tooltip [\#143](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/143)
+
+
+## [3.0.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.1) (2017-07-12)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.0.0...3.0.1)
 
 **Fixed bugs:**
