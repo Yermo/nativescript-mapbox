@@ -894,11 +894,11 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   private getTappedMarkerDetails(tapped): any {
     for (let m in _markers) {
       let cached = _markers[m];
-      // don't compare lat/lmng types as they're not the same
+      // don't compare lat/lng types as they're not the same (same for (sub)title, they may be null vs undefined)
       if (cached.lat == tapped.coordinate.latitude &&
           cached.lng == tapped.coordinate.longitude &&
-          cached.title === tapped.title &&
-          cached.subtitle === tapped.subtitle) {
+          cached.title == tapped.title &&
+          cached.subtitle == tapped.subtitle) {
         return cached;
       }
     }

@@ -148,6 +148,7 @@ export class HelloWorldModel extends Observable {
         id: 3,
         lat: 52.3602160,
         lng: 5,
+        onTap: () => { console.log("Title-less marker tapped!") },
         icon: 'http://www.bme.be/wp-content/uploads/2014/04/marker.png'
       },
       {

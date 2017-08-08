@@ -1,5 +1,13 @@
 # Change Log
 
+## [3.0.3](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.3) (2017-08-08)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.0.2...3.0.3)
+
+**Implemented enhancements:**
+
+- Possibility to disable marker tooltip [\#143](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/143)
+
+
 ## [3.0.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.2) (2017-08-05)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.0.1...3.0.2)
 

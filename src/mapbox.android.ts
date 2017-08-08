@@ -181,8 +181,8 @@ const _getClickedMarkerDetails = (clicked) => {
     let cached = _markers[m];
     if (cached.lat === clicked.getPosition().getLatitude() &&
         cached.lng === clicked.getPosition().getLongitude() &&
-        cached.title === clicked.getTitle() &&
-        cached.subtitle === clicked.getSnippet()) {
+        cached.title == clicked.getTitle() && // == because of null vs undefined
+        cached.subtitle == clicked.getSnippet()) {
       return cached;
     }
   }
