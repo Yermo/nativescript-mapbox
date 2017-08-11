@@ -1,4 +1,4 @@
-# NativeScript Mapbox
+# NativeScript Mapbox 🗺
 
 [![Build Status][build-status]][build-url]
 [![NPM version][npm-image]][npm-url]
@@ -16,16 +16,6 @@
 Awesome native OpenGL-powered maps - by Mapbox
 
 <img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
-
-### Use when
-* you want full map styling capability to match the uses of your app (example: downplaying highways for a running app),
-* you want a platform independent map implementation,
-* you care about performance so you don't want a web based solution,
-* you want an open source map implementation that you can tweak yourself,
-* you want to leverage Mapbox's backend to visualize massive geo data sets,
-* you want advanced analytics about your app's users,
-* you need offline maps and custom markers,
-* 🆕 you want to define maps in either code or __XML__.
 
 ## Prerequisites
 You need a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
@@ -253,7 +243,7 @@ instead of redrawing it (which is a lot slower and you loose the viewport positi
   mapbox.unhide();
 ```
 
-### destroy
+### destroy 💥
 To clean up the map entirely you can destroy instead of hide it:
 
 ```js
