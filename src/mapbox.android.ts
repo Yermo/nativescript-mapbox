@@ -13,7 +13,7 @@ import {
   MapboxCommon,
   MapboxViewBase,
   MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
-  Viewport
+  Viewport, AddExtrusionOptions
 } from "./mapbox.common";
 
 // Export the enums for devs not using TS
@@ -77,7 +77,7 @@ export class MapboxView extends MapboxViewBase {
                   });
                 }
 
-                this.notifyMapReady();
+                this.notify({ eventName: MapboxViewBase.mapReadyEvent, object: this, map: this, android: this.mapView});
               }
             })
         );
@@ -185,7 +185,9 @@ const _getClickedMarkerDetails = (clicked) => {
     let cached = _markers[m];
     if (cached.lat === clicked.getPosition().getLatitude() &&
         cached.lng === clicked.getPosition().getLongitude() &&
+        // tslint:disable-next-line:triple-equals
         cached.title == clicked.getTitle() && // == because of null vs undefined
+        // tslint:disable-next-line:triple-equals
         cached.subtitle == clicked.getSnippet()) {
       return cached;
     }
@@ -420,8 +422,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                 onMapReady: (mbMap) => {
                   _mapbox.mapboxMap = mbMap;
                   _mapbox.mapView.mapboxMap = mbMap;
-                  // mapboxMap.setStyleUrl(mapbox._getMapStyle(settings.style));
-                  // mapboxMap.setStyleUrl(com.mapbox.mapboxsdk.constants.Style.DARK);
 
                   _polylines = [];
                   _markers = [];
@@ -432,7 +432,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                       _showLocation(_mapbox.mapView);
                     });
                   }
-                  resolve();
+                  resolve({
+                    android: _mapbox.mapView
+                  });
                 }
               })
           );
@@ -1047,6 +1049,34 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       } catch (ex) {
         console.log("Error in mapbox.listOfflineRegions: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  addExtrusion(options: AddExtrusionOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+
+        // Create fill extrusion layer
+        const fillExtrusionLayer = new com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer("3d-buildings", "composite");
+        fillExtrusionLayer.setSourceLayer("building");
+        fillExtrusionLayer.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.eq("extrude", "true"));
+        fillExtrusionLayer.setMinZoom(15);
+
+        // Set data-driven styling properties
+        fillExtrusionLayer.setProperties(
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionColor(android.graphics.Color.LTGRAY),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionHeight(com.mapbox.mapboxsdk.style.functions.Function.property("height", new com.mapbox.mapboxsdk.style.functions.stops.IdentityStops())),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionBase(com.mapbox.mapboxsdk.style.functions.Function.property("min_height", new com.mapbox.mapboxsdk.style.functions.stops.IdentityStops())),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionOpacity(new java.lang.Float(0.6))
+        );
+
+        theMap.mapboxMap.addLayer(fillExtrusionLayer);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addExtrusion: " + ex);
         reject(ex);
       }
     });

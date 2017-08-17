@@ -134,6 +134,11 @@ Open `main-page.[js|ts]` and add this (see [`addMarkers`](#addmarkers) further b
 var mapbox = require("nativescript-mapbox");
 
 function onMapReady(args) {
+  // you can tap into the native MapView objects (MGLMapView for iOS and com.mapbox.mapboxsdk.maps.MapView for Android)
+  var nativeMapView = args.ios ? args.ios : args.android;
+  console.log("Mapbox onMapReady for " + (args.ios ? "iOS" : "Android") + ", native object received: " + nativeMapView);
+
+  // .. or use the convenience methods exposed on args.map, for instance:
   args.map.addMarkers([
     {
       lat: 52.3602160,
@@ -219,8 +224,8 @@ Check out the usage details on the functions below.
       }
     ]
   }).then(
-      function(result) {
-        console.log("Mapbox show done");
+      function(showResult) {
+        console.log("Mapbox show done for " + (showResult.ios ? "iOS" : "Android") + ", native object received: " + (showResult.ios ? showResult.ios : showResult.android));
       },
       function(error) {
         console.log("mapbox show error: " + error);

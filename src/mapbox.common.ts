@@ -148,6 +148,10 @@ export interface AddGeoJsonClusteredOptions {
   clusters?: Array<MapboxCluster>;
 }
 
+export interface AddExtrusionOptions {
+
+}
+
 export interface OfflineRegion {
   name: string;
   bounds: Bounds;
@@ -229,6 +233,11 @@ export interface ShowOptions {
   markers?: MapboxMarker[];
 }
 
+export interface ShowResult {
+  ios: any /* MGLMapView */;
+  android: any /* com.mapbox.mapboxsdk.maps.MapView */;
+}
+
 export interface AnimateCameraOptions {
   target: LatLng;
   /**
@@ -250,7 +259,7 @@ export interface MapboxCommonApi {
 }
 
 export interface MapboxApi {
-  show(options: ShowOptions): Promise<any>;
+  show(options: ShowOptions): Promise<ShowResult>;
   hide(): Promise<any>;
   unhide(): Promise<any>;
   destroy(nativeMap?: any): Promise<any>;
@@ -288,6 +297,8 @@ export interface MapboxApi {
   deleteOfflineRegion(options: DeleteOfflineRegionOptions): Promise<any>;
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions): Promise<any>;
+
+  // addExtrusion(options: AddExtrusionOptions): Promise<any>;
 }
 
 export abstract class MapboxCommon implements MapboxCommonApi {
@@ -483,13 +494,9 @@ delayProperty.register(MapboxViewCommonBase);
 
 export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
-  private static mapReadyEvent: string = "mapReady";
+  static mapReadyEvent: string = "mapReady";
 
   protected config: any = {};
-
-  protected notifyMapReady(): void {
-    this.notify({ eventName: MapboxViewBase.mapReadyEvent, object: this, map: this });
-  }
 
   get ios(): any {
     return this.nativeView;

@@ -11,7 +11,7 @@ import {
   MapboxCommon,
   MapboxViewBase,
   MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
-  Viewport
+  Viewport, AddExtrusionOptions
 } from "./mapbox.common";
 import { Color } from "tns-core-modules/color";
 
@@ -102,7 +102,7 @@ export class MapboxView extends MapboxViewBase {
         MGLAccountManager.setAccessToken(settings.accessToken);
         this.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), _getMapStyle(settings.style));
         this.mapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback(() => {
-          this.notifyMapReady();
+          this.notify({ eventName: MapboxViewBase.mapReadyEvent, object: this, map: this, ios: this.mapView});
         });
         _setMapboxMapOptions(this.mapView, settings);
         _markers = [];
@@ -149,8 +149,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         _setMapboxMapOptions(_mapbox.mapView, settings);
 
         _mapbox.mapView.delegate = _delegate = MGLMapViewDelegateImpl.new().initWithCallback(
-            () => {
-              resolve();
+            (mapView: MGLMapView) => {
+              resolve({
+                ios: mapView
+              });
             }
         );
 
@@ -721,7 +723,25 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
+  addExtrusion(options: AddExtrusionOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.deleteOfflineRegion: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+        addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }
@@ -807,16 +827,16 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     return <MGLMapViewDelegateImpl>super.new();
   }
 
-  private mapLoadedCallback: () => void;
+  private mapLoadedCallback: (mapView: MGLMapView) => void;
 
-  public initWithCallback(mapLoadedCallback: () => void): MGLMapViewDelegateImpl {
+  public initWithCallback(mapLoadedCallback: (mapView: MGLMapView) => void): MGLMapViewDelegateImpl {
     this.mapLoadedCallback = mapLoadedCallback;
     return this;
   }
 
   mapViewDidFinishLoadingMap(mapView: MGLMapView): void {
     if (this.mapLoadedCallback !== undefined) {
-      this.mapLoadedCallback();
+      this.mapLoadedCallback(mapView);
     }
   }
 
@@ -900,9 +920,13 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     for (let m in _markers) {
       let cached = _markers[m];
       // don't compare lat/lng types as they're not the same (same for (sub)title, they may be null vs undefined)
+      // tslint:disable-next-line:triple-equals
       if (cached.lat == tapped.coordinate.latitude &&
+          // tslint:disable-next-line:triple-equals
           cached.lng == tapped.coordinate.longitude &&
+          // tslint:disable-next-line:triple-equals
           cached.title == tapped.title &&
+          // tslint:disable-next-line:triple-equals
           cached.subtitle == tapped.subtitle) {
         return cached;
       }

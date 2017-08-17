@@ -7,6 +7,7 @@
 
 - Feature Request: Update to sdk to 5.1.2+ [\#156](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/156)
 - Document the new TRAFFIC_DAY and TRAFFIC_NIGHT styles [\#158](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/158)
+- Return the native Mapbox view when show is invoked [\#159](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/159)
 
 
 ## [3.0.3](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.3) (2017-08-08)

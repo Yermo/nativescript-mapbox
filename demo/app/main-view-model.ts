@@ -55,8 +55,8 @@ export class HelloWorldModel extends Observable {
         }
       ]
     }).then(
-        () => {
-          console.log("Mapbox show done");
+        (showResult) => {
+          console.log(`Mapbox show done for ${showResult.ios ? "iOS" : "Android"}, native object received: ${showResult.ios ? showResult.ios : showResult.android}`);
         },
         (error: string) => {
           console.log("mapbox show error: " + error);
@@ -148,7 +148,7 @@ export class HelloWorldModel extends Observable {
         id: 3,
         lat: 52.3602160,
         lng: 5,
-        onTap: () => { console.log("Title-less marker tapped!") },
+        onTap: () => { console.log("Titleless marker tapped!"); },
         icon: 'http://www.bme.be/wp-content/uploads/2014/04/marker.png'
       },
       {

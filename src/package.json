@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "3.0.3",
+  "version": "3.1.0",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox",
   "typings": "index.d.ts",
@@ -17,7 +17,7 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -skipLibCheck",
     "demo.ios": "npm run preparedemo && cd ../demo && tns platform remove ios && tns run ios --emulator",
     "demo.ios.device": "npm run preparedemo && cd ../demo && tns platform remove ios && tns run ios",
     "demo.android": "npm run preparedemo && cd ../demo && tns platform remove android && tns run android --justlaunch",
@@ -26,7 +26,7 @@
     "setup": "npm i && cd ../demo && npm i && cd ../src && npm run build",
     "tslint": "tslint *.ts",
     "tslint.demo": "tslint ../demo/app/*.ts",
-    "test": "npm run build && npm run tslint && npm run tslint.demo && cd ../demo && tns build ios",
+    "test": "npm i && npm run build && npm run tslint && npm run tslint.demo && cd ../demo && tns build android",
     "development.setup": "npm run setup && npm link && cd ../demo && npm link nativescript-mapbox && cd ../src",
     "generate.typings.ios": "cd ../demo && TNS_DEBUG_METADATA_PATH=\"$(pwd)/metadata\" tns build ios && TNS_TYPESCRIPT_DECLARATIONS_PATH=\"$(pwd)/typings\" tns build ios && echo 'Now look for your library typings in demo/typings!'"
   },

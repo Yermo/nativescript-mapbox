@@ -12,6 +12,12 @@ export function pageLoaded(args: observable.EventData) {
 
 function onMapReady(args) {
   let map: MapboxViewApi = args.map;
+
+  // you can tap into the native MapView objects (MGLMapView for iOS and com.mapbox.mapboxsdk.maps.MapView for Android)
+  const nativeMapView = args.ios ? args.ios : args.android;
+  console.log(`Mapbox onMapReady for ${args.ios ? "iOS" : "Android"}, native object received: ${nativeMapView}`);
+
+  // .. or use the convenience methods exposed on args.map, for instance:
   map.addMarkers([
     {
       id: 2,
