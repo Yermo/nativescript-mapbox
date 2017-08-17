@@ -62,7 +62,7 @@ Could be rendered by a definition like this:
       <!-- IMPORTANT: plugin version 3 uses :MapboxView, lower versions use :Mapbox -->
       <map:MapboxView
           accessToken="your_token"
-          mapStyle="light"
+          mapStyle="traffic_night"
           latitude="52.3702160"
           longitude="4.8951680"
           zoomLevel="3"
@@ -88,7 +88,7 @@ View:
   <ContentView height="100%" width="100%">
     <Mapbox
         accessToken="your_token"
-        mapStyle="dark"
+        mapStyle="traffic_day"
         latitude="50.467735"
         longitude="13.427718"
         hideCompass="true"
@@ -110,7 +110,7 @@ All currently supported options for your XML based map are (__don't__ use other 
 |---|---|---
 |`accesstoken`|-|see 'Prerequisites' above
 |`delay`|0|A delay in milliseconds - you can set this to have better control over when Mapbox is invoked so it won't clash with other computations your app may need to perform. 
-|`mapStyle`|streets|streets, light, dark, emerald, hybrid, satellite
+|`mapStyle`|streets|streets, light, dark, emerald, hybrid, satellite, traffic_day, traffic_night
 |`latitude `|-|Set the center of the map by passing this in
 |`longitude`|-|.. and this as well
 |`zoomLevel`|0|0-20
@@ -185,7 +185,7 @@ Check out the usage details on the functions below.
 
   mapbox.show({
     accessToken: 'YOUR_API_ACCESS_TOKEN', // see 'Prerequisites' above
-    style: mapbox.MapStyle.DARK, // see the mapbox.MapStyle enum for other options, default mapbox.MapStyle.STREETS
+    style: mapbox.MapStyle.TRAFFIC_DAY, // see the mapbox.MapStyle enum for other options, default mapbox.MapStyle.STREETS
     margins: {
       left: 40, // default 0
       right: 40, // default 0
@@ -212,7 +212,7 @@ Check out the usage details on the functions below.
         title: 'Nice location', // recommended to pass in
         subtitle: 'Really really nice location', // one line is available on iOS, multiple on Android
         icon: 'res://cool_marker', // use either this preferred way (to grab a density-independent marker from app resources), or:
-        icon: 'http(s)://my-remote-image', // an image from the interwebs (see the note at the bottom of this readme), or:
+        // icon: 'http(s)://my-remote-image', // an image from the interwebs (see the note at the bottom of this readme), or:
         iconPath: 'res/markers/green_pin_marker.png', // anywhere in your app folder
         onTap: function(marker) { console.log("This marker was tapped"); },
         onCalloutTap: function(marker) { console.log("The callout of this marker was tapped"); }
@@ -273,14 +273,14 @@ You can update the map style after you've loaded it. How neat is that!?
       lng: 4.8891680, // mandatory
       title: 'One-line title here', // no popup unless set
       subtitle: 'Infamous subtitle!',
-      icon: 'res://cool_marker', // preferred way, otherwise use:
+      // icon: 'res://cool_marker', // preferred way, otherwise use:
       icon: 'http(s)://website/coolimage.png', // from the internet (see the note at the bottom of this readme), or:
       iconPath: 'res/markers/home_marker.png',
       onTap: onTap,
       onCalloutTap: onCalloutTap
     },
     {
-      ..
+      // more markers..
     }
   ])
 ```
@@ -524,7 +524,7 @@ Grab the viewport with the `mapbox.getViewport()` function and download it at va
     mapbox.downloadOfflineRegion(
       {
         name: "LastViewport", // anything you like really
-        style: mapbox.MapStyle.OUTDOORS,
+        style: mapbox.MapStyle.LIGHT,
         minZoom: viewport.zoomLevel,
         maxZoom: viewport.zoomLevel + 2, // higher zoom level is lower to the ground
         bounds: viewport.bounds,
