@@ -1,5 +1,14 @@
 # Change Log
 
+## [3.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.0) (2017-08-17)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.0.3...3.1.0)
+
+**Implemented enhancements:**
+
+- Feature Request: Update to sdk to 5.1.2+ [\#156](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/156)
+- Document the new TRAFFIC_DAY and TRAFFIC_NIGHT styles [\#158](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/158)
+
+
 ## [3.0.3](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.0.3) (2017-08-08)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.0.2...3.0.3)
 
