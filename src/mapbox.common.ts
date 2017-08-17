@@ -9,7 +9,9 @@ export enum MapStyle {
   HYBRID = <any>"hybrid", // deprecated, use SATELLITE_STREETS
   SATELLITE_STREETS = <any>"satellite_streets",
   EMERALD = <any>"emerald",
-  STREETS = <any>"streets"
+  STREETS = <any>"streets",
+  TRAFFIC_DAY = <any>"traffic_day",
+  TRAFFIC_NIGHT = <any>"traffic_night"
 }
 
 export interface LatLng {

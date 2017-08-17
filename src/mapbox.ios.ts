@@ -51,25 +51,27 @@ const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
 };
 
 const _getMapStyle = (input: any) => {
-  const version = 9;
-
   if (/^mapbox:\/\/styles/.test(input)) {
     // allow for a style URL to be passed
     return NSURL.URLWithString(input);
   } else if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
-    return MGLStyle.lightStyleURLWithVersion(version);
+    return MGLStyle.lightStyleURL();
   } else if (input === MapStyle.DARK || input === MapStyle.DARK.toString()) {
-    return MGLStyle.darkStyleURLWithVersion(version);
+    return MGLStyle.darkStyleURL();
   } else if (input === MapStyle.EMERALD || input === MapStyle.EMERALD.toString()) {
     return MGLStyle.emeraldStyleURL();
   } else if (input === MapStyle.OUTDOORS || input === MapStyle.OUTDOORS.toString()) {
-    return MGLStyle.outdoorsStyleURLWithVersion(version);
+    return MGLStyle.outdoorsStyleURL();
   } else if (input === MapStyle.SATELLITE || input === MapStyle.SATELLITE.toString()) {
-    return MGLStyle.satelliteStyleURLWithVersion(version);
+    return MGLStyle.satelliteStyleURL();
   } else if (input === MapStyle.HYBRID || input === MapStyle.SATELLITE_STREETS || input === MapStyle.HYBRID.toString() || input === MapStyle.SATELLITE_STREETS.toString()) {
-    return MGLStyle.satelliteStreetsStyleURLWithVersion(version);
+    return MGLStyle.satelliteStreetsStyleURL();
+  } else if (input === MapStyle.TRAFFIC_DAY || input === MapStyle.TRAFFIC_DAY.toString()) {
+    return MGLStyle.trafficDayStyleURL();
+  } else if (input === MapStyle.TRAFFIC_NIGHT || input === MapStyle.TRAFFIC_NIGHT.toString()) {
+    return MGLStyle.trafficNightStyleURL();
   } else {
-    return MGLStyle.streetsStyleURLWithVersion(version);
+    return MGLStyle.streetsStyleURL();
   }
 };
 
@@ -836,6 +838,9 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
           return reusedImage;
         }
       }
+
+      // TODO try adding .rotatesToMatchCamera = true;
+      // .. for instance in the mapViewDidDeselectAnnotationView / mapViewDidSelectAnnotationView / mapViewViewForAnnotation delegate
 
       if (cachedMarker.icon) {
         if (cachedMarker.icon.startsWith("res://")) {

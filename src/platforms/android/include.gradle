@@ -12,7 +12,7 @@ repositories {
 
 // for other options (beta / snapshot) see https://www.mapbox.com/android-sdk/
 dependencies {
-    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:5.0.2@aar'){
+    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:5.1.2@aar'){
         transitive=true
     }
 }

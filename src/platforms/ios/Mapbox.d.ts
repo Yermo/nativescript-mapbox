@@ -87,17 +87,23 @@ declare class MGLAnnotationView extends UIView implements NSSecureCoding {
 
 	readonly reuseIdentifier: string;
 
+	rotatesToMatchCamera: boolean;
+
 	scalesWithViewingDistance: boolean;
 
 	selected: boolean;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
+	constructor(o: { annotation: MGLAnnotation; reuseIdentifier: string; });
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { reuseIdentifier: string; });
 
 	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithAnnotationReuseIdentifier(annotation: MGLAnnotation, reuseIdentifier: string): this;
 
 	initWithCoder(aDecoder: NSCoder): this;
 
@@ -159,6 +165,10 @@ declare class MGLBackgroundStyleLayer extends MGLStyleLayer {
 	backgroundPattern: MGLStyleValue<string>;
 
 	backgroundPatternTransition: MGLTransition;
+
+	constructor(o: { identifier: string; });
+
+	initWithIdentifier(identifier: string): this;
 }
 
 interface MGLCalloutView extends NSObjectProtocol {
@@ -272,6 +282,10 @@ declare class MGLCircleStyleLayer extends MGLVectorStyleLayer {
 	circleTranslationAnchor: MGLStyleValue<NSValue>;
 
 	circleTranslationTransition: MGLTransition;
+
+	constructor(o: { identifier: string; source: MGLSource; });
+
+	initWithIdentifierSource(identifier: string, source: MGLSource): this;
 }
 
 declare const enum MGLCircleTranslationAnchor {
@@ -403,7 +417,11 @@ declare const enum MGLErrorCode {
 
 	BadServerResponse = 2,
 
-	ConnectionFailed = 3
+	ConnectionFailed = 3,
+
+	ParseStyleFailed = 4,
+
+	LoadStyleFailed = 5
 }
 
 declare var MGLErrorDomain: string;
@@ -422,6 +440,50 @@ declare var MGLFeature: {
 
 	prototype: MGLFeature;
 };
+
+declare class MGLFillExtrusionStyleLayer extends MGLVectorStyleLayer {
+
+	static alloc(): MGLFillExtrusionStyleLayer; // inherited from NSObject
+
+	static new(): MGLFillExtrusionStyleLayer; // inherited from NSObject
+
+	fillExtrusionBase: MGLStyleValue<number>;
+
+	fillExtrusionBaseTransition: MGLTransition;
+
+	fillExtrusionColor: MGLStyleValue<UIColor>;
+
+	fillExtrusionColorTransition: MGLTransition;
+
+	fillExtrusionHeight: MGLStyleValue<number>;
+
+	fillExtrusionHeightTransition: MGLTransition;
+
+	fillExtrusionOpacity: MGLStyleValue<number>;
+
+	fillExtrusionOpacityTransition: MGLTransition;
+
+	fillExtrusionPattern: MGLStyleValue<string>;
+
+	fillExtrusionPatternTransition: MGLTransition;
+
+	fillExtrusionTranslation: MGLStyleValue<NSValue>;
+
+	fillExtrusionTranslationAnchor: MGLStyleValue<NSValue>;
+
+	fillExtrusionTranslationTransition: MGLTransition;
+
+	constructor(o: { identifier: string; source: MGLSource; });
+
+	initWithIdentifierSource(identifier: string, source: MGLSource): this;
+}
+
+declare const enum MGLFillExtrusionTranslationAnchor {
+
+	Map = 0,
+
+	Viewport = 1
+}
 
 declare class MGLFillStyleLayer extends MGLVectorStyleLayer {
 
@@ -452,6 +514,10 @@ declare class MGLFillStyleLayer extends MGLVectorStyleLayer {
 	fillTranslationAnchor: MGLStyleValue<NSValue>;
 
 	fillTranslationTransition: MGLTransition;
+
+	constructor(o: { identifier: string; source: MGLSource; });
+
+	initWithIdentifierSource(identifier: string, source: MGLSource): this;
 }
 
 declare const enum MGLFillTranslationAnchor {
@@ -468,10 +534,6 @@ declare class MGLForegroundStyleLayer extends MGLStyleLayer {
 	static new(): MGLForegroundStyleLayer; // inherited from NSObject
 
 	readonly sourceIdentifier: string;
-
-	constructor(o: { identifier: string; source: MGLSource; });
-
-	initWithIdentifierSource(identifier: string, source: MGLSource): this;
 }
 
 declare const enum MGLIconRotationAlignment {
@@ -510,6 +572,34 @@ declare const enum MGLInterpolationMode {
 	Categorical = 2,
 
 	Identity = 3
+}
+
+declare class MGLLight extends NSObject {
+
+	static alloc(): MGLLight; // inherited from NSObject
+
+	static new(): MGLLight; // inherited from NSObject
+
+	anchor: MGLStyleValue<NSValue>;
+
+	color: MGLStyleValue<UIColor>;
+
+	colorTransition: MGLTransition;
+
+	intensity: MGLStyleValue<number>;
+
+	intensityTransition: MGLTransition;
+
+	position: MGLStyleValue<NSValue>;
+
+	positionTransition: MGLTransition;
+}
+
+declare const enum MGLLightAnchor {
+
+	Map = 0,
+
+	Viewport = 1
 }
 
 declare const enum MGLLineCap {
@@ -581,6 +671,10 @@ declare class MGLLineStyleLayer extends MGLVectorStyleLayer {
 	lineWidth: MGLStyleValue<number>;
 
 	lineWidthTransition: MGLTransition;
+
+	constructor(o: { identifier: string; source: MGLSource; });
+
+	initWithIdentifierSource(identifier: string, source: MGLSource): this;
 }
 
 declare const enum MGLLineTranslationAnchor {
@@ -701,6 +795,8 @@ declare class MGLMapView extends UIView {
 	pitchEnabled: boolean;
 
 	rotateEnabled: boolean;
+
+	readonly scaleBar: UIView;
 
 	scrollEnabled: boolean;
 
@@ -1298,9 +1394,13 @@ declare class MGLOpenGLStyleLayer extends MGLStyleLayer {
 
 	readonly mapView: MGLMapView;
 
+	constructor(o: { identifier: string; });
+
 	didMoveToMapView(mapView: MGLMapView): void;
 
 	drawInMapViewWithContext(mapView: MGLMapView, context: MGLStyleLayerDrawingContext): void;
+
+	initWithIdentifier(identifier: string): this;
 
 	setNeedsDisplay(): void;
 
@@ -1730,9 +1830,17 @@ declare class MGLRasterSource extends MGLTileSource {
 
 	static new(): MGLRasterSource; // inherited from NSObject
 
+	constructor(o: { identifier: string; configurationURL: NSURL; });
+
 	constructor(o: { identifier: string; configurationURL: NSURL; tileSize: number; });
 
+	constructor(o: { identifier: string; tileURLTemplates: NSArray<string>; options: NSDictionary<string, any>; });
+
+	initWithIdentifierConfigurationURL(identifier: string, configurationURL: NSURL): this;
+
 	initWithIdentifierConfigurationURLTileSize(identifier: string, configurationURL: NSURL, tileSize: number): this;
+
+	initWithIdentifierTileURLTemplatesOptions(identifier: string, tileURLTemplates: NSArray<string>, options: NSDictionary<string, any>): this;
 }
 
 declare class MGLRasterStyleLayer extends MGLForegroundStyleLayer {
@@ -1768,6 +1876,10 @@ declare class MGLRasterStyleLayer extends MGLForegroundStyleLayer {
 	rasterSaturation: MGLStyleValue<number>;
 
 	rasterSaturationTransition: MGLTransition;
+
+	constructor(o: { identifier: string; source: MGLSource; });
+
+	initWithIdentifierSource(identifier: string, source: MGLSource): this;
 }
 
 declare const enum MGLResourceKind {
@@ -1997,6 +2109,13 @@ declare class MGLSourceStyleFunction<T> extends MGLStyleFunction<T> {
 	defaultValue: MGLStyleValue<T>;
 }
 
+interface MGLSphericalPosition {
+	radial: number;
+	azimuthal: number;
+	polar: number;
+}
+declare var MGLSphericalPosition: interop.StructType<MGLSphericalPosition>;
+
 declare class MGLStyle extends NSObject {
 
 	static alloc(): MGLStyle; // inherited from NSObject
@@ -2015,7 +2134,11 @@ declare class MGLStyle extends NSObject {
 
 	static new(): MGLStyle; // inherited from NSObject
 
+	static outdoorsStyleURL(): NSURL;
+
 	static outdoorsStyleURLWithVersion(version: number): NSURL;
+
+	static satelliteStreetsStyleURL(): NSURL;
 
 	static satelliteStreetsStyleURLWithVersion(version: number): NSURL;
 
@@ -2027,7 +2150,17 @@ declare class MGLStyle extends NSObject {
 
 	static streetsStyleURLWithVersion(version: number): NSURL;
 
+	static trafficDayStyleURL(): NSURL;
+
+	static trafficDayStyleURLWithVersion(version: number): NSURL;
+
+	static trafficNightStyleURL(): NSURL;
+
+	static trafficNightStyleURLWithVersion(version: number): NSURL;
+
 	layers: NSArray<MGLStyleLayer>;
+
+	light: MGLLight;
 
 	readonly name: string;
 
@@ -2120,10 +2253,6 @@ declare class MGLStyleLayer extends NSObject {
 	minimumZoomLevel: number;
 
 	visible: boolean;
-
-	constructor(o: { identifier: string; });
-
-	initWithIdentifier(identifier: string): this;
 }
 
 interface MGLStyleLayerDrawingContext {
@@ -2287,6 +2416,10 @@ declare class MGLSymbolStyleLayer extends MGLVectorStyleLayer {
 	textTranslationAnchor: MGLStyleValue<NSValue>;
 
 	textTranslationTransition: MGLTransition;
+
+	constructor(o: { identifier: string; source: MGLSource; });
+
+	initWithIdentifierSource(identifier: string, source: MGLSource): this;
 }
 
 declare const enum MGLTextAnchor {
@@ -2432,14 +2565,6 @@ declare class MGLTileSource extends MGLSource {
 	readonly attributionInfos: NSArray<MGLAttributionInfo>;
 
 	readonly configurationURL: NSURL;
-
-	constructor(o: { identifier: string; configurationURL: NSURL; });
-
-	constructor(o: { identifier: string; tileURLTemplates: NSArray<string>; options: NSDictionary<string, any>; });
-
-	initWithIdentifierConfigurationURL(identifier: string, configurationURL: NSURL): this;
-
-	initWithIdentifierTileURLTemplatesOptions(identifier: string, tileURLTemplates: NSArray<string>, options: NSDictionary<string, any>): this;
 }
 
 declare var MGLTileSourceOptionAttributionHTMLString: string;
@@ -2565,7 +2690,15 @@ declare class MGLVectorSource extends MGLTileSource {
 
 	static new(): MGLVectorSource; // inherited from NSObject
 
+	constructor(o: { identifier: string; configurationURL: NSURL; });
+
+	constructor(o: { identifier: string; tileURLTemplates: NSArray<string>; options: NSDictionary<string, any>; });
+
 	featuresInSourceLayersWithIdentifiersPredicate(sourceLayerIdentifiers: NSSet<string>, predicate: NSPredicate): NSArray<MGLFeature>;
+
+	initWithIdentifierConfigurationURL(identifier: string, configurationURL: NSURL): this;
+
+	initWithIdentifierTileURLTemplatesOptions(identifier: string, tileURLTemplates: NSArray<string>, options: NSDictionary<string, any>): this;
 }
 
 declare class MGLVectorStyleLayer extends MGLForegroundStyleLayer {

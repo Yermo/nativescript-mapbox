@@ -15,8 +15,8 @@
 
       <TabViewItem title="By XML">
         <TabViewItem.view>
-          <GridLayout columns="*, *" rows="120, *, 120" horizontalAlignment="stretch" class="tab-content">
-            <ContentView row="0">
+          <GridLayout columns="*, *" rows="110, *, 160" horizontalAlignment="stretch">
+            <ContentView row="0" style="border-right-width: 3; border-color: #fff">
               <map:MapboxView
                   latitude="52.3702160"
                   longitude="4.8951680"
@@ -28,7 +28,7 @@
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="0" col="1">
+            <ContentView row="0" col="1" style="border-left-width: 3; border-color: #fff">
               <map:MapboxView
                   delay="invalid"
                   latitude="52.3702160"
@@ -41,9 +41,9 @@
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="1" colSpan="2">
+            <ContentView row="1" colSpan="2" style="border-top-width: 6; border-bottom-width: 6; border-color: #fff">
               <map:MapboxView
-                  delay="3000"
+                  delay="2000"
                   latitude="52.3702160"
                   longitude="4.8951680"
                   zoomLevel="7"
@@ -51,35 +51,35 @@
                   mapReady="onMapReady"
                   showUserLocation="true"
                   hideLogo="true"
-                  hideCompass="true"
+                  hideCompass="false"
                   hideAttribution="true"
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="2">
+            <ContentView row="2" style="border-right-width: 3; border-color: #fff">
               <map:MapboxView
-                  delay="6000"
+                  delay="4000"
                   latitude="52.3702160"
                   longitude="4.8951680"
-                  zoomLevel="12"
+                  zoomLevel="14"
                   mapStyle="streets"
                   hideAttribution="true"
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="2" col="1">
+            <ContentView row="2" col="1" style="border-left-width: 3; border-color: #fff">
               <map:MapboxView
-                  delay="8000"
+                  delay="6000"
                   latitude="52.3702160"
                   longitude="4.8951680"
-                  zoomLevel="13"
+                  zoomLevel="9"
                   disableZoom="true"
                   disableRotation="true"
                   disableScroll="true"
                   disableTilt="true"
                   showUserLocation="false"
                   hideAttribution="true"
-                  mapStyle="hybrid"
+                  mapStyle="traffic_day"
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>

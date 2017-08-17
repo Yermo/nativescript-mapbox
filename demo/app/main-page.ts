@@ -48,8 +48,8 @@ function onMapReady(args) {
   }, 3000);
 
   setTimeout(() => {
-    map.setMapStyle(MapStyle.DARK);
-  }, 5000);
+    map.setMapStyle(MapStyle.TRAFFIC_NIGHT);
+  }, 6000);
 
   setTimeout(() => {
     map.addPolyline({
@@ -70,7 +70,7 @@ function onMapReady(args) {
         }
       ]
     });
-  }, 6000);
+  }, 10000);
 
   setTimeout(() => {
     map.setCenter({
@@ -78,41 +78,41 @@ function onMapReady(args) {
       lng: 5.1087,
       animated: true
     });
-  }, 6100);
+  }, 11000);
 
   setTimeout(() => {
     map.setZoomLevel({
       level: 7,
       animated: true
     });
-  }, 8000);
+  }, 16000);
 
-  setTimeout(() => {
-    map.removeMarkers([2]);
-  }, 10000);
+  // setTimeout(() => {
+  //   map.removeMarkers([2]);
+  // }, 10000);
 
   setTimeout(() => {
     map.setTilt({
       tilt: 25,
       duration: 2500
     });
-  }, 10000);
-
-  setTimeout(() => {
-    map.animateCamera({
-      target: {
-        lat: 51.8,
-        lng: 5
-      },
-      tilt: 30,
-      zoomLevel: 3,
-      duration: 7000
-    });
-  }, 14000);
+  }, 21000);
 
   // setTimeout(() => {
-  //   map.removePolylines([10]);
-  // }, 15000);
+  //   map.animateCamera({
+  //     target: {
+  //       lat: 51.8,
+  //       lng: 5
+  //     },
+  //     tilt: 20,
+  //     zoomLevel: 8,
+  //     duration: 6000
+  //   });
+  // }, 14000);
+
+  setTimeout(() => {
+    map.removePolylines([10]);
+  }, 24000);
 }
 
 exports.onMapReady = onMapReady;

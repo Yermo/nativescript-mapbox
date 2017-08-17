@@ -106,6 +106,10 @@ const _getMapStyle = (input: any) => {
     return Style.SATELLITE;
   } else if (input === MapStyle.HYBRID || input === MapStyle.SATELLITE_STREETS || input === MapStyle.HYBRID.toString() || input === MapStyle.SATELLITE_STREETS.toString()) {
     return Style.SATELLITE_STREETS;
+  } else if (input === MapStyle.TRAFFIC_DAY || input === MapStyle.TRAFFIC_DAY.toString()) {
+    return Style.TRAFFIC_DAY;
+  } else if (input === MapStyle.TRAFFIC_NIGHT || input === MapStyle.TRAFFIC_NIGHT.toString()) {
+    return Style.TRAFFIC_NIGHT;
   } else {
     // default
     return Style.MAPBOX_STREETS;

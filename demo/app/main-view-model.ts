@@ -18,7 +18,7 @@ export class HelloWorldModel extends Observable {
   public doShow(): void {
     this.mapbox.show({
       accessToken: ACCESS_TOKEN,
-      style: MapStyle.LIGHT,
+      style: MapStyle.TRAFFIC_DAY,
       margins: {
         left: 18,
         right: 18,
