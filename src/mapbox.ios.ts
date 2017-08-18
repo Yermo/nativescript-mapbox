@@ -1,7 +1,7 @@
-import * as fs from "file-system";
-import * as imgSrc from "image-source";
-import * as utils from "utils/utils";
-import * as http from "http";
+import * as fs from "tns-core-modules/file-system";
+import * as imgSrc from "tns-core-modules/image-source";
+import * as utils from "tns-core-modules/utils/utils";
+import * as http from "tns-core-modules/http";
 
 import {
   AddGeoJsonClusteredOptions,

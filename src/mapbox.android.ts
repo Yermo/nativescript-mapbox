@@ -1,9 +1,9 @@
-import * as utils from "utils/utils";
-import * as application from "application";
-import * as frame  from "ui/frame";
-import * as fs from "file-system";
-import { Color } from "color";
-import * as http from "http";
+import * as utils from "tns-core-modules/utils/utils";
+import * as application from "tns-core-modules/application";
+import * as frame  from "tns-core-modules/ui/frame";
+import * as fs from "tns-core-modules/file-system";
+import { Color } from "tns-core-modules/color";
+import * as http from "tns-core-modules/http";
 
 import {
   AddGeoJsonClusteredOptions,

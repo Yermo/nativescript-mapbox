@@ -24,9 +24,8 @@
     "preparedemo": "npm run build && cd ../demo && tns plugin remove nativescript-mapbox && tns plugin add ../src && tns install",
     "disabled-prepublish": "npm run build",
     "setup": "npm i && cd ../demo && npm i && cd ../src && npm run build",
-    "tslint": "tslint *.ts",
-    "tslint.demo": "tslint ../demo/app/*.ts",
-    "test": "npm i && npm run build && npm run tslint && npm run tslint.demo && cd ../demo && tns build android",
+    "tslint": "cd .. && tslint \"**/*.ts\" --config tslint.json --exclude \"**/node_modules/**\" --exclude \"src/platforms/ios/Mapbox.d.ts\"",
+    "test": "npm i && npm run build && npm run tslint && cd ../demo && tns build android",
     "development.setup": "npm run setup && npm link && cd ../demo && npm link nativescript-mapbox && cd ../src",
     "generate.typings.ios": "cd ../demo && TNS_DEBUG_METADATA_PATH=\"$(pwd)/metadata\" tns build ios && TNS_TYPESCRIPT_DECLARATIONS_PATH=\"$(pwd)/typings\" tns build ios && echo 'Now look for your library typings in demo/typings!'"
   },
@@ -56,7 +55,7 @@
     "tns-core-modules": "^3.1.0",
     "tns-platform-declarations": "^3.1.0",
     "tslint": "^5.1.0",
-    "typescript": "^2.2.2"
+    "typescript": "~2.3.0"
   },
   "peerDependencies": {
     "tns-core-modules": "^3.0.0"

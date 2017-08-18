@@ -1,8 +1,8 @@
-import { Observable } from "data/observable";
-import { Color } from "color";
+import { Observable } from "tns-core-modules/data/observable";
+import { Color } from "tns-core-modules/color";
+import { alert, AlertOptions } from "tns-core-modules/ui/dialogs";
+import * as platform from "tns-core-modules/platform";
 import { Mapbox, MapStyle, OfflineRegion, LatLng, Viewport, DownloadProgress, MapboxMarker } from "nativescript-mapbox";
-import { alert, AlertOptions } from "ui/dialogs";
-import * as platform from "platform";
 
 const isIOS = platform.device.os === platform.platformNames.ios;
 const ACCESS_TOKEN = "sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw";

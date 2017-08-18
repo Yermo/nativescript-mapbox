@@ -1,8 +1,8 @@
-import * as observable from "data/observable";
-import * as pages from "ui/page";
+import * as observable from "tns-core-modules/data/observable";
+import * as pages from "tns-core-modules/ui/page";
+import { Color } from "tns-core-modules/color";
 import { HelloWorldModel } from "./main-view-model";
 import { MapboxViewApi, MapStyle, LatLng } from "nativescript-mapbox";
-import { Color } from "color";
 
 // Event handler for Page 'loaded' event attached in main-page.xml
 export function pageLoaded(args: observable.EventData) {

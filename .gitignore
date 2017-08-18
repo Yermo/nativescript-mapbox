@@ -1,7 +1,9 @@
 .idea
 .vscode
 *.js
+*.js.map
 *.log
+*.t.gz
 !demo/karma.conf.js
 !demo/app/tests/*.js
 demo/*.d.ts
