@@ -585,6 +585,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             bounds,
             options.minZoom,
             options.maxZoom);
+        
+        if (options.accessToken){
+          MGLAccountManager.setAccessToken(options.accessToken);
+        }
 
         // TODO there's more observers, see https://www.mapbox.com/ios-sdk/examples/offline-pack/
         if (options.onProgress) {
