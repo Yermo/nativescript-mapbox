@@ -1,5 +1,13 @@
 # Change Log
 
+## [3.1.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.0) (2017-08-24)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.1.0...3.1.1)
+
+**Fixed bugs:**
+
+- Problems with Android that works with iOS [\#162](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/162)
+
+
 ## [3.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.0) (2017-08-17)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.0.3...3.1.0)
 
