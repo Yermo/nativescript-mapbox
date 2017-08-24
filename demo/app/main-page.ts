@@ -10,6 +10,11 @@ export function pageLoaded(args: observable.EventData) {
   page.bindingContext = new HelloWorldModel();
 }
 
+function onLocationPermissionGranted(args) {
+  let map: MapboxViewApi = args.map;
+  console.log("onLocationPermissionGranted, map: " + map);
+}
+
 function onMapReady(args) {
   let map: MapboxViewApi = args.map;
 
@@ -122,3 +127,4 @@ function onMapReady(args) {
 }
 
 exports.onMapReady = onMapReady;
+exports.onLocationPermissionGranted = onLocationPermissionGranted;

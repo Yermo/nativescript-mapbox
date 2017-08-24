@@ -103,6 +103,8 @@ export class MapboxView extends MapboxViewBase {
         this.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), _getMapStyle(settings.style));
         this.mapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback(() => {
           this.notify({ eventName: MapboxViewBase.mapReadyEvent, object: this, map: this, ios: this.mapView});
+          // no permission required, but to align with Android we fire the event anyway
+          this.notify({ eventName: MapboxViewBase.locationPermissionGrantedEvent, object: this, map: this, ios: this.mapView});
         });
         _setMapboxMapOptions(this.mapView, settings);
         _markers = [];

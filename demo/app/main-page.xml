@@ -49,6 +49,7 @@
                   zoomLevel="7"
                   mapStyle="satellite"
                   mapReady="onMapReady"
+                  locationPermissionGranted="onLocationPermissionGranted"
                   showUserLocation="true"
                   hideLogo="true"
                   hideCompass="false"

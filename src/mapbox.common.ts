@@ -495,6 +495,7 @@ delayProperty.register(MapboxViewCommonBase);
 export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
   static mapReadyEvent: string = "mapReady";
+  static locationPermissionGrantedEvent: string = "locationPermissionGranted";
 
   protected config: any = {};
 

@@ -74,6 +74,7 @@ export class MapboxView extends MapboxViewBase {
                 if (settings.showUserLocation) {
                   this.mapbox.requestFineLocationPermission().then(() => {
                     _showLocation(this.mapView);
+                    this.notify({ eventName: MapboxViewBase.locationPermissionGrantedEvent, object: this, map: this, android: this.mapView});
                   });
                 }
 
