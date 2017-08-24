@@ -910,6 +910,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject("First show a map, or pass in an 'accessToken' param");
           return;
         }
+        if (!_accessToken){
+            _accessToken = options.accessToken;
+        }
+        com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, _accessToken);
 
         _getOfflineManager().createOfflineRegion(offlineRegionDefinition, encodedMetadata, new com.mapbox.mapboxsdk.offline.OfflineManager.CreateOfflineRegionCallback({
           onError: (error: string) => {
