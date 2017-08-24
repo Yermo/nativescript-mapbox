@@ -1,11 +1,11 @@
 {
   "nativescript": {
     "id": "org.nativescript.mapbox",
-    "tns-android": {
-      "version": "3.1.1"
-    },
     "tns-ios": {
       "version": "3.1.0"
+    },
+    "tns-android": {
+      "version": "3.1.1"
     }
   },
   "dependencies": {

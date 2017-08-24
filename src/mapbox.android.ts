@@ -1,6 +1,6 @@
 import * as utils from "tns-core-modules/utils/utils";
 import * as application from "tns-core-modules/application";
-import * as frame  from "tns-core-modules/ui/frame";
+import * as frame from "tns-core-modules/ui/frame";
 import * as fs from "tns-core-modules/file-system";
 import { Color } from "tns-core-modules/color";
 import * as http from "tns-core-modules/http";
@@ -34,8 +34,7 @@ const ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111; // irrelevant really, 
 /*************** XML definition START ****************/
 export class MapboxView extends MapboxViewBase {
 
-  private mapView: any;
-  /* com.mapbox.mapboxsdk.maps.MapView */
+  private mapView: any; // com.mapbox.mapboxsdk.maps.MapView
 
   getNativeMapView(): any {
     return this.mapView;
@@ -73,12 +72,24 @@ export class MapboxView extends MapboxViewBase {
 
                 if (settings.showUserLocation) {
                   this.mapbox.requestFineLocationPermission().then(() => {
-                    _showLocation(this.mapView);
-                    this.notify({ eventName: MapboxViewBase.locationPermissionGrantedEvent, object: this, map: this, android: this.mapView});
+                    setTimeout(() => {
+                      _showLocation(this.mapView);
+                    }, 1000);
+                    this.notify({
+                      eventName: MapboxViewBase.locationPermissionGrantedEvent,
+                      object: this,
+                      map: this,
+                      android: this.mapView
+                    });
                   });
                 }
 
-                this.notify({ eventName: MapboxViewBase.mapReadyEvent, object: this, map: this, android: this.mapView});
+                this.notify({
+                  eventName: MapboxViewBase.mapReadyEvent,
+                  object: this,
+                  map: this,
+                  android: this.mapView
+                });
               }
             })
         );
@@ -89,6 +100,7 @@ export class MapboxView extends MapboxViewBase {
     }
   }
 }
+
 /*************** XML definition END ****************/
 
 const _getMapStyle = (input: any) => {
@@ -167,16 +179,14 @@ const _fineLocationPermissionGranted = () => {
   return hasPermission;
 };
 
+// TODO deprecated in 5.2.0, see https://github.com/mapbox/mapbox-gl-native/issues/9775#issuecomment-322695996
 const _showLocation = (theMapView) => {
-  _locationServices = com.mapbox.mapboxsdk.location.LocationSource.getLocationEngine(application.android.context);
-  // var locationEngineListener = new com.mapbox.services.android.telemetry.location.LocationEngineListener({
-  //     onConnected: function () {
-  //   },
-  //   onLocationChanged: function (location) {
-  //   }
-  // });
-  // mapbox.locationServices.addLocationEngineListener(locationEngineListener);
+  _locationServices = new com.mapbox.mapboxsdk.location.LocationSource(application.android.context);
   theMapView.mapboxMap.setMyLocationEnabled(true);
+  // TODO nice candidate for a property the user can pass in
+  // theMapView.mapboxMap.getTrackingSettings().setMyLocationTrackingMode(com.mapbox.mapboxsdk.constants.MyLocationTracking.TRACKING_FOLLOW);
+  theMapView.mapboxMap.getTrackingSettings().setMyBearingTrackingMode(com.mapbox.mapboxsdk.constants.MyBearingTracking.COMPASS);
+  theMapView.mapboxMap.getTrackingSettings().setLocationChangeAnimationEnabled(true);
   _locationServices.activate();
   _locationServices.requestLocationUpdates();
 };
@@ -911,8 +921,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject("First show a map, or pass in an 'accessToken' param");
           return;
         }
-        if (!_accessToken){
-            _accessToken = options.accessToken;
+        if (!_accessToken) {
+          _accessToken = options.accessToken;
         }
         com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, _accessToken);
 
@@ -1139,9 +1149,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               i === 0
                   ? com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0]))
                   : com.mapbox.mapboxsdk.style.layers.Filter.all([
-                com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0])),
-                com.mapbox.mapboxsdk.style.layers.Filter.lt("point_count", new java.lang.Integer(layers[i - 1][0]))
-              ])
+                    com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0])),
+                    com.mapbox.mapboxsdk.style.layers.Filter.lt("point_count", new java.lang.Integer(layers[i - 1][0]))
+                  ])
           );
 
           theMap.mapboxMap.addLayer(circles); // , "building");

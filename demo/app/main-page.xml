@@ -16,7 +16,7 @@
       <TabViewItem title="By XML">
         <TabViewItem.view>
           <GridLayout columns="*, *" rows="110, *, 160" horizontalAlignment="stretch">
-            <ContentView row="0" style="border-right-width: 3; border-color: #fff">
+            <ContentView row="0" style="margin-right: 3; border-color: #fff">
               <map:MapboxView
                   latitude="52.3702160"
                   longitude="4.8951680"
@@ -28,7 +28,7 @@
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="0" col="1" style="border-left-width: 3; border-color: #fff">
+            <ContentView row="0" col="1" style="margin-left: 3; border-color: #fff">
               <map:MapboxView
                   delay="invalid"
                   latitude="52.3702160"
@@ -41,7 +41,7 @@
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="1" colSpan="2" style="border-top-width: 6; border-bottom-width: 6; border-color: #fff">
+            <ContentView row="1" colSpan="2" style="margin-top: 6; margin-bottom: 6; border-color: #fff">
               <map:MapboxView
                   delay="2000"
                   latitude="52.3702160"
@@ -57,7 +57,7 @@
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="2" style="border-right-width: 3; border-color: #fff">
+            <ContentView row="2" style="margin-right: 3; border-color: #fff">
               <map:MapboxView
                   delay="4000"
                   latitude="52.3702160"
@@ -68,7 +68,7 @@
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
             </ContentView>
-            <ContentView row="2" col="1" style="border-left-width: 3; border-color: #fff">
+            <ContentView row="2" col="1" style="margin-left: 3; border-color: #fff">
               <map:MapboxView
                   delay="6000"
                   latitude="52.3702160"

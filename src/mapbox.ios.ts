@@ -102,9 +102,19 @@ export class MapboxView extends MapboxViewBase {
         MGLAccountManager.setAccessToken(settings.accessToken);
         this.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), _getMapStyle(settings.style));
         this.mapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback(() => {
-          this.notify({ eventName: MapboxViewBase.mapReadyEvent, object: this, map: this, ios: this.mapView});
+          this.notify({
+            eventName: MapboxViewBase.mapReadyEvent,
+            object: this,
+            map: this,
+            ios: this.mapView
+          });
           // no permission required, but to align with Android we fire the event anyway
-          this.notify({ eventName: MapboxViewBase.locationPermissionGrantedEvent, object: this, map: this, ios: this.mapView});
+          this.notify({
+            eventName: MapboxViewBase.locationPermissionGrantedEvent,
+            object: this,
+            map: this,
+            ios: this.mapView
+          });
         });
         _setMapboxMapOptions(this.mapView, settings);
         _markers = [];
@@ -114,6 +124,7 @@ export class MapboxView extends MapboxViewBase {
     }
   }
 }
+
 /*************** XML definition END ****************/
 
 export class Mapbox extends MapboxCommon implements MapboxApi {
@@ -587,8 +598,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             bounds,
             options.minZoom,
             options.maxZoom);
-        
-        if (options.accessToken){
+
+        if (options.accessToken) {
           MGLAccountManager.setAccessToken(options.accessToken);
         }
 
@@ -747,7 +758,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-        addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
+  addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
     throw new Error('Method not implemented.');
   }
 }
