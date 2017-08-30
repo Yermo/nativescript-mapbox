@@ -194,8 +194,8 @@ const _showLocation = (theMapView) => {
 const _getClickedMarkerDetails = (clicked) => {
   for (let m in _markers) {
     let cached = _markers[m];
-    if (cached.lat === clicked.getPosition().getLatitude() &&
-        cached.lng === clicked.getPosition().getLongitude() &&
+    if (cached.lat == clicked.getPosition().getLatitude() &&
+        cached.lng == clicked.getPosition().getLongitude() &&
         // tslint:disable-next-line:triple-equals
         cached.title == clicked.getTitle() && // == because of null vs undefined
         // tslint:disable-next-line:triple-equals
