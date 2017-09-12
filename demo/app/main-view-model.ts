@@ -57,6 +57,9 @@ export class HelloWorldModel extends Observable {
     }).then(
         (showResult) => {
           console.log(`Mapbox show done for ${showResult.ios ? "iOS" : "Android"}, native object received: ${showResult.ios ? showResult.ios : showResult.android}`);
+          this.mapbox.setOnMapClickListener((latLng => {
+            console.log(">> latLng clicked: " + JSON.stringify(latLng));
+          }));
         },
         (error: string) => {
           console.log("mapbox show error: " + error);

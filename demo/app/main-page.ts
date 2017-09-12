@@ -22,6 +22,10 @@ function onMapReady(args) {
   const nativeMapView = args.ios ? args.ios : args.android;
   console.log(`Mapbox onMapReady for ${args.ios ? "iOS" : "Android"}, native object received: ${nativeMapView}`);
 
+  map.setOnMapClickListener((latLng => {
+    console.log(">> latLng clicked = " + JSON.stringify(latLng));
+  }));
+
   // .. or use the convenience methods exposed on args.map, for instance:
   map.addMarkers([
     {

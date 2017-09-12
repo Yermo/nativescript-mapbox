@@ -503,14 +503,25 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox;
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
 
         if (!theMap) {
           reject("No map has been loaded");
           return;
         }
 
-        // TODO not implemented for iOS yet (it's rather tricky) -- https://github.com/EddyVerbruggen/nativescript-mapbox/issues/51
+        // adding the tap handler to the map oject so it's not GC'd
+        theMap['mapTapHandler'] = MapTapHandlerImpl.initWithOwnerAndListenerForMap(new WeakRef(this), listener, theMap);
+        const tapGestureRecognizer = UITapGestureRecognizer.alloc().initWithTargetAction(theMap['mapTapHandler'], "tap");
+
+        for (let i = 0; i < theMap.gestureRecognizers.count; i++) {
+          let recognizer: UIGestureRecognizer = theMap.gestureRecognizers.objectAtIndex(i);
+          if (recognizer instanceof UITapGestureRecognizer) {
+            tapGestureRecognizer.requireGestureRecognizerToFail(recognizer);
+          }
+        }
+
+        theMap.addGestureRecognizer(tapGestureRecognizer);
 
         resolve();
       } catch (ex) {
@@ -949,4 +960,32 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
       }
     }
   }
+}
+
+class MapTapHandlerImpl extends NSObject {
+  private _owner: WeakRef<Mapbox>;
+  private _listener: (data: LatLng) => void;
+  private _mapView: MGLMapView;
+
+  public static initWithOwnerAndListenerForMap(owner: WeakRef<Mapbox>, listener: (data: LatLng) => void, mapView: MGLMapView): MapTapHandlerImpl {
+    let handler = <MapTapHandlerImpl>MapTapHandlerImpl.new();
+    handler._owner = owner;
+    handler._listener = listener;
+    handler._mapView = mapView;
+    return handler;
+  }
+
+  public tap(recognizer: UITapGestureRecognizer): void {
+    const tapPoint = recognizer.locationInView(this._mapView);
+
+    const tapCoordinate = this._mapView.convertPointToCoordinateFromView(tapPoint, this._mapView);
+    this._listener({
+      lat: tapCoordinate.latitude,
+      lng: tapCoordinate.longitude
+    });
+  }
+
+  public static ObjCExposedMethods = {
+    "tap": {returns: interop.types.void, params: [interop.types.id]}
+  };
 }
