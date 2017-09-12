@@ -8,7 +8,7 @@
 android {  
   defaultConfig {  
     generatedDensities = []
-    applicationId = "org.nativescript.starter"
+    applicationId = "org.nativescript.mapbox"
   }
   aaptOptions {  
     additionalParameters "--no-version-vectors"  

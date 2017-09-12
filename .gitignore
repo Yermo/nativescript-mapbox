@@ -1,9 +1,11 @@
 .idea
 .vscode
+.DS_Store
 *.js
-*.js.map
 *.log
-*.t.gz
+*.map
+*.tgz
+!src/angular/*.js
 !demo/karma.conf.js
 !demo/app/tests/*.js
 demo/*.d.ts
@@ -13,4 +15,5 @@ src/*.d.ts
 demo/lib
 demo/platforms
 node_modules
-publish/*.tgz
+demo/hooks/
+publish/package/

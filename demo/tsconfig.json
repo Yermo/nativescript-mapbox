@@ -8,8 +8,9 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "lib": [
+            "es6",
             "dom",
-            "es6"
+            "es2015.iterable"
         ],
         "pretty": true,
         "allowUnreachableCode": false,
@@ -20,12 +21,11 @@
         "noImplicitReturns": true,
         "noImplicitUseStrict": false,
         "noFallthroughCasesInSwitch": true,
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "./node_modules/*"
-            ]
-        }
+        "typeRoots": [
+            "./node_modules/@types",
+            "./node_modules"
+        ],
+        "types": []
     },
     "exclude": [
         "node_modules",

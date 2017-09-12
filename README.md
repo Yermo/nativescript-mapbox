@@ -38,10 +38,14 @@ On Android the plugin adds this to the `<application>` node of `app/App_Resource
 
 If you get an error related to `TelemetryService` then please check it's there.
 
-## Demo
+## Usage
+
+### Demo app (XML + TypeScript)
 If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
 It shows you how to draw a map in XML and JS with almost all possible options.
 
+### Demo app (Angular)
+This plugin is part of the [plugin showcase app](https://github.com/EddyVerbruggen/nativescript-pluginshowcase/tree/master/app/mapping) I built using Angular.
 
 ## Declaring a map in the view
 
