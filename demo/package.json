@@ -9,7 +9,7 @@
     }
   },
   "dependencies": {
-    "nativescript-mapbox": "file:///Users/eddyverbruggen/sandboxes/nativescript-mapbox/src",
+    "nativescript-mapbox": "../src",
     "nativescript-theme-core": "^1.0.2",
     "nativescript-unit-test-runner": "^0.3.4",
     "tns-core-modules": "^3.1.1"
@@ -32,6 +32,7 @@
     "nativescript-dev-webpack": "0.7.3",
     "raw-loader": "~0.5.1",
     "resolve-url-loader": "~2.1.0",
+    "tns-platform-declarations": "^3.2.0",
     "typescript": "^2.4.2",
     "webpack": "~3.2.0",
     "webpack-bundle-analyzer": "^2.8.2",
