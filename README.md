@@ -423,6 +423,10 @@ Draw a shape (like a line/route, or star). Just connect the dots like we did as 
 ```js
   // this is a boring triangle drawn near Amsterdam Central Station
   mapbox.addPolygon({
+    id: 1, // optional, can be used to get polygon info
+    fillColor: '#336699', // Set the color of thepolygon (default black)
+    strokeColor: '#ff4801', // Set the stroke color ofthe polygon
+    opacity: 0.7, //Transparency / alpha, ranging 0-1.Default fully opaque (1).
     points: [
       {
         'lat': 52.3832160, // mandatory
