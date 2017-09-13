@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox",
   "typings": "index.d.ts",
@@ -19,21 +19,32 @@
   "scripts": {
     "build": "npm i && tsc",
     "demo.ios": "npm run preparedemo && cd ../demo && tns run ios --emulator",
-    "demo.ios.device": "npm run preparedemo && cd ../demo && tns platform remove ios && tns run ios",
-    "demo.android": "npm run preparedemo && cd ../demo && tns platform remove android && tns run android --justlaunch",
-    "test": "npm run tslint && npm run tslint.demo && cd ../demo && tns build ios && tns build android",
-    "test.ios": "cd ../demo && tns platform remove ios && tns test ios --emulator",
+    "demo.ios.device":
+      "npm run preparedemo && cd ../demo && tns platform remove ios && tns run ios",
+    "demo.android":
+      "npm run preparedemo && cd ../demo && tns platform remove android && tns run android --justlaunch",
+    "test":
+      "npm run tslint && npm run tslint.demo && cd ../demo && tns build ios && tns build android",
+    "test.ios":
+      "cd ../demo && tns platform remove ios && tns test ios --emulator",
     "test.ios.device": "cd ../demo && tns platform remove ios && tns test ios",
-    "test.android": "cd ../demo && tns platform remove android && tns test android --justlaunch",
-    "preparedemo": "npm run build && cd ../demo && tns plugin remove nativescript-mapbox && tns plugin add ../src && tns install",
+    "test.android":
+      "cd ../demo && tns platform remove android && tns test android --justlaunch",
+    "preparedemo":
+      "npm run build && cd ../demo && tns plugin remove nativescript-mapbox && tns plugin add ../src && tns install",
     "setup": "npm run build && cd ../demo && npm i",
-    "setupandinstall": "npm i && cd ../demo && npm i && cd ../src && npm run build && cd ../demo && tns plugin add ../src && cd ../src",
-    "tslint": "tslint --config '../tslint.json' '*.ts' --exclude '**/node_modules/**'",
-    "tslint.demo": "tslint --config '../tslint.json' '../demo/app/*.ts' --exclude '**/node_modules/**'",
+    "setupandinstall":
+      "npm i && cd ../demo && npm i && cd ../src && npm run build && cd ../demo && tns plugin add ../src && cd ../src",
+    "tslint":
+      "tslint --config '../tslint.json' '*.ts' --exclude '**/node_modules/**'",
+    "tslint.demo":
+      "tslint --config '../tslint.json' '../demo/app/*.ts' --exclude '**/node_modules/**'",
     "ci.tslint": "npm run tslint && npm run tslint.demo",
     "prepublishOnly": "npm run build",
-    "development.setup": "npm run setup && npm link && cd ../demo && npm link nativescript-mapbox && cd ../src",
-    "generate.typings.ios": "cd ../demo && TNS_DEBUG_METADATA_PATH=\"$(pwd)/metadata\" tns build ios && TNS_TYPESCRIPT_DECLARATIONS_PATH=\"$(pwd)/typings\" tns build ios && echo 'Now look for your library typings in demo/typings!'"
+    "development.setup":
+      "npm run setup && npm link && cd ../demo && npm link nativescript-mapbox && cd ../src",
+    "generate.typings.ios":
+      "cd ../demo && TNS_DEBUG_METADATA_PATH=\"$(pwd)/metadata\" tns build ios && TNS_TYPESCRIPT_DECLARATIONS_PATH=\"$(pwd)/typings\" tns build ios && echo 'Now look for your library typings in demo/typings!'"
   },
   "repository": {
     "type": "git",
@@ -51,6 +62,45 @@
     "name": "Eddy Verbruggen",
     "email": "eddyverbruggen@gmail.com"
   },
+  "contributors": [
+    {
+      "name": "Brad Martin",
+      "email": "bmartin@nstudio.io",
+      "url": "https://github.com/bradmartin"
+    },
+    {
+      "name": "seros00",
+      "url": "https://github.com/seros00"
+    },
+    {
+      "name": "Antoine Galluet",
+      "url": "https://github.com/Neomac"
+    },
+    {
+      "name": "Zigmas Slusnys",
+      "url": "https://github.com/zslusnys"
+    },
+    {
+      "name": "Equisetum",
+      "url": "https://github.com/Equisetum"
+    },
+    {
+      "name": "Alexander Vakrilov",
+      "url": "https://github.com/vakrilov"
+    },
+    {
+      "name": "Andrew Halls",
+      "url": "https://github.com/ahalls"
+    },
+    {
+      "name": "Doğa Budak",
+      "url": "https://github.com/dogabudak"
+    },
+    {
+      "name": "Matías",
+      "url": "https://github.com/blinkythebear"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/eddyverbruggen/nativescript-mapbox/issues"
