@@ -19,6 +19,16 @@ export interface LatLng {
   lng: number;
 }
 
+export interface Polygon {
+  id: number;
+  polygon: any;
+}
+
+export interface Polyline {
+  id: number;
+  polyline: any;
+}
+
 export interface AddPolygonOptions {
   points: LatLng[];
   fillColor?: string | Color;
@@ -285,7 +295,9 @@ export interface MapboxApi {
   animateCamera(options: AnimateCameraOptions, nativeMap?: any): Promise<any>;
 
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any>;
-
+  setOnPolygonClickListener(listener: (data: Polygon) => void, nativeMap?): Promise<any>;
+  setOnPolylineClickListener(listener: (data: Polyline) => void, nativeMap?): Promise<any>;
+  
   requestFineLocationPermission(): Promise<any>;
   hasFineLocationPermission(): Promise<boolean>;
 
@@ -360,6 +372,8 @@ export interface MapboxViewApi {
   addMarkers(markers: MapboxMarker[]): Promise<any>;
   removeMarkers(options?: any): Promise<any>;
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
+  setOnPolygonClickListener(listener: (data: Polygon) => void): Promise<any>;
+  setOnPolylineClickListener(listener: (data: Polyline) => void): Promise<any>;
   getViewport(): Promise<Viewport>;
   setViewport(options: SetViewportOptions): Promise<any>;
   setMapStyle(style: string | MapStyle): Promise<any>;
@@ -391,6 +405,14 @@ export abstract class MapboxViewCommonBase extends View implements MapboxViewApi
 
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any> {
     return this.mapbox.setOnMapClickListener(listener, this.getNativeMapView());
+  }
+
+  setOnPolygonClickListener(listener: (data: Polygon) => void): Promise<any> {
+    return this.mapbox.setOnPolygonClickListener(listener, this.getNativeMapView());
+  }
+
+  setOnPolylineClickListener(listener: (data: Polyline) => void): Promise<any> {
+    return this.mapbox.setOnPolylineClickListener(listener, this.getNativeMapView());
   }
 
   getViewport(): Promise<Viewport> {
