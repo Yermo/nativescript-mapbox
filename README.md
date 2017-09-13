@@ -478,12 +478,30 @@ or remove specific polyline id's (which you specified previously).
   mapbox.removePolylines([1, 2]);
 ```
 
-### setOnMapClickListener (Android)
+### setOnMapClickListener
 Add a listener to retrieve lat and lng when the user taps the map (not a marker).
 
 ```js
   mapbox.setOnMapClickListener(function(point) {
     console.log("Map clicked at latitude: " + point.lat + ", longitude: " + point.lng);
+  });
+```
+
+### setOnPolygonClickListener (Android)
+Add a listener to be notified when a user taps a polygon.
+
+```js
+  mapbox.setOnPolygonClickListener(function(polygon) {
+    console.log("Polygon: "+ polygon.id + " tapped.");
+  });
+```
+
+### setOnPolylineClickListener (Android)
+Add a listener to be notified when a user taps a polyline.
+
+```js
+  mapbox.setOnPolylineClickListener(function(polyline) {
+    console.log("Polyline: "+ polyline.id + " tapped.");
   });
 ```
 
