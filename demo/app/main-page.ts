@@ -1,5 +1,6 @@
 import * as observable from "tns-core-modules/data/observable";
 import * as pages from "tns-core-modules/ui/page";
+import { isAndroid } from "tns-core-modules/platform";
 import { Color } from "tns-core-modules/color";
 import { HelloWorldModel } from "./main-view-model";
 import { MapboxViewApi, MapStyle, LatLng } from "nativescript-mapbox";
@@ -25,6 +26,16 @@ function onMapReady(args) {
   map.setOnMapClickListener((latLng => {
     console.log(">> latLng clicked = " + JSON.stringify(latLng));
   }));
+
+  if (isAndroid) {
+    map.setOnPolygonClickListener((polygon => {
+      console.log(">> polygon clicked = " + JSON.stringify(polygon));
+    }));
+
+    map.setOnPolylineClickListener((polyline => {
+      console.log(">> polyline clicked = " + JSON.stringify(polyline));
+    }));
+  }  
 
   // .. or use the convenience methods exposed on args.map, for instance:
   map.addMarkers([
