@@ -8,7 +8,7 @@ import * as http from "tns-core-modules/http";
 import {
   AddGeoJsonClusteredOptions,
   MapboxMarker, AddPolygonOptions, AddPolylineOptions, AnimateCameraOptions, DeleteOfflineRegionOptions,
-  DownloadOfflineRegionOptions, LatLng,
+  DownloadOfflineRegionOptions, LatLng, Polygon, Polyline,
   MapboxApi,
   MapboxCommon,
   MapboxViewBase,
@@ -834,6 +834,65 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  setOnPolygonClickListener(listener: (data: Polygon) => void, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        theMap.mapboxMap.setOnPolygonClickListener(
+          new com.mapbox.mapboxsdk.maps.MapboxMap.OnPolygonClickListener({
+            onPolygonClick: (polygon) => {
+              listener({
+                id: polygon.getId(),
+                polygon
+              });
+            }
+          })
+        );
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setOnPolygonClickListener: " + ex);
+        reject(ex);
+      }
+    })
+  }
+
+  setOnPolylineClickListener(listener: (data: Polyline) => void, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        theMap.mapboxMap.setOnPolylineClickListener(
+          new com.mapbox.mapboxsdk.maps.MapboxMap.OnPolylineClickListener({
+            onPolylineClick: (polyline) => {
+              listener({
+                id: polyline.getId(),
+                polyline
+              });
+            }
+          })
+        );
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setOnPolylineClickListener: " + ex);
+        reject(ex);
+      }
+    })
+  }
+
 
   getViewport(nativeMap?): Promise<Viewport> {
     return new Promise((resolve, reject) => {
