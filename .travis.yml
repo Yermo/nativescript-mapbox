@@ -42,6 +42,7 @@ matrix:
       language: node_js 
       node_js: "6"
       jdk: oraclejdk8
+      before_install: gem install cocoapods
       script: cd ../demo && npm run build-ios-bundle
     - language: android
       os: linux
@@ -67,6 +68,7 @@ matrix:
       language: node_js 
       node_js: "6"
       jdk: oraclejdk8
-      script: 
+      before_install: gem install cocoapods
+      script:
         - cd ../demo && tns build ios
     
