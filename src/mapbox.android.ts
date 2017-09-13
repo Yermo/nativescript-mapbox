@@ -25,6 +25,7 @@ let _mapbox: any = {};
 let _accessToken: string;
 let _markers = [];
 let _polylines = [];
+let _polygons = [];
 let _markerIconDownloadCache = [];
 let _locationServices = null;
 
@@ -68,6 +69,7 @@ export class MapboxView extends MapboxViewBase {
 
                 // note that this is not multi-map friendly, but I don't think that's used in real apps anyway
                 _polylines = [];
+                _polygons = [];
                 _markers = [];
 
                 if (settings.showUserLocation) {
@@ -437,6 +439,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                   _mapbox.mapView.mapboxMap = mbMap;
 
                   _polylines = [];
+                  _polygons = [];
                   _markers = [];
                   _addMarkers(settings.markers, _mapbox.mapView);
 
@@ -701,13 +704,18 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
         const polygonOptions = new com.mapbox.mapboxsdk.annotations.PolygonOptions();
+        polygonOptions.fillColor(Mapbox.getAndroidColor(options.fillColor));
+        polygonOptions.strokeColor(Mapbox.getAndroidColor(options.strokeColor));
+        polygonOptions.alpha(options.opacity === undefined ? 1 : options.opacity); 
         for (let p in points) {
           let point = points[p];
           polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
         }
-        polygonOptions.fillColor(Mapbox.getAndroidColor(options.fillColor));
-        polygonOptions.strokeColor(Mapbox.getAndroidColor(options.strokeColor));
-        theMap.mapboxMap.addPolygon(polygonOptions);
+      
+        _polygons.push({
+          id: options.id,
+          android: theMap.mapboxMap.addPolygon(polygonOptions)
+        });  
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.addPolygon: " + ex);

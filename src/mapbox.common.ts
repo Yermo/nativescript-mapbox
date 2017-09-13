@@ -19,10 +19,25 @@ export interface LatLng {
   lng: number;
 }
 
-export interface AddPolygonOptions {
+export interface AddPolylineOptions {
+  /**
+   * Set this in case you want to later pass it to 'removePolylines'.
+   */
+  id?: any;
+  /**
+   * Width of the line, default 5.
+   */
+  width?: number;
+  /**
+   * Color of the line, default black.
+   */
+  color?: string | Color;
+  /**
+   * Transparency / alpha, ranging from 0 to 1.
+   * Default fully opaque (1).
+   */
+  opacity?: number;
   points: LatLng[];
-  fillColor?: string | Color;
-  strokeColor?: string | Color;
 }
 
 export interface SetCenterOptions extends LatLng {
