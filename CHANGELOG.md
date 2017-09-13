@@ -1,6 +1,15 @@
 # Change Log
 
-## [3.1.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.0) (2017-08-24)
+## [3.1.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.2) (2017-09-12)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.1.1...3.1.2)
+
+**Implemented enhancements:**
+
+- setOnMapClickListener iOS [\#153](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/153)
+- Align with the NativeScript plugin seed [\#163](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/163)
+
+
+## [3.1.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.1) (2017-08-24)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.1.0...3.1.1)
 
 **Fixed bugs:**
