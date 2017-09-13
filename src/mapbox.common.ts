@@ -19,6 +19,16 @@ export interface LatLng {
   lng: number;
 }
 
+export interface Polygon {
+  id: number;
+  polygon: any;
+}
+
+export interface Polyline {
+  id: number;
+  polyline: any;
+}
+
 export interface AddPolygonOptions {
   points: LatLng[];
   fillColor?: string | Color;
