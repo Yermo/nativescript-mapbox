@@ -345,6 +345,15 @@ const _removeMarkers = (ids, nativeMap?) => {
       }
     }
   }
+  // remove markers from cache
+  if(ids){
+      _markers = _markers.filter((marker) => {
+          return ids.indexOf(marker.id) < 0;
+      });
+  }
+  else{
+      _markers = [];
+  }
 };
 
 const _getRegionName = (offlineRegion) => {
