@@ -1,5 +1,14 @@
 # Change Log
 
+## [3.1.3](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.3) (2017-11-02)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.1.2...3.1.3)
+
+**Fixed bugs:**
+
+- Marker onTap - after navigating back to map [\#125](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/125)
+- Markers not cleaned from cache on android [\#182](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/182)
+
+
 ## [3.1.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.2) (2017-09-12)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.1.1...3.1.2)
 
