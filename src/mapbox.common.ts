@@ -285,6 +285,11 @@ export interface MapboxApi {
   animateCamera(options: AnimateCameraOptions, nativeMap?: any): Promise<any>;
 
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any>;
+  setOnScrollListener(listener: () => void, nativeMap?: any): Promise<any>;
+  setOnFlingListener(listener: () => void, nativeMap?: any): Promise<any>;
+  setOnCameraMoveListener(listener: () => void, nativeMap?: any): Promise<any>;
+  setOnCameraMoveCancelListener(listener: () => void, nativeMap?: any): Promise<any>;
+  setOnCameraIdleListener(listener: () => void, nativeMap?: any): Promise<any>;
 
   requestFineLocationPermission(): Promise<any>;
   hasFineLocationPermission(): Promise<boolean>;
@@ -360,6 +365,11 @@ export interface MapboxViewApi {
   addMarkers(markers: MapboxMarker[]): Promise<any>;
   removeMarkers(options?: any): Promise<any>;
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
+  setOnScrollListener(listener: () => void): Promise<any>;
+  setOnFlingListener(listener: () => void): Promise<any>;
+  setOnCameraMoveListener(listener: () => void): Promise<any>;
+  setOnCameraMoveCancelListener(listener: () => void): Promise<any>;
+  setOnCameraIdleListener(listener: () => void): Promise<any>;
   getViewport(): Promise<Viewport>;
   setViewport(options: SetViewportOptions): Promise<any>;
   setMapStyle(style: string | MapStyle): Promise<any>;
@@ -391,6 +401,26 @@ export abstract class MapboxViewCommonBase extends View implements MapboxViewApi
 
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any> {
     return this.mapbox.setOnMapClickListener(listener, this.getNativeMapView());
+  }
+
+  setOnScrollListener(listener: () => void, nativeMap?: any): Promise<any>{
+      return this.mapbox.setOnScrollListener(listener, this.getNativeMapView());
+  }
+
+  setOnFlingListener(listener: () => void, nativeMap?: any): Promise<any>{
+      return this.mapbox.setOnFlingListener(listener, this.getNativeMapView());
+  }
+
+  setOnCameraMoveListener(listener: () => void, nativeMap?: any): Promise<any>{
+      return this.mapbox.setOnCameraMoveListener(listener, this.getNativeMapView());
+  }
+
+  setOnCameraMoveCancelListener(listener: () => void, nativeMap?: any): Promise<any>{
+      return this.mapbox.setOnCameraMoveCancelListener(listener, this.getNativeMapView());
+  }
+
+  setOnCameraIdleListener(listener: () => void, nativeMap?: any): Promise<any>{
+      return this.mapbox.setOnCameraIdleListener(listener, this.getNativeMapView());
   }
 
   getViewport(): Promise<Viewport> {
