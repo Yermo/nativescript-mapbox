@@ -254,7 +254,7 @@ export interface AnimateCameraOptions {
 }
 
 export interface MapboxCommonApi {
-  requestFineLocationPermission(): Promise<boolean>;
+  requestFineLocationPermission(): Promise<any>;
   hasFineLocationPermission(): Promise<boolean>;
 }
 
@@ -346,14 +346,14 @@ export abstract class MapboxCommon implements MapboxCommonApi {
     return result;
   }
 
-  requestFineLocationPermission(): Promise<boolean> {
-    return new Promise((resolve) => {
-      resolve(true);
+  requestFineLocationPermission(): Promise<any> {
+    return new Promise(resolve => {
+      resolve();
     });
   }
 
   hasFineLocationPermission(): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       resolve(true);
     });
   }

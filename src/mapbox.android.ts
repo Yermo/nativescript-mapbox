@@ -28,7 +28,7 @@ let _polylines = [];
 let _markerIconDownloadCache = [];
 let _locationEngine = null;
 
-const ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111; // irrelevant really, since we simply invoke onPermissionGranted
+const ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
 
 
 /*************** XML definition START ****************/
@@ -176,6 +176,7 @@ const _fineLocationPermissionGranted = () => {
     hasPermission = android.content.pm.PackageManager.PERMISSION_GRANTED ===
         android.support.v4.content.ContextCompat.checkSelfPermission(application.android.foregroundActivity, android.Manifest.permission.ACCESS_FINE_LOCATION);
   }
+  console.log("******* _fineLocationPermissionGranted: " + hasPermission);
   return hasPermission;
 };
 
@@ -381,7 +382,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  requestFineLocationPermission(): Promise<boolean> {
+  requestFineLocationPermission(): Promise<any> {
     return new Promise((resolve, reject) => {
       if (_fineLocationPermissionGranted()) {
         resolve();
@@ -390,12 +391,16 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       // grab the permission dialog result
       application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, (args: any) => {
+        if (args.requestCode !== ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
+          return;
+        }
         for (let i = 0; i < args.permissions.length; i++) {
           if (args.grantResults[i] === android.content.pm.PackageManager.PERMISSION_DENIED) {
             reject("Permission denied");
             return;
           }
         }
+        console.log("****** requestFineLocationPermission @ " + new Date().getTime());
         resolve();
       });
 
@@ -448,7 +453,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                   _addMarkers(settings.markers, _mapbox.mapView);
 
                   if (settings.showUserLocation) {
-                    this.requestFineLocationPermission().then((granted: boolean) => {
+                    this.requestFineLocationPermission().then(() => {
                       _showLocation(_mapbox.mapView, mbMap);
                     });
                   }

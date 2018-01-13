@@ -23,7 +23,6 @@
                   zoomLevel="3"
                   mapStyle="light"
                   hideAttribution="true"
-                  showUserLocation="true"
                   hideCompass="false"
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
               </map:MapboxView>
