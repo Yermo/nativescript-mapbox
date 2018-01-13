@@ -130,11 +130,6 @@ const _getMapStyle = (input: any) => {
 };
 
 const _getMapboxMapOptions = (settings) => {
-  const resourcename = "mapbox_mylocation_icon_default";
-  const res = utils.ad.getApplicationContext().getResources();
-  const identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
-  const iconDrawable = android.support.v4.content.ContextCompat.getDrawable(application.android.context, identifier);
-
   const mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
       .styleUrl(_getMapStyle(settings.style))
       .compassEnabled(!settings.hideCompass)
@@ -143,12 +138,6 @@ const _getMapboxMapOptions = (settings) => {
       .tiltGesturesEnabled(!settings.disableTilt)
       .zoomGesturesEnabled(!settings.disableZoom)
       .attributionEnabled(!settings.hideAttribution)
-      .myLocationForegroundDrawable(iconDrawable)
-      // .myLocationBackgroundDrawable(iconDrawable)
-      .myLocationForegroundTintColor(android.graphics.Color.rgb(135, 206, 250)) // "lightskyblue"
-      // .myLocationBackgroundTintColor(android.graphics.Color.YELLOW)
-      .myLocationAccuracyTint(android.graphics.Color.rgb(135, 206, 250)) // "lightskyblue"
-      .myLocationAccuracyAlpha(80)
       .logoEnabled(!settings.hideLogo);
 
   // zoomlevel is not applied unless center is set
@@ -176,7 +165,6 @@ const _fineLocationPermissionGranted = () => {
     hasPermission = android.content.pm.PackageManager.PERMISSION_GRANTED ===
         android.support.v4.content.ContextCompat.checkSelfPermission(application.android.foregroundActivity, android.Manifest.permission.ACCESS_FINE_LOCATION);
   }
-  console.log("******* _fineLocationPermissionGranted: " + hasPermission);
   return hasPermission;
 };
 
@@ -400,7 +388,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             return;
           }
         }
-        console.log("****** requestFineLocationPermission @ " + new Date().getTime());
         resolve();
       });
 
