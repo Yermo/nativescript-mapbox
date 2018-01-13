@@ -842,6 +842,135 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  setOnScrollListener(listener: () => void, nativeMap?): Promise<any> {
+      return new Promise((resolve, reject) => {
+          try {
+              const theMap = nativeMap || _mapbox;
+
+              if (!theMap) {
+                  reject("No map has been loaded");
+                  return;
+              }
+
+              theMap.mapboxMap.setOnScrollListener(
+                  new com.mapbox.mapboxsdk.maps.MapboxMap.OnScrollListener({
+                      onScroll: () => {
+                          listener();
+                      }
+                  })
+              );
+
+              resolve();
+          } catch (ex) {
+              console.log("Error in mapbox.setOnScrollListener: " + ex);
+              reject(ex);
+          }
+      });
+  }
+
+  setOnFlingListener(listener: () => void, nativeMap?): Promise<any> {
+      return new Promise((resolve, reject) => {
+          try {
+              const theMap = nativeMap || _mapbox;
+
+              if (!theMap) {
+                  reject("No map has been loaded");
+                  return;
+              }
+
+              theMap.mapboxMap.setOnFlingListener(
+                  new com.mapbox.mapboxsdk.maps.MapboxMap.OnFlingListener({
+                      onFling: () => {
+                          listener();
+                      }
+                  })
+              );
+
+              resolve();
+          } catch (ex) {
+              console.log("Error in mapbox.setOnFlingListener: " + ex);
+              reject(ex);
+          }
+      });
+  }
+
+  setOnCameraMoveListener(listener: () => void, nativeMap?): Promise<any> {
+      return new Promise((resolve, reject) => {
+          try {
+              const theMap = nativeMap || _mapbox;
+
+              if (!theMap) {
+                  reject("No map has been loaded");
+                  return;
+              }
+
+              theMap.mapboxMap.setOnCameraMoveListener(
+                  new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveListener({
+                      onCameraMove: () => {
+                          listener();
+                      }
+                  })
+              );
+
+              resolve();
+          } catch (ex) {
+              console.log("Error in mapbox.setOnCameraMoveListener: " + ex);
+              reject(ex);
+          }
+      });
+  }
+  setOnCameraMoveCancelListener(listener: () => void, nativeMap?): Promise<any> {
+      return new Promise((resolve, reject) => {
+          try {
+              const theMap = nativeMap || _mapbox;
+
+              if (!theMap) {
+                  reject("No map has been loaded");
+                  return;
+              }
+
+              theMap.mapboxMap.setOnCameraMoveCancelListener(
+                  new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveCanceledListener({
+                      onCameraMoveCanceled: () => {
+                          listener();
+                      }
+                  })
+              );
+
+              resolve();
+          } catch (ex) {
+              console.log("Error in mapbox.setOnCameraMoveCancelListener: " + ex);
+              reject(ex);
+          }
+      });
+  }
+
+  setOnCameraIdleListener(listener: () => void, nativeMap?): Promise<any> {
+      return new Promise((resolve, reject) => {
+          try {
+              const theMap = nativeMap || _mapbox;
+
+              if (!theMap) {
+                  reject("No map has been loaded");
+                  return;
+              }
+
+              theMap.mapboxMap.setOnCameraIdleListener(
+                  new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener({
+                      onCameraIdle: () => {
+                          listener();
+                      }
+                  })
+              );
+
+              resolve();
+          } catch (ex) {
+              console.log("Error in mapbox.setOnCameraIdleListener: " + ex);
+              reject(ex);
+          }
+      });
+  }
+
   getViewport(nativeMap?): Promise<Viewport> {
     return new Promise((resolve, reject) => {
       try {
