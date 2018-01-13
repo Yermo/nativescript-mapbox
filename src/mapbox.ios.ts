@@ -531,6 +531,26 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  setOnScrollListener(listener: () => void, nativeMap?: any): Promise<any> {
+    return undefined;
+  }
+
+  setOnFlingListener(listener: () => void, nativeMap?: any): Promise<any> {
+    return undefined;
+  }
+
+  setOnCameraMoveListener(listener: () => void, nativeMap?: any): Promise<any> {
+    return undefined;
+  }
+
+  setOnCameraMoveCancelListener(listener: () => void, nativeMap?: any): Promise<any> {
+    return undefined;
+  }
+
+  setOnCameraIdleListener(listener: () => void, nativeMap?: any): Promise<any> {
+    return undefined;
+  }
+
   getViewport(nativeMap?): Promise<Viewport> {
     return new Promise((resolve, reject) => {
       try {
