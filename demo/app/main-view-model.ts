@@ -22,7 +22,7 @@ export class HelloWorldModel extends Observable {
       margins: {
         left: 18,
         right: 18,
-        top: isIOS ? 360 : 424,
+        top: isIOS ? 384 : 424,
         bottom: isIOS ? 50 : 8
       },
       center: {

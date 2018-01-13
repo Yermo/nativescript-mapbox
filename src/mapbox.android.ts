@@ -26,7 +26,7 @@ let _accessToken: string;
 let _markers = [];
 let _polylines = [];
 let _markerIconDownloadCache = [];
-let _locationServices = null;
+let _locationEngine = null;
 
 const ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111; // irrelevant really, since we simply invoke onPermissionGranted
 
@@ -63,7 +63,7 @@ export class MapboxView extends MapboxViewBase {
 
         this.mapView.getMapAsync(
             new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
-              onMapReady: (mbMap) => {
+              onMapReady: mbMap => {
                 this.mapView.mapboxMap = mbMap;
 
                 // note that this is not multi-map friendly, but I don't think that's used in real apps anyway
@@ -73,7 +73,7 @@ export class MapboxView extends MapboxViewBase {
                 if (settings.showUserLocation) {
                   this.mapbox.requestFineLocationPermission().then(() => {
                     setTimeout(() => {
-                      _showLocation(this.mapView);
+                      _showLocation(this.mapView, mbMap);
                     }, 1000);
                     this.notify({
                       eventName: MapboxViewBase.locationPermissionGrantedEvent,
@@ -179,16 +179,15 @@ const _fineLocationPermissionGranted = () => {
   return hasPermission;
 };
 
-// TODO deprecated in 5.2.0, see https://github.com/mapbox/mapbox-gl-native/issues/9775#issuecomment-322695996
-const _showLocation = (theMapView) => {
-  _locationServices = new com.mapbox.mapboxsdk.location.LocationSource(application.android.context);
-  theMapView.mapboxMap.setMyLocationEnabled(true);
-  // TODO nice candidate for a property the user can pass in
-  // theMapView.mapboxMap.getTrackingSettings().setMyLocationTrackingMode(com.mapbox.mapboxsdk.constants.MyLocationTracking.TRACKING_FOLLOW);
-  theMapView.mapboxMap.getTrackingSettings().setMyBearingTrackingMode(com.mapbox.mapboxsdk.constants.MyBearingTracking.COMPASS);
-  theMapView.mapboxMap.getTrackingSettings().setLocationChangeAnimationEnabled(true);
-  _locationServices.activate();
-  _locationServices.requestLocationUpdates();
+const _showLocation = (theMapView, mapboxMap) => {
+  if (!_locationEngine) {
+    _locationEngine = new com.mapbox.services.android.location.LostLocationEngine(application.android.context);
+    _locationEngine.setPriority(com.mapbox.services.android.telemetry.location.LocationEnginePriority.HIGH_ACCURACY);
+    _locationEngine.activate();
+  }
+
+  const locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap, _locationEngine);
+  locationLayerPlugin.setLocationLayerEnabled(com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerMode.TRACKING);
 };
 
 const _getClickedMarkerDetails = (clicked) => {
@@ -440,7 +439,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
           _mapbox.mapView.getMapAsync(
               new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
-                onMapReady: (mbMap) => {
+                onMapReady: mbMap => {
                   _mapbox.mapboxMap = mbMap;
                   _mapbox.mapView.mapboxMap = mbMap;
 
@@ -450,7 +449,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
                   if (settings.showUserLocation) {
                     this.requestFineLocationPermission().then((granted: boolean) => {
-                      _showLocation(_mapbox.mapView);
+                      _showLocation(_mapbox.mapView, mbMap);
                     });
                   }
                   resolve({
