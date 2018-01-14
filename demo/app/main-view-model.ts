@@ -146,6 +146,7 @@ export class HelloWorldModel extends Observable {
         title: 'One-line title here', // no popup unless set
         subtitle: 'With a res://icon-40 image',
         icon: isIOS ? 'res://icon-40' : 'res://icon',
+        selected: false,
         onTap: onTap,
         onCalloutTap: onCalloutTap
       },
@@ -164,6 +165,7 @@ export class HelloWorldModel extends Observable {
         title: 'One-line title here 3', // no popup unless set
         subtitle: 'And a one-liner here as well.',
         iconPath: 'res/markers/home_marker.png',
+        selected: true,
         onTap: onTap,
         onCalloutTap: onCalloutTap
       },
