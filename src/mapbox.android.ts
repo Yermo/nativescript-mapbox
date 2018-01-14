@@ -235,7 +235,7 @@ const _downloadMarkerImages = (markers) => {
   });
 };
 
-const _addMarkers = (markers, nativeMap?) => {
+const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
   if (!markers) {
     console.log("No markers passed");
     return;
@@ -276,7 +276,7 @@ const _addMarkers = (markers, nativeMap?) => {
   const iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
 
   // if any markers need to be downloaded from the web they need to be available synchronously, so fetch them first before looping
-  _downloadMarkerImages(markers).then((updatedMarkers) => {
+  _downloadMarkerImages(markers).then(updatedMarkers => {
     for (let m in updatedMarkers) {
       let marker: any = updatedMarkers[m];
       _markers.push(marker);
@@ -315,6 +315,10 @@ const _addMarkers = (markers, nativeMap?) => {
         }
       }
       marker.android = theMap.mapboxMap.addMarker(markerOptions);
+
+      if (marker.selected) {
+        theMap.mapboxMap.selectMarker(marker.android);
+      }
     }
   });
 };
