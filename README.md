@@ -1,4 +1,8 @@
-# NativeScript Mapbox 🗺
+<a href="https://www.mapbox.com">
+  <img src="/screenshots/mapbox_logo.png" width="400"/>
+</a>
+
+# NativeScript Mapbox plugin
 
 [![Build Status][build-status]][build-url]
 [![NPM version][npm-image]][npm-url]
