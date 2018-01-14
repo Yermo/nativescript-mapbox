@@ -154,6 +154,7 @@ function onMapReady(args) {
       lng: 4.8891680,
       title: 'One-line title here',
       subtitle: 'Really really nice location',
+      selected: true, // makes the callout show immediately when the marker is added (note: only 1 marker can be selected at a time)
       onCalloutTap: function(){console.log("'Nice location' marker callout tapped");}
     }]
   );
@@ -228,6 +229,7 @@ Check out the usage details on the functions below.
         icon: 'res://cool_marker', // use either this preferred way (to grab a density-independent marker from app resources), or:
         // icon: 'http(s)://my-remote-image', // an image from the interwebs (see the note at the bottom of this readme), or:
         iconPath: 'res/markers/green_pin_marker.png', // anywhere in your app folder
+        selected: true, // makes the callout show immediately when the marker is added (note: only 1 marker can be selected at a time)
         onTap: function(marker) { console.log("This marker was tapped"); },
         onCalloutTap: function(marker) { console.log("The callout of this marker was tapped"); }
       }
@@ -290,6 +292,7 @@ You can update the map style after you've loaded it. How neat is that!?
       // icon: 'res://cool_marker', // preferred way, otherwise use:
       icon: 'http(s)://website/coolimage.png', // from the internet (see the note at the bottom of this readme), or:
       iconPath: 'res/markers/home_marker.png',
+      selected: true, // makes the callout show immediately when the marker is added (note: only 1 marker can be selected at a time)
       onTap: onTap,
       onCalloutTap: onCalloutTap
     },

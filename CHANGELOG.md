@@ -11,6 +11,7 @@
 **Implemented enhancements:**
 
 - New Listeners [\#183](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/183)
+- Calling selectAnnotation() from native map view throws "TypeError: nv.selectAnnotation is not a function" [\#186](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/186) 
 - Bump Mapbox SDK versions [\#193](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/193)
 
 
