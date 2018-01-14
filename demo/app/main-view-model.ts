@@ -66,6 +66,10 @@ export class HelloWorldModel extends Observable {
             // note that only iOS returns the point
             console.log(`>> Map scrolled: ${JSON.stringify(point)}`);
           });
+
+          this.mapbox.setOnFlingListener(() => {
+            console.log(`>> Map flinged"}`);
+          }).catch(err => console.log(err));
         },
         (error: string) => {
           console.log("mapbox show error: " + error);
