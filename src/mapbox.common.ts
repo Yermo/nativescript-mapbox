@@ -76,6 +76,12 @@ export interface MapboxMarker extends LatLng {
    * A callback function to invoke when the callout (popup) of this marker is tapped.
    */
   onCalloutTap?: Function;
+  /**
+   * Set to true to select the marker when rendered - effectively showing any configured callout.
+   * Note that only 1 callout will be shown at any time on a Mapbox map.
+   * Default false.
+   */
+  selected?: boolean;
 }
 
 export interface SetZoomLevelOptions {
