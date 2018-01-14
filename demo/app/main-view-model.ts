@@ -57,11 +57,14 @@ export class HelloWorldModel extends Observable {
     }).then(
         (showResult) => {
           console.log(`Mapbox show done for ${showResult.ios ? "iOS" : "Android"}, native object received: ${showResult.ios ? showResult.ios : showResult.android}`);
-          this.mapbox.setOnMapClickListener((latLng => {
-            console.log(">> map clicked: " + JSON.stringify(latLng));
-          }));
-          this.mapbox.setOnScrollListener(() => {
-            console.log(">> map scrolled");
+
+          this.mapbox.setOnMapClickListener(point => {
+            console.log(`>> Map clicked: ${JSON.stringify(point)}`);
+          });
+
+          this.mapbox.setOnScrollListener((point?: LatLng) => {
+            // note that only iOS returns the point
+            console.log(`>> Map scrolled: ${JSON.stringify(point)}`);
           });
         },
         (error: string) => {

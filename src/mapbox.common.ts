@@ -291,7 +291,7 @@ export interface MapboxApi {
   animateCamera(options: AnimateCameraOptions, nativeMap?: any): Promise<any>;
 
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any>;
-  setOnScrollListener(listener: () => void, nativeMap?: any): Promise<any>;
+  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<any>;
   setOnFlingListener(listener: () => void, nativeMap?: any): Promise<any>;
   setOnCameraMoveListener(listener: () => void, nativeMap?: any): Promise<any>;
   setOnCameraMoveCancelListener(listener: () => void, nativeMap?: any): Promise<any>;
@@ -371,7 +371,7 @@ export interface MapboxViewApi {
   addMarkers(markers: MapboxMarker[]): Promise<any>;
   removeMarkers(options?: any): Promise<any>;
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
-  setOnScrollListener(listener: () => void): Promise<any>;
+  setOnScrollListener(listener: (data?: LatLng) => void): Promise<any>;
   setOnFlingListener(listener: () => void): Promise<any>;
   setOnCameraMoveListener(listener: () => void): Promise<any>;
   setOnCameraMoveCancelListener(listener: () => void): Promise<any>;
@@ -409,7 +409,7 @@ export abstract class MapboxViewCommonBase extends View implements MapboxViewApi
     return this.mapbox.setOnMapClickListener(listener, this.getNativeMapView());
   }
 
-  setOnScrollListener(listener: () => void, nativeMap?: any): Promise<any>{
+  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<any>{
       return this.mapbox.setOnScrollListener(listener, this.getNativeMapView());
   }
 

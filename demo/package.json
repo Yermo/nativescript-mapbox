@@ -1,15 +1,15 @@
 {
   "nativescript": {
     "id": "org.nativescript.mapbox",
-    "tns-ios": {
+    "tns-android": {
       "version": "3.4.0"
     },
-    "tns-android": {
+    "tns-ios": {
       "version": "3.4.0"
     }
   },
   "dependencies": {
-    "nativescript-mapbox": "../src",
+    "nativescript-mapbox": "file:///Users/eddyverbruggen/sandboxes/nativescript-mapbox/src",
     "nativescript-theme-core": "^1.0.2",
     "nativescript-unit-test-runner": "^0.3.4",
     "tns-core-modules": "^3.1.1"

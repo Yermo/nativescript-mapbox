@@ -531,8 +531,34 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  setOnScrollListener(listener: () => void, nativeMap?: any): Promise<any> {
-    return undefined;
+  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        // adding the pan handler to the map oject so it's not GC'd
+        theMap['mapPanHandler'] = MapPanHandlerImpl.initWithOwnerAndListenerForMap(new WeakRef(this), listener, theMap);
+
+        // there's already a pan recognizer, so find it and attach a target action
+        for (let i = 0; i < theMap.gestureRecognizers.count; i++) {
+          let recognizer: UIGestureRecognizer = theMap.gestureRecognizers.objectAtIndex(i);
+          if (recognizer instanceof UIPanGestureRecognizer) {
+            recognizer.addTargetAction(theMap['mapPanHandler'], "pan");
+            break;
+          }
+        }
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setOnScrollListener: " + ex);
+        reject(ex);
+      }
+    });
   }
 
   setOnFlingListener(listener: () => void, nativeMap?: any): Promise<any> {
@@ -708,7 +734,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         for (let i = 0; i < packs.count; i++) {
           let pack: MGLOfflinePack = packs.objectAtIndex(i);
           let region: MGLTilePyramidOfflineRegion = <MGLTilePyramidOfflineRegion>pack.region;
-          let style = region.styleURL;
           let userInfo = NSKeyedUnarchiver.unarchiveObjectWithData(pack.context);
           regions.push({
             name: userInfo.objectForKey("name"),
@@ -957,6 +982,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
 
   // fired when a marker is tapped
   mapViewDidSelectAnnotation(mapView: MGLMapView, annotation: MGLAnnotation): void {
+    // console.log(">>>>> mapViewDidSelectAnnotation " + annotation.class() + " @ " + new Date().getTime());
     let cachedMarker = this.getTappedMarkerDetails(annotation);
     if (cachedMarker && cachedMarker.onTap) {
       cachedMarker.onTap(cachedMarker);
@@ -1014,5 +1040,32 @@ class MapTapHandlerImpl extends NSObject {
 
   public static ObjCExposedMethods = {
     "tap": {returns: interop.types.void, params: [interop.types.id]}
+  };
+}
+
+class MapPanHandlerImpl extends NSObject {
+  private _owner: WeakRef<Mapbox>;
+  private _listener: (data?: LatLng) => void;
+  private _mapView: MGLMapView;
+
+  public static initWithOwnerAndListenerForMap(owner: WeakRef<Mapbox>, listener: (data?: LatLng) => void, mapView: MGLMapView): MapPanHandlerImpl {
+    let handler = <MapPanHandlerImpl>MapPanHandlerImpl.new();
+    handler._owner = owner;
+    handler._listener = listener;
+    handler._mapView = mapView;
+    return handler;
+  }
+
+  public pan(recognizer: UIPanGestureRecognizer): void {
+    const panPoint = recognizer.locationInView(this._mapView);
+    const panCoordinate = this._mapView.convertPointToCoordinateFromView(panPoint, this._mapView);
+    this._listener({
+      lat: panCoordinate.latitude,
+      lng: panCoordinate.longitude
+    });
+  }
+
+  public static ObjCExposedMethods = {
+    "pan": {returns: interop.types.void, params: [interop.types.id]}
   };
 }

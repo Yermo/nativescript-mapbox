@@ -821,7 +821,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         theMap.mapboxMap.setOnMapClickListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener({
-              onMapClick: (point) => {
+              onMapClick: point => {
                 listener({
                   lat: point.getLatitude(),
                   lng: point.getLongitude()
@@ -838,7 +838,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  setOnScrollListener(listener: () => void, nativeMap?): Promise<any> {
+  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
         const theMap = nativeMap || _mapbox;

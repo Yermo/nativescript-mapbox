@@ -26,8 +26,9 @@ function onMapReady(args) {
     console.log(`~~~~~ Map clicked: ${JSON.stringify(point)}`);
   });
 
-  map.setOnScrollListener(() => {
-    console.log("~~~~~ Map scrolled");
+  map.setOnScrollListener((point?: LatLng) => {
+    // note that only iOS returns the point
+    console.log(`~~~~~ Map scrolled: ${JSON.stringify(point)}`);
   });
 
   // .. or use the convenience methods exposed on args.map, for instance:
