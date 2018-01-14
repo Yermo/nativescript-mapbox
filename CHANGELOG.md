@@ -1,11 +1,25 @@
 # Change Log
 
+## [3.2.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.2.0) (2018-01-13)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.1.3...3.2.0)
+
+**Fixed bugs:**
+
+- Don't handle permissions other than our own [\#194](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/194)
+- Don't fire the "mapready" event when the style changes [\#195](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/195)
+
+**Implemented enhancements:**
+
+- New Listeners [\#183](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/183)
+- Bump Mapbox SDK versions [\#193](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/193)
+
+
 ## [3.1.3](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.1.3) (2017-11-02)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.1.2...3.1.3)
 
 **Fixed bugs:**
 
-- Marker onTap - after navigating back to map [\#125](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/125)
+- Marker onTap - after navigating back to map [\#125](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/125)
 - Markers not cleaned from cache on android [\#182](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/182)
 
 

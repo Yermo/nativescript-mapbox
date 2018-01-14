@@ -885,6 +885,8 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   mapViewDidFinishLoadingMap(mapView: MGLMapView): void {
     if (this.mapLoadedCallback !== undefined) {
       this.mapLoadedCallback(mapView);
+      // this should be fired only once, but it's also fired when the style changes, so just remove the callback
+      this.mapLoadedCallback = undefined;
     }
   }
 
