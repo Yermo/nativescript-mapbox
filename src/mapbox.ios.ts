@@ -840,7 +840,7 @@ const _downloadMarkerImages = (markers) => {
   });
 };
 
-const _addMarkers = (markers, nativeMap?) => {
+const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
   if (!markers) {
     console.log("No markers passed");
     return;
@@ -863,6 +863,11 @@ const _addMarkers = (markers, nativeMap?) => {
       // needs to be done before adding to the map, otherwise the delegate method 'mapViewImageForAnnotation' can't use it
       _markers.push(marker);
       theMap.addAnnotation(point);
+
+      if (marker.selected) {
+        theMap.selectAnnotationAnimated(point, false);
+      }
+
       marker.ios = point;
     }
   });
