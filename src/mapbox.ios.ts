@@ -970,9 +970,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
       if (cachedMarker.icon) {
         if (cachedMarker.icon.startsWith("res://")) {
           let resourcename = cachedMarker.icon.substring("res://".length);
-          console.log("resourcename: " + resourcename);
           let imageSource = imgSrc.fromResource(resourcename);
-          console.log("imageSource: " + imageSource);
           if (imageSource === null) {
             console.log(`Unable to locate ${resourcename}`);
           } else {
