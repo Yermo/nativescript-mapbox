@@ -366,7 +366,7 @@ export class HelloWorldModel extends Observable {
           };
           alert(alertOptions);
         }
-    )
+    );
   }
 
   public doDeleteOfflineRegion(): void {
