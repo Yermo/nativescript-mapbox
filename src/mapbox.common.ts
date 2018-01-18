@@ -25,6 +25,11 @@ export interface AddPolygonOptions {
   strokeColor?: string | Color;
 }
 
+export interface UserLocation {
+  location: LatLng;
+  speed: number;
+}
+
 export interface SetCenterOptions extends LatLng {
   animated?: boolean;
 }
@@ -296,6 +301,8 @@ export interface MapboxApi {
 
   getTilt(nativeMap?: any): Promise<number>;
 
+  getUserLocation(nativeMap?: any): Promise<UserLocation>;
+
   addPolygon(options: AddPolygonOptions, nativeMap?: any): Promise<any>;
 
   addPolyline(options: AddPolylineOptions, nativeMap?: any): Promise<any>;
@@ -507,6 +514,10 @@ export abstract class MapboxViewCommonBase extends View implements MapboxViewApi
 
   setTilt(options: SetTiltOptions): Promise<any> {
     return this.mapbox.setTilt(options, this.getNativeMapView());
+  }
+
+  getUserLocation(): Promise<UserLocation> {
+    return this.mapbox.getUserLocation(this.getNativeMapView());
   }
 
   addPolygon(options: AddPolygonOptions): Promise<any> {

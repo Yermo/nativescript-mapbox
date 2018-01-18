@@ -415,6 +415,22 @@ export class HelloWorldModel extends Observable {
     );
   }
 
+  public doGetUserLocation(): void {
+    this.mapbox.getUserLocation().then(
+        location => {
+          let alertOptions: AlertOptions = {
+            title: "User location",
+            message: JSON.stringify(location),
+            okButtonText: "Thanks!"
+          };
+          alert(alertOptions);
+        },
+        (error: string) => {
+          console.log("mapbox getUserLocation error: " + error);
+        }
+    );
+  }
+
   public doSetTilt(): void {
     this.mapbox.setTilt(
         {

@@ -11,7 +11,7 @@ import {
   MapboxCommon,
   MapboxViewBase,
   MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
-  Viewport, AddExtrusionOptions
+  Viewport, AddExtrusionOptions, UserLocation
 } from "./mapbox.common";
 import { Color } from "tns-core-modules/color";
 
@@ -380,6 +380,29 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         resolve(theMap.camera.pitch);
       } catch (ex) {
         console.log("Error in mapbox.getTilt: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  getUserLocation(nativeMap?): Promise<UserLocation> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        const loc = theMap.userLocation;
+        if (loc === null) {
+          reject("Location not available");
+        } else {
+          resolve({
+            location: {
+              lat: loc.coordinate.latitude,
+              lng: loc.coordinate.longitude
+            },
+            speed: loc.location.speed
+          })
+        }
+      } catch (ex) {
+        console.log("Error in mapbox.getUserLocation: " + ex);
         reject(ex);
       }
     });

@@ -112,6 +112,9 @@
             <Button row="4" colSpan="2" text="remove 2 markers" tap="{{ doRemove2Markers }}" class="button" />
             <Button row="4" col="2" colSpan="2" text="remove all markers" tap="{{ doRemoveAllMarkers }}" class="button" />
 
+            <Button row="5" colSpan="2" text="get user location" tap="{{ doGetUserLocation }}" class="button" />
+            <!--<Button row="5" col="2" colSpan="2" text="remove all markers" tap="{{ doRemoveAllMarkers }}" class="button" />-->
+
             <Android>
               <Button row="6" colSpan="2" text="Polygon" tap="{{ doAddPolygon }}" class="button" />
               <Button row="6" col="2" colSpan="2" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />

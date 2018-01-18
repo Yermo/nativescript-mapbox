@@ -1,5 +1,13 @@
 # Change Log
 
+## [3.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.3.0) (2018-01-XX)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.2.0...3.3.0)
+
+**Implemented enhancements:**
+
+- How to get lat long of userlocation from mapbox [\#180](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/180)
+
+
 ## [3.2.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.2.0) (2018-01-13)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.1.3...3.2.0)
 

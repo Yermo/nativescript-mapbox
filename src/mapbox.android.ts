@@ -13,7 +13,7 @@ import {
   MapboxCommon,
   MapboxViewBase,
   MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
-  Viewport, AddExtrusionOptions
+  Viewport, AddExtrusionOptions, UserLocation
 } from "./mapbox.common";
 
 // Export the enums for devs not using TS
@@ -688,6 +688,28 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         resolve(tilt);
       } catch (ex) {
         console.log("Error in mapbox.getTilt: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  getUserLocation(): Promise<UserLocation> {
+    return new Promise((resolve, reject) => {
+      try {
+        const loc = _locationEngine ? _locationEngine.getLastLocation() : null;
+        if (loc === null) {
+          reject("Location not available");
+        } else {
+          resolve({
+            location: {
+              lat: loc.getLatitude(),
+              lng: loc.getLongitude()
+            },
+            speed: loc.getSpeed()
+          })
+        }
+      } catch (ex) {
+        console.log("Error in mapbox.getUserLocation: " + ex);
         reject(ex);
       }
     });

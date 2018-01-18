@@ -425,6 +425,18 @@ Here the promise callback makes sense, so adding it to the example:
   )
 ```
 
+### getUserLocation
+If the user's location is shown on the map you can get their coordinates and speed:
+
+```js
+  mapbox.getUserLocation().then(
+      function(userLocation) {
+        console.log("Current user location: " +  userLocation.location.lat + ", " + userLocation.location.lng);
+        console.log("Current user speed: " +  userLocation.speed);
+      }
+  )
+```
+
 ### addPolygon (Android)
 Draw a shape (like a line/route, or star). Just connect the dots like we did as a child. The first person to tweet a snowman drawn with this function gets a T-shirt.
 ```js
@@ -568,7 +580,7 @@ To help you manage offline regions there's a `listOfflineRegions` function you c
 ```js
   mapbox.listOfflineRegions({
     // required for Android in case no map has been shown yet
-    accessToken: accessToken,
+    accessToken: accessToken
   }).then(
     function(regions) {
       console.log(JSON.stringify(JSON.stringify(regions));
