@@ -11,7 +11,7 @@ import {
   MapboxCommon,
   MapboxViewBase,
   MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
-  Viewport, AddExtrusionOptions, UserLocation
+  Viewport, AddExtrusionOptions, UserLocation, ListOfflineRegionsOptions
 } from "./mapbox.common";
 import { Color } from "tns-core-modules/color";
 
@@ -746,7 +746,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  listOfflineRegions(): Promise<OfflineRegion[]> {
+  listOfflineRegions(options?: ListOfflineRegionsOptions): Promise<OfflineRegion[]> {
     return new Promise((resolve, reject) => {
       try {
         let packs = MGLOfflineStorage.sharedOfflineStorage().packs;

@@ -187,6 +187,15 @@ export interface DownloadOfflineRegionOptions extends OfflineRegion {
   onProgress?: (data: DownloadProgress) => void;
   /**
    * Optional, used on Android only.
+   * Set this, in case no map has been show yet (and thus, no accessToken has been passed in yet).
+   */
+  accessToken?: string;
+}
+
+export interface ListOfflineRegionsOptions {
+  /**
+   * Optional, used on Android only.
+   * Set this, in case no map has been show yet (and thus, no accessToken has been passed in yet).
    */
   accessToken?: string;
 }
@@ -333,7 +342,7 @@ export interface MapboxApi {
 
   downloadOfflineRegion(options: DownloadOfflineRegionOptions): Promise<any>;
 
-  listOfflineRegions(): Promise<Array<OfflineRegion>>;
+  listOfflineRegions(options?: ListOfflineRegionsOptions): Promise<Array<OfflineRegion>>;
 
   deleteOfflineRegion(options: DeleteOfflineRegionOptions): Promise<any>;
 

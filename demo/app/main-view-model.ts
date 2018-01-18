@@ -162,7 +162,7 @@ export class HelloWorldModel extends Observable {
         id: 3,
         lat: 52.3602160,
         lng: 5,
-        onTap: () => { console.log("Titleless marker tapped!"); },
+        onTap: () => console.log("Titleless marker tapped!"),
         icon: 'http://www.bme.be/wp-content/uploads/2014/04/marker.png'
       },
       {
@@ -183,20 +183,12 @@ export class HelloWorldModel extends Observable {
         title: 'This title is cut off on iOS, but multi-line on Android', // no popup unless set
         subtitle: 'Same for this subtitle. Same for this subtitle. Same for this subtitle. Same for this subtitle. Same for this subtitle.',
         icon: 'http://maryjanewa.com/wp-content/uploads/2016/01/map-marker.png',
-        onTap: () => {
-          console.log("Marker tapped");
-        },
-        onCalloutTap: () => {
-          console.log("Marker callout tapped");
-        }
+        onTap: () => console.log("Marker tapped"),
+        onCalloutTap: () => console.log("Marker callout tapped")
       }
     ]).then(
-        () => {
-          console.log("Mapbox addMarkers done");
-        },
-        (error: string) => {
-          console.log("mapbox addMarkers error: " + error);
-        }
+        () => console.log("Mapbox addMarkers done"),
+        (error: string) => console.log("mapbox addMarkers error: " + error)
     );
   }
 
@@ -210,9 +202,7 @@ export class HelloWorldModel extends Observable {
           };
           alert(alertOptions);
         },
-        (error: string) => {
-          console.log("mapbox doGetViewport error: " + error);
-        }
+        (error: string) => console.log("mapbox doGetViewport error: " + error)
     );
   }
 
@@ -357,7 +347,9 @@ export class HelloWorldModel extends Observable {
   }
 
   public doListOfflineRegions(): void {
-    this.mapbox.listOfflineRegions().then(
+    this.mapbox.listOfflineRegions({
+      accessToken: ACCESS_TOKEN
+    }).then(
         (regions: Array<OfflineRegion>) => {
           let alertOptions: AlertOptions = {
             title: "Offline regions",
@@ -374,7 +366,7 @@ export class HelloWorldModel extends Observable {
           };
           alert(alertOptions);
         }
-    );
+    )
   }
 
   public doDeleteOfflineRegion(): void {

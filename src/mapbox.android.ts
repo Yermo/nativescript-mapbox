@@ -13,7 +13,7 @@ import {
   MapboxCommon,
   MapboxViewBase,
   MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
-  Viewport, AddExtrusionOptions, UserLocation
+  Viewport, AddExtrusionOptions, UserLocation, ListOfflineRegionsOptions
 } from "./mapbox.common";
 
 // Export the enums for devs not using TS
@@ -1080,8 +1080,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
         if (!_accessToken) {
           _accessToken = options.accessToken;
+          com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, _accessToken);
         }
-        com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, _accessToken);
 
         _getOfflineManager().createOfflineRegion(offlineRegionDefinition, encodedMetadata, new com.mapbox.mapboxsdk.offline.OfflineManager.CreateOfflineRegionCallback({
           onError: (error: string) => {
@@ -1138,9 +1138,18 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  listOfflineRegions(): Promise<OfflineRegion[]> {
+  listOfflineRegions(options?: ListOfflineRegionsOptions): Promise<OfflineRegion[]> {
     return new Promise((resolve, reject) => {
       try {
+        if (!_accessToken && !options.accessToken) {
+          reject("First show a map, or pass in an 'accessToken' param");
+          return;
+        }
+        if (!_accessToken) {
+          _accessToken = options.accessToken;
+          com.mapbox.mapboxsdk.Mapbox.getInstance(application.android.context, _accessToken);
+        }
+
         _getOfflineManager().listOfflineRegions(new com.mapbox.mapboxsdk.offline.OfflineManager.ListOfflineRegionsCallback({
           onError: (error: string) => {
             reject(error);

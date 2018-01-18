@@ -3,8 +3,13 @@
 ## [3.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.3.0) (2018-01-XX)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.2.0...3.3.0)
 
+**Fixed bugs:**
+
+- Console output query [\#177](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/177)
+
 **Implemented enhancements:**
 
+- listOfflineRegions fails on Android if no map has been shown [\#172](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/172)
 - How to get lat long of userlocation from mapbox [\#180](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/180)
 
 
@@ -13,6 +18,7 @@
 
 **Fixed bugs:**
 
+- Dragging Map [\#175](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/175)
 - Don't handle permissions other than our own [\#194](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/194)
 - Don't fire the "mapready" event when the style changes [\#195](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/195)
 
