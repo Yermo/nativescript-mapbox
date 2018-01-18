@@ -399,7 +399,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               lng: loc.coordinate.longitude
             },
             speed: loc.location.speed
-          })
+          });
         }
       } catch (ex) {
         console.log("Error in mapbox.getUserLocation: " + ex);

@@ -706,7 +706,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               lng: loc.getLongitude()
             },
             speed: loc.getSpeed()
-          })
+          });
         }
       } catch (ex) {
         console.log("Error in mapbox.getUserLocation: " + ex);
