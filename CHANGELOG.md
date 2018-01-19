@@ -1,6 +1,6 @@
 # Change Log
 
-## [3.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.3.0) (2018-01-XX)
+## [3.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.3.0) (2018-01-19)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.2.0...3.3.0)
 
 **Fixed bugs:**
@@ -24,6 +24,7 @@
 
 **Implemented enhancements:**
 
+- Is there a way to capture when the map is scrolled? [\136](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/136)
 - New Listeners [\#183](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/183)
 - Calling selectAnnotation() from native map view throws "TypeError: nv.selectAnnotation is not a function" [\#186](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/186) 
 - Bump Mapbox SDK versions [\#193](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/193)
