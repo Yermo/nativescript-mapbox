@@ -1,16 +1,17 @@
 # Change Log
 
-## [3.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.3.0) (2018-01-19)
+## [3.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.3.0) (2018-01-20)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.2.0...3.3.0)
 
 **Fixed bugs:**
 
-- Console output query [\#177](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/177)
+- Console output query [\#177](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/177)
 
 **Implemented enhancements:**
 
-- listOfflineRegions fails on Android if no map has been shown [\#172](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/172)
-- How to get lat long of userlocation from mapbox [\#180](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/180)
+- listOfflineRegions fails on Android if no map has been shown [\#172](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/172)
+- How to get lat long of userlocation from mapbox [\#180](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/180)
+- Failed to bind EAGLDrawable [\#196](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/196)
 
 
 ## [3.2.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.2.0) (2018-01-13)

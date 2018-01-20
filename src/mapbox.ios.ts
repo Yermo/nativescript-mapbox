@@ -123,6 +123,16 @@ export class MapboxView extends MapboxViewBase {
       setTimeout(drawMap, settings.delay ? settings.delay : 0);
     }
   }
+
+  public onLayout(left: number, top: number, right: number, bottom: number): void {
+    // in case the user wrapped the map in a layout that doesn't specify height, simply 'auto-grow' the map ourselves
+    if (this.ios.layer.bounds.size.width === 0 || this.ios.layer.bounds.size.height === 0) {
+      if (this.ios.superview) {
+        this.mapView.frame = CGRectMake(0, 0, this.ios.superview.layer.bounds.size.width, this.ios.superview.layer.bounds.size.height);
+      }
+    }
+    super.onLayout(left, top, right, bottom);
+  }
 }
 
 /*************** XML definition END ****************/
