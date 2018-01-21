@@ -406,7 +406,7 @@ Here the promise callback makes sense, so adding it to the example:
   })
 ```
 
-### setTilt (Android)
+### setTilt (Android only)
 ```js
   mapbox.setTilt(
       {
@@ -416,7 +416,7 @@ Here the promise callback makes sense, so adding it to the example:
   )
 ```
 
-### getTilt (Android)
+### getTilt (Android only)
 ```js
   mapbox.getTilt().then(
       function(tilt) {
@@ -437,7 +437,7 @@ If the user's location is shown on the map you can get their coordinates and spe
   )
 ```
 
-### addPolygon (Android)
+### addPolygon (Android only)
 Draw a shape (like a line/route, or star). Just connect the dots like we did as a child. The first person to tweet a snowman drawn with this function gets a T-shirt.
 ```js
   // this is a boring triangle drawn near Amsterdam Central Station
@@ -485,7 +485,7 @@ Draw a polyline. Connect the points given as parameters.
   });
 ```
 
-### removePolylines (Android)
+### removePolylines (Android only)
 You can either remove all polylines by not passing in an argument,
 or remove specific polyline id's (which you specified previously). 
 
