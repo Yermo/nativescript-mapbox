@@ -506,11 +506,11 @@ Add a listener to retrieve lat and lng of where the user taps the map (not a mar
   });
 ```
 
-### setOnMapScrollListener
+### setOnScrollListener
 Add a listener to retrieve lat and lng of where the user scrolls to on the map (lat/lng only returned on iOS though).
 
 ```typescript
-  mapbox.setOnMapScrollListener((point?: LatLng) => {
+  mapbox.setOnScrollListener((point?: LatLng) => {
     console.log("Map scrolled to latitude: " + point.lat + ", longitude: " + point.lng);
   });
 ```
