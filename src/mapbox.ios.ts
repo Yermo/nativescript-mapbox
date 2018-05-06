@@ -432,7 +432,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         coordinateArray.push([points[p].lng, points[p].lat]);
       }
 
-      const polygonID = "polygon_" + options.id;
+      const polygonID = "polyline_" + (options.id || new Date().getTime());
 
       if (theMap.style.sourceWithIdentifier(polygonID)) {
         reject("Remove the polyline with this id first with 'removePolylines': " + polygonID);
@@ -471,7 +471,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         coordinateArray.push([points[p].lng, points[p].lat]);
       }
 
-      const polylineID = "polyline_" + options.id;
+      const polylineID = "polyline_" + (options.id || new Date().getTime());
 
       // this would otherwise crash the app
       if (theMap.style.sourceWithIdentifier(polylineID)) {
@@ -628,19 +628,19 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   setOnFlingListener(listener: () => void, nativeMap?: any): Promise<any> {
     // there's no swipe event we can bind to
-    return Promise.reject("Not supported on iOS");
+    return Promise.reject("'setOnFlingListener' is not supported on iOS");
   }
 
   setOnCameraMoveListener(listener: () => void, nativeMap?: any): Promise<any> {
-    return Promise.reject("Not currently supported on iOS");
+    return Promise.reject("'setOnCameraMoveListener' not currently supported on iOS");
   }
 
   setOnCameraMoveCancelListener(listener: () => void, nativeMap?: any): Promise<any> {
-    return Promise.reject("Not currently supported on iOS");
+    return Promise.reject("'setOnCameraMoveCancelListener' not currently supported on iOS");
   }
 
   setOnCameraIdleListener(listener: () => void, nativeMap?: any): Promise<any> {
-    return Promise.reject("Not currently supported on iOS");
+    return Promise.reject("'setOnCameraIdleListener' not currently supported on iOS");
   }
 
   getViewport(nativeMap?): Promise<Viewport> {

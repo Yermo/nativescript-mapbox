@@ -760,7 +760,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           polylineOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
         }
         _polylines.push({
-          id: options.id,
+          id: options.id || new Date().getTime(),
           android: theMap.mapboxMap.addPolyline(polylineOptions)
         });
         resolve();
