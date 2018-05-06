@@ -503,7 +503,7 @@ Draw a polyline. Connect the points given as parameters.
   });
 ```
 
-### removePolylines (Android only)
+### removePolylines
 You can either remove all polylines by not passing in an argument,
 or remove specific polyline id's (which you specified previously). 
 
