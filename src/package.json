@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox",
   "typings": "index.d.ts",
@@ -57,9 +57,9 @@
   "homepage": "https://github.com/eddyverbruggen/nativescript-mapbox",
   "readmeFilename": "README.md",
   "devDependencies": {
-    "tns-core-modules": "~3.4.0",
-    "tns-platform-declarations": "~3.4.0",
+    "tns-core-modules": "~4.0.0",
+    "tns-platform-declarations": "~4.0.0",
     "tslint": "^5.1.0",
-    "typescript": "~2.4.0"
+    "typescript": "~2.7.0"
   }
 }
