@@ -437,30 +437,48 @@ If the user's location is shown on the map you can get their coordinates and spe
   )
 ```
 
-### addPolygon (Android only)
-Draw a shape (like a line/route, or star). Just connect the dots like we did as a child. The first person to tweet a snowman drawn with this function gets a T-shirt.
-```js
-  // this is a boring triangle drawn near Amsterdam Central Station
-  mapbox.addPolygon({
-    points: [
+### addPolygon
+Draw a shape. Just connect the dots like we did as a toddler.
+
+The first person to tweet a snowman drawn with this function gets a T-shirt.
+
+```typescript
+  // after adding this, scroll to Amsterdam to see a semi-transparent red square
+  mapbox.addPolygon(
       {
-        'lat': 52.3832160, // mandatory
-        'lng': 4.8991680 // mandatory
-      },
-      {
-        'lat': 52.3632160,
-        'lng': 4.9011680
-      },
-      {
-        'lat': 52.3932160,
-        'lng': 4.8911680
-      }
-    ]
-  })
+        id: 1,
+        fillColor: new Color("red"),
+        fillOpacity: 0.7,
+        points: [
+          {
+            lat: 52.3923633970718,
+            lng: 4.902648925781249
+          },
+          {
+            lat: 52.35421556258807,
+            lng: 4.9308013916015625
+          },
+          {
+            lat: 52.353796172573944,
+            lng: 4.8799896240234375
+          },
+          {
+            lat: 52.3864966440161,
+            lng: 4.8621368408203125
+          },
+          {
+            lat: 52.3923633970718,
+            lng: 4.902648925781249
+          }
+        ]
+      })
+      .then(result => console.log("Mapbox addPolygon done"))
+      .catch((error: string) => console.log("mapbox addPolygon error: " + error));
 ```
 
 ### addPolyline
 Draw a polyline. Connect the points given as parameters.
+
 ```js
   // Draw a two segment line near Amsterdam Central Station
   mapbox.addPolyline({

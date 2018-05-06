@@ -420,24 +420,55 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   addPolygon(options: AddPolygonOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
-      reject("not implemented for iOS");
-    });
-  }
-
-  addPolyline(options: AddPolylineOptions, nativeMap?): Promise<any> {
-    return new Promise((resolve, reject) => {
-      let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+      const theMap = nativeMap || _mapbox.mapView;
       const points = options.points;
       if (points === undefined) {
         reject("Please set the 'points' parameter");
         return;
       }
 
-      let coordinateArray = [];
-      for (let p in points) {
-        let point = points[p];
-        // beware: lng, lat (not the other way around)
-        coordinateArray.push([point.lng, point.lat]);
+      const coordinateArray = [];
+      for (const p in points) {
+        coordinateArray.push([points[p].lng, points[p].lat]);
+      }
+
+      const polygonID = "polygon_" + options.id;
+
+      if (theMap.style.sourceWithIdentifier(polygonID)) {
+        reject("Remove the polyline with this id first with 'removePolylines': " + polygonID);
+        return;
+      }
+
+      const geoJSON = `{"type": "FeatureCollection", "features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon", "coordinates": [${JSON.stringify(coordinateArray)}]}}]}`;
+      const geoDataStr = NSString.stringWithString(geoJSON);
+      const geoData = geoDataStr.dataUsingEncoding(NSUTF8StringEncoding);
+      const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
+      const geo = NSData.alloc().initWithBase64EncodedStringOptions(geoDataBase64Enc, null);
+      const shape = MGLShape.shapeWithDataEncodingError(geo, NSUTF8StringEncoding);
+      const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions(polygonID, shape, null);
+      theMap.style.addSource(source);
+
+      const layer = MGLFillStyleLayer.alloc().initWithIdentifierSource(polygonID, source);
+      layer.fillColor = MGLStyleValue.valueWithRawValue(!options.fillColor ? UIColor.blackColor : (options.fillColor instanceof Color ? options.fillColor.ios : new Color(options.fillColor).ios));
+      layer.fillOpacity = MGLStyleValue.valueWithRawValue(options.fillOpacity === undefined ? 1 : options.fillOpacity);
+      theMap.style.addLayer(layer);
+
+      resolve();
+    });
+  }
+
+  addPolyline(options: AddPolylineOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+      const points = options.points;
+      if (points === undefined) {
+        reject("Please set the 'points' parameter");
+        return;
+      }
+
+      const coordinateArray = [];
+      for (const p in points) {
+        coordinateArray.push([points[p].lng, points[p].lat]);
       }
 
       const polylineID = "polyline_" + options.id;

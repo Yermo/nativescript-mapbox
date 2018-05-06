@@ -528,31 +528,36 @@ export class HelloWorldModel extends Observable {
   }
 
   public doAddPolygon(): void {
-    this.mapbox.addPolygon({
-      fillColor: new Color("red"),
-      strokeColor: new Color("blue"),
-      points: [
+    this.mapbox.addPolygon(
         {
-          lat: 52.3832160,
-          lng: 4.8991680
-        },
-        {
-          lat: 52.3632160,
-          lng: 4.9011680
-        },
-        {
-          lat: 52.3932160,
-          lng: 4.8911680
-        }
-      ]
-    }).then(
-        result => {
-          console.log("Mapbox addPolygon done");
-        },
-        (error: string) => {
-          console.log("mapbox addPolygon error: " + error);
-        }
-    );
+          id: 1,
+          fillColor: new Color("red"),
+          fillOpacity: 0.7,
+          points: [
+            {
+              lat: 52.3923633970718,
+              lng: 4.902648925781249
+            },
+            {
+              lat: 52.35421556258807,
+              lng: 4.9308013916015625
+            },
+            {
+              lat: 52.353796172573944,
+              lng: 4.8799896240234375
+            },
+            {
+              lat: 52.3864966440161,
+              lng: 4.8621368408203125
+            },
+            {
+              lat: 52.3923633970718,
+              lng: 4.902648925781249
+            }
+          ]
+        })
+        .then(result => console.log("Mapbox addPolygon done"))
+        .catch((error: string) => console.log("mapbox addPolygon error: " + error));
   }
 
   public doAddPolyline(): void {

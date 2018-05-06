@@ -731,7 +731,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
         }
         polygonOptions.fillColor(Mapbox.getAndroidColor(options.fillColor));
-        polygonOptions.strokeColor(Mapbox.getAndroidColor(options.strokeColor));
+        polygonOptions.alpha(options.fillOpacity === undefined ? 1 : options.fillOpacity);
         theMap.mapboxMap.addPolygon(polygonOptions);
         resolve();
       } catch (ex) {

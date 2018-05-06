@@ -20,9 +20,17 @@ export interface LatLng {
 }
 
 export interface AddPolygonOptions {
+  /**
+   * Set this in case you want to later pass it to 'removePolygons'. TODO doesn't exist yet ;)
+   */
+  id?: any;
   points: LatLng[];
   fillColor?: string | Color;
-  strokeColor?: string | Color;
+  /**
+   * Transparency / alpha, ranging from 0 to 1.
+   * Default fully opaque (1).
+   */
+  fillOpacity?: number;
 }
 
 export interface UserLocation {
