@@ -4,7 +4,7 @@ matrix:
       language: node_js
       os: linux
       node_js: "6"
-      script: cd src && npm run ci.tslint
+      script: cd src && npm i && npm run ci.tslint
     - stage: "WebPack, Build and Test"
       os: osx
       env:
