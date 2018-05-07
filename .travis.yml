@@ -4,7 +4,7 @@ matrix:
       language: node_js
       os: linux
       node_js: "6"
-      script: cd src && npm i && npm run ci.tslint
+      script: cd src && npm run ci.tslint && cd ../demo && npm run ci.tslint
     - stage: "WebPack, Build and Test"
       os: osx
       env:
@@ -16,14 +16,14 @@ matrix:
       before_install:
         - gem install cocoapods
         - pod repo update
-      script: cd demo && tns build ios --bundle --env.uglify
+      script: cd demo && npm run build.plugin && npm i && tns build ios --bundle --env.uglify
     - language: android
       os: linux
       env:
         - WebPack="Android"
       jdk: oraclejdk8
       before_install: nvm install 6.10.3
-      script: cd demo && tns build android --bundle --env.uglify --env.snapshot
+      script: cd demo && npm run build.plugin && npm i && tns build android --bundle --env.uglify --env.snapshot
     - language: android
       env:
         - BuildAndroid="26"
