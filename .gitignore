@@ -5,6 +5,7 @@
 *.log
 *.map
 *.tgz
+*.aar
 !src/angular/*.js
 !demo/karma.conf.js
 !demo/app/tests/*.js

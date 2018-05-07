@@ -5,10 +5,13 @@
 
 **Fixed bugs:**
 
-- The App crashs on Android when using nativescript-vue - missing toHumanReadableAscii method[\#216](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/216)
+- Nativescript Mapbox on iOS retain memory after navigation away [\#67](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/67)
+- The App crashs on Android when using nativescript-vue - missing toHumanReadableAscii method [\#216](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/216)
+- Didn't find class "com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin" [\#198](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/198)
 
 **Implemented enhancements:**
 
+- Using/Showing an offline map [\#150](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/150)
 - Polygons for iOS [\#204](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/204)
 - animateCamera with target increases the zoomLevel to maximum in iOS [\#215](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/215)
 - Bump Mapbox iOS SDK to 4.0.0 and Android to 6.0.1 [\#219](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/219)
