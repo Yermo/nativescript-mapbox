@@ -11,7 +11,7 @@
       "es6",
       "dom"
     ],
-    "sourceMap": true,
+    "sourceMap": false,
     "pretty": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
@@ -20,17 +20,11 @@
     "noImplicitAny": false,
     "noImplicitReturns": true,
     "noImplicitUseStrict": false,
-    "noFallthroughCasesInSwitch": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./node_modules"
-    ],
-    "types": [
-    ]
+    "noFallthroughCasesInSwitch": true
   },
   "exclude": [
-    "demo",
-    "node_modules"
+    "node_modules",
+    "typings"
   ],
   "compileOnSave": false
 }

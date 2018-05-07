@@ -4,24 +4,33 @@ import * as utils from "tns-core-modules/utils/utils";
 import * as http from "tns-core-modules/http";
 
 import {
+  AddExtrusionOptions,
   AddGeoJsonClusteredOptions,
-  MapboxMarker, AddPolygonOptions, AddPolylineOptions, AnimateCameraOptions, DeleteOfflineRegionOptions,
-  DownloadOfflineRegionOptions, LatLng,
+  AddPolygonOptions,
+  AddPolylineOptions,
+  AnimateCameraOptions,
+  DeleteOfflineRegionOptions,
+  DownloadOfflineRegionOptions,
+  LatLng,
+  ListOfflineRegionsOptions,
   MapboxApi,
   MapboxCommon,
+  MapboxMarker,
   MapboxViewBase,
-  MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
-  Viewport, AddExtrusionOptions, UserLocation, ListOfflineRegionsOptions
+  MapStyle,
+  OfflineRegion,
+  SetCenterOptions,
+  SetTiltOptions,
+  SetViewportOptions,
+  SetZoomLevelOptions,
+  ShowOptions,
+  UserLocation,
+  Viewport
 } from "./mapbox.common";
 import { Color } from "tns-core-modules/color";
 
 // Export the enums for devs not using TS
 export { MapStyle };
-
-(() => {
-  // need to kick this off otherwise offline stuff won't work without first showing a map
-  MGLOfflineStorage.sharedOfflineStorage();
-})();
 
 let _markers = [];
 let _markerIconDownloadCache = [];
@@ -38,6 +47,9 @@ const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
   mapView.scrollEnabled = !settings.disableScroll;
   mapView.zoomEnabled = !settings.disableZoom;
   mapView.allowsTilting = !settings.disableTilt;
+  // mapView.showsScale = settings.showScale; // TODO, default false
+  // mapView.showsHeading = true;
+  // mapView.showsUserHeadingIndicator = true;
 
   if (settings.center && settings.center.lat && settings.center.lng) {
     let centerCoordinate = CLLocationCoordinate2DMake(settings.center.lat, settings.center.lng);
@@ -55,23 +67,21 @@ const _getMapStyle = (input: any) => {
     // allow for a style URL to be passed
     return NSURL.URLWithString(input);
   } else if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
-    return MGLStyle.lightStyleURL();
+    return MGLStyle.lightStyleURL;
   } else if (input === MapStyle.DARK || input === MapStyle.DARK.toString()) {
-    return MGLStyle.darkStyleURL();
-  } else if (input === MapStyle.EMERALD || input === MapStyle.EMERALD.toString()) {
-    return MGLStyle.emeraldStyleURL();
+    return MGLStyle.darkStyleURL;
   } else if (input === MapStyle.OUTDOORS || input === MapStyle.OUTDOORS.toString()) {
-    return MGLStyle.outdoorsStyleURL();
+    return MGLStyle.outdoorsStyleURL;
   } else if (input === MapStyle.SATELLITE || input === MapStyle.SATELLITE.toString()) {
-    return MGLStyle.satelliteStyleURL();
-  } else if (input === MapStyle.HYBRID || input === MapStyle.SATELLITE_STREETS || input === MapStyle.HYBRID.toString() || input === MapStyle.SATELLITE_STREETS.toString()) {
-    return MGLStyle.satelliteStreetsStyleURL();
+    return MGLStyle.satelliteStyleURL;
+  } else if (input === MapStyle.SATELLITE_STREETS || input === MapStyle.SATELLITE_STREETS.toString()) {
+    return MGLStyle.satelliteStreetsStyleURL;
   } else if (input === MapStyle.TRAFFIC_DAY || input === MapStyle.TRAFFIC_DAY.toString()) {
-    return MGLStyle.trafficDayStyleURL();
+    return NSURL.URLWithString("mapbox://styles/mapbox/traffic-day-v2");
   } else if (input === MapStyle.TRAFFIC_NIGHT || input === MapStyle.TRAFFIC_NIGHT.toString()) {
-    return MGLStyle.trafficNightStyleURL();
+    return NSURL.URLWithString("mapbox://styles/mapbox/traffic-night-v2");
   } else {
-    return MGLStyle.streetsStyleURL();
+    return MGLStyle.streetsStyleURL;
   }
 };
 
@@ -87,7 +97,6 @@ export class MapboxView extends MapboxViewBase {
 
   public createNativeView(): Object {
     let v = super.createNativeView();
-    this.nativeView = UIView.new();
     setTimeout(() => {
       this.initMap();
     }, 0);
@@ -99,7 +108,7 @@ export class MapboxView extends MapboxViewBase {
       this.mapbox = new Mapbox();
       let settings = Mapbox.merge(this.config, Mapbox.defaults);
       let drawMap = () => {
-        MGLAccountManager.setAccessToken(settings.accessToken);
+        MGLAccountManager.accessToken = settings.accessToken;
         this.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), _getMapStyle(settings.style));
         this.mapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback(() => {
           this.notify({
@@ -125,13 +134,10 @@ export class MapboxView extends MapboxViewBase {
   }
 
   public onLayout(left: number, top: number, right: number, bottom: number): void {
-    // in case the user wrapped the map in a layout that doesn't specify height, simply 'auto-grow' the map ourselves
-    if (this.ios.layer.bounds.size.width === 0 || this.ios.layer.bounds.size.height === 0) {
-      if (this.ios.superview) {
-        this.mapView.frame = CGRectMake(0, 0, this.ios.superview.layer.bounds.size.width, this.ios.superview.layer.bounds.size.height);
-      }
-    }
     super.onLayout(left, top, right, bottom);
+    if (this.mapView) {
+      this.mapView.layer.frame = this.ios.layer.bounds;
+    }
   }
 }
 
@@ -167,7 +173,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             ),
             styleURL = _getMapStyle(settings.style);
 
-        MGLAccountManager.setAccessToken(settings.accessToken);
+        MGLAccountManager.accessToken = settings.accessToken;
         _mapbox.mapView = MGLMapView.alloc().initWithFrameStyleURL(mapFrame, styleURL);
         _setMapboxMapOptions(_mapbox.mapView, settings);
 
@@ -449,8 +455,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       theMap.style.addSource(source);
 
       const layer = MGLFillStyleLayer.alloc().initWithIdentifierSource(polygonID, source);
-      layer.fillColor = MGLStyleValue.valueWithRawValue(!options.fillColor ? UIColor.blackColor : (options.fillColor instanceof Color ? options.fillColor.ios : new Color(options.fillColor).ios));
-      layer.fillOpacity = MGLStyleValue.valueWithRawValue(options.fillOpacity === undefined ? 1 : options.fillOpacity);
+      layer.fillColor = NSExpression.expressionForConstantValue(!options.fillColor ? UIColor.blackColor : (options.fillColor instanceof Color ? options.fillColor.ios : new Color(options.fillColor).ios));
+      layer.fillOpacity = NSExpression.expressionForConstantValue(options.fillOpacity === undefined ? 1 : options.fillOpacity);
       theMap.style.addLayer(layer);
 
       resolve();
@@ -490,9 +496,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       theMap.style.addSource(source);
 
       const layer = MGLLineStyleLayer.alloc().initWithIdentifierSource(polylineID, source);
-      layer.lineColor = MGLStyleValue.valueWithRawValue(!options.color ? UIColor.blackColor : (options.color instanceof Color ? options.color.ios : new Color(options.color).ios));
-      layer.lineWidth = MGLStyleValue.valueWithRawValue(options.width || 5);
-      layer.lineOpacity = MGLStyleValue.valueWithRawValue(options.opacity === undefined ? 1 : options.opacity);
+      layer.lineColor = NSExpression.expressionForConstantValue(!options.color ? UIColor.blackColor : (options.color instanceof Color ? options.color.ios : new Color(options.color).ios));
+      layer.lineWidth = NSExpression.expressionForConstantValue(options.width || 5);
+      layer.lineOpacity = NSExpression.expressionForConstantValue(options.opacity === undefined ? 1 : options.opacity);
 
       theMap.style.addLayer(layer);
       resolve();
@@ -596,7 +602,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<any> {
+  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         let theMap: MGLMapView = nativeMap || _mapbox.mapView;
@@ -723,7 +729,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             options.maxZoom);
 
         if (options.accessToken) {
-          MGLAccountManager.setAccessToken(options.accessToken);
+          MGLAccountManager.accessToken = options.accessToken;
         }
 
         // TODO there's more observers, see https://www.mapbox.com/ios-sdk/examples/offline-pack/
@@ -751,7 +757,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         _addObserver(MGLOfflinePackErrorNotification, (notification: NSNotification) => {
           let offlinePack = notification.object;
           let userInfo = NSKeyedUnarchiver.unarchiveObjectWithData(offlinePack.context);
-          let error = notification.userInfo[MGLOfflinePackErrorUserInfoKey];
+          let error = notification.userInfo[MGLOfflinePackUserInfoKeyError];
           reject({
             name: userInfo.objectForKey("name"),
             error: "Download error. " + error
@@ -761,7 +767,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         _addObserver(MGLOfflinePackMaximumMapboxTilesReachedNotification, (notification: NSNotification) => {
           let offlinePack = notification.object;
           let userInfo = NSKeyedUnarchiver.unarchiveObjectWithData(offlinePack.context);
-          let maximumCount = notification.userInfo[MGLOfflinePackMaximumCountUserInfoKey];
+          let maximumCount = notification.userInfo[MGLOfflinePackUserInfoKeyMaximumCount];
           console.log(`Offline region '${userInfo.objectForKey("name")}' reached the tile limit of ${maximumCount}`);
         });
 
@@ -770,7 +776,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         let context = NSKeyedArchiver.archivedDataWithRootObject(userInfo);
 
         // Create and register an offline pack with the shared offline storage object.
-        MGLOfflineStorage.sharedOfflineStorage().addPackForRegionWithContextCompletionHandler(region, context, (pack, error: NSError) => {
+        MGLOfflineStorage.sharedOfflineStorage.addPackForRegionWithContextCompletionHandler(region, context, (pack, error: NSError) => {
           if (error) {
             // The pack couldn’t be created for some reason.
             reject(error.localizedFailureReason);
@@ -790,7 +796,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   listOfflineRegions(options?: ListOfflineRegionsOptions): Promise<OfflineRegion[]> {
     return new Promise((resolve, reject) => {
       try {
-        let packs = MGLOfflineStorage.sharedOfflineStorage().packs;
+        let packs = MGLOfflineStorage.sharedOfflineStorage.packs;
         if (!packs) {
           reject("No packs found or Mapbox not ready yet");
           return;
@@ -831,8 +837,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        let packs = MGLOfflineStorage.sharedOfflineStorage().packs;
-        let regions = [];
+        let packs = MGLOfflineStorage.sharedOfflineStorage.packs;
         let found = false;
         for (let i = 0; i < packs.count; i++) {
           let pack = packs.objectAtIndex(i);
@@ -840,7 +845,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           let name = userInfo.objectForKey("name");
           if (name === options.name) {
             found = true;
-            MGLOfflineStorage.sharedOfflineStorage().removePackWithCompletionHandler(pack, (error: NSError) => {
+            MGLOfflineStorage.sharedOfflineStorage.removePackWithCompletionHandler(pack, (error: NSError) => {
               if (error) {
                 // The pack couldn’t be deleted for some reason.
                 reject(error.localizedFailureReason);

@@ -1,11 +1,3 @@
-android {
-    productFlavors {
-        "mapbox" {
-            dimension "mapbox"
-        }
-    }
-}
-
 repositories {
     mavenCentral()
 }
@@ -13,15 +5,15 @@ repositories {
 // see https://www.mapbox.com/android-sdk/
 dependencies {
     // core library
-    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:5.3.1@aar'){
+    compile ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.0.1@aar'){
         transitive=true
     }
 
     // service library
-    compile ('com.mapbox.mapboxsdk:mapbox-android-services:2.2.9@aar'){
+    compile ('com.mapbox.mapboxsdk:mapbox-android-services:2.2.10@aar'){
         transitive=true
     }
 
     // plugins
-    compile 'com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:0.3.0'
+    compile 'com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:0.5.0'
 }

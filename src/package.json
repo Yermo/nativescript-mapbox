@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "3.4.0",
+  "version": "4.0.0",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox",
   "typings": "index.d.ts",
@@ -18,12 +18,13 @@
   },
   "scripts": {
     "build": "npm i && tsc",
-    "demo.ios": "npm run preparedemo && cd ../demo && tns platform remove ios && tns run ios",
-    "demo.android": "npm run preparedemo && cd ../demo && tns platform remove android && tns run android --justlaunch",
+    "demo.ios": "npm run build && cd ../demo && tns run ios --syncAllFiles",
+    "demo.android": "npm run build && cd ../demo && tns run android --syncAllFiles",
     "test": "npm run tslint && npm run tslint.demo && cd ../demo && tns build ios && tns build android",
     "test.ios": "cd ../demo && tns platform remove ios && tns test ios --emulator",
     "test.ios.device": "cd ../demo && tns platform remove ios && tns test ios",
     "test.android": "cd ../demo && tns platform remove android && tns test android --justlaunch",
+    "plugin.link": "npm link && cd ../demo && npm link nativescript-mapbox && cd ../src",
     "preparedemo": "npm run build && cd ../demo && tns plugin remove nativescript-mapbox && tns plugin add ../src && tns install",
     "setup": "npm run build && cd ../demo && npm i",
     "setupandinstall": "npm i && cd ../demo && npm i && cd ../src && npm run build && cd ../demo && tns plugin add ../src && cd ../src",

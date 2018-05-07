@@ -1,14 +1,13 @@
-import { View, Property, booleanConverter } from "tns-core-modules/ui/core/view";
+import { Property, booleanConverter } from "tns-core-modules/ui/core/view";
 import { Color } from "tns-core-modules/color/color";
+import { ContentView } from "tns-core-modules/ui/content-view";
 
 export enum MapStyle {
   DARK = <any>"dark",
   OUTDOORS = <any>"outdoors",
   LIGHT = <any>"light",
   SATELLITE = <any>"satellite",
-  HYBRID = <any>"hybrid", // deprecated, use SATELLITE_STREETS
   SATELLITE_STREETS = <any>"satellite_streets",
-  EMERALD = <any>"emerald",
   STREETS = <any>"streets",
   TRAFFIC_DAY = <any>"traffic_day",
   TRAFFIC_NIGHT = <any>"traffic_night"
@@ -330,7 +329,7 @@ export interface MapboxApi {
 
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any>;
 
-  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<any>;
+  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void>;
 
   setOnFlingListener(listener: () => void, nativeMap?: any): Promise<any>;
 
@@ -421,7 +420,7 @@ export interface MapboxViewApi {
 
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
 
-  setOnScrollListener(listener: (data?: LatLng) => void): Promise<any>;
+  setOnScrollListener(listener: (data?: LatLng) => void): Promise<void>;
 
   setOnFlingListener(listener: () => void): Promise<any>;
 
@@ -460,7 +459,7 @@ export interface MapboxViewApi {
   destroy(): Promise<any>;
 }
 
-export abstract class MapboxViewCommonBase extends View implements MapboxViewApi {
+export abstract class MapboxViewCommonBase extends ContentView implements MapboxViewApi {
   protected mapbox: MapboxApi;
 
   abstract getNativeMapView(): any;
@@ -477,7 +476,7 @@ export abstract class MapboxViewCommonBase extends View implements MapboxViewApi
     return this.mapbox.setOnMapClickListener(listener, this.getNativeMapView());
   }
 
-  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<any> {
+  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void> {
     return this.mapbox.setOnScrollListener(listener, this.getNativeMapView());
   }
 
@@ -638,22 +637,6 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
   static locationPermissionGrantedEvent: string = "locationPermissionGranted";
 
   protected config: any = {};
-
-  get ios(): any {
-    return this.nativeView;
-  }
-
-  set ios(value) {
-    this.nativeView = value;
-  }
-
-  get android(): any {
-    return this.nativeView;
-  }
-
-  set android(value) {
-    this.nativeView = value;
-  }
 
   [zoomLevelProperty.setNative](value: number) {
     this.config.zoomLevel = +value;

@@ -1,19 +1,8 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" actionBarHidden="true" loaded="pageLoaded">
   <TabView>
     <TabView.items>
-      <TabViewItem title="About">
-        <TabViewItem.view>
-          <ScrollView>
-            <StackLayout class="tab-content">
-              <Image margin="10" src="~/res/telerik-logo.png" />
-              <Label text="Mapbox plugin demo" class="title"/>
-              <Label text="Awesome platform independent OpenGL powered maps by Mapbox. Make sure you provide your own (free) ACCESS_TOKEN in main-view-model.ts or unexpected things will happen." textWrap="true"/>
-            </StackLayout>
-          </ScrollView>
-        </TabViewItem.view>
-      </TabViewItem>
 
-      <TabViewItem title="By XML">
+      <!--TabViewItem title="By XML">
         <TabViewItem.view>
           <GridLayout columns="*, *" rows="110, *, 160" horizontalAlignment="stretch">
             <ContentView row="0" style="margin-right: 3; border-color: #fff">
@@ -85,7 +74,7 @@
             </ContentView>
           </GridLayout>
         </TabViewItem.view>
-      </TabViewItem>
+      </TabViewItem-->
 
       <TabViewItem title="By Code">
         <TabViewItem.view>
@@ -113,11 +102,10 @@
             <Button row="4" col="2" colSpan="2" text="remove all markers" tap="{{ doRemoveAllMarkers }}" class="button" />
 
             <Button row="5" colSpan="2" text="get user location" tap="{{ doGetUserLocation }}" class="button" />
-            <Button row="5" col="2" colSpan="2" text="remove all markers" tap="{{ doRemoveAllMarkers }}" class="button" />
+            <Button row="5" colSpan="2" text="Add polygon" tap="{{ doAddPolygon }}" class="button" />
 
-            <Button row="6" colSpan="2" text="Add polygon" tap="{{ doAddPolygon }}" class="button" />
             <Android>
-              <Button row="6" col="2" colSpan="2" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />
+              <Button row="6" colSpan="4" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />
             </Android>
 
             <Button row="7" colSpan="2" text="Add polyline" tap="{{ doAddPolyline }}" class="button" />
@@ -135,6 +123,19 @@
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>
+
+      <TabViewItem title="About">
+        <TabViewItem.view>
+          <ScrollView>
+            <StackLayout class="tab-content">
+              <Image margin="10" src="~/res/telerik-logo.png" />
+              <Label text="Mapbox plugin demo" class="title"/>
+              <Label text="Awesome platform independent OpenGL powered maps by Mapbox. Make sure you provide your own (free) ACCESS_TOKEN in main-view-model.ts or unexpected things will happen." textWrap="true"/>
+            </StackLayout>
+          </ScrollView>
+        </TabViewItem.view>
+      </TabViewItem>
+
     </TabView.items>
   </TabView>
 </Page>

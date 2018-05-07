@@ -1,14 +1,10 @@
 declare class MGLAccountManager extends NSObject {
 
-  static accessToken(): string;
-
   static alloc(): MGLAccountManager; // inherited from NSObject
-
-  static mapboxMetricsEnabledSettingShownInApp(): boolean;
 
   static new(): MGLAccountManager; // inherited from NSObject
 
-  static setAccessToken(accessToken: string): void;
+  static accessToken: string;
 }
 
 interface MGLAnnotation extends NSObjectProtocol {
@@ -165,15 +161,15 @@ declare class MGLBackgroundStyleLayer extends MGLStyleLayer {
 
   static new(): MGLBackgroundStyleLayer; // inherited from NSObject
 
-  backgroundColor: MGLStyleValue<UIColor>;
+  backgroundColor: NSExpression;
 
   backgroundColorTransition: MGLTransition;
 
-  backgroundOpacity: MGLStyleValue<number>;
+  backgroundOpacity: NSExpression;
 
   backgroundOpacityTransition: MGLTransition;
 
-  backgroundPattern: MGLStyleValue<string>;
+  backgroundPattern: NSExpression;
 
   backgroundPatternTransition: MGLTransition;
 
@@ -198,7 +194,9 @@ interface MGLCalloutView extends NSObjectProtocol {
 
   dismissCalloutAnimated(animated: boolean): void;
 
-  presentCalloutFromRectInViewConstrainedToViewAnimated(rect: CGRect, view: UIView, constrainedView: UIView, animated: boolean): void;
+  marginInsetsHintForPresentationFromRect?(rect: CGRect): UIEdgeInsets;
+
+  presentCalloutFromRectInViewConstrainedToRectAnimated(rect: CGRect, view: UIView, constrainedRect: CGRect, animated: boolean): void;
 }
 
 declare var MGLCalloutView: {
@@ -222,29 +220,27 @@ declare var MGLCalloutViewDelegate: {
   prototype: MGLCalloutViewDelegate;
 };
 
-declare class MGLCameraStyleFunction<T> extends MGLStyleFunction<T> {
+declare const enum MGLCameraChangeReason {
 
-  static alloc<T>(): MGLCameraStyleFunction<T>; // inherited from NSObject
+  None = 0,
 
-  static functionWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLCameraStyleFunction<T>; // inherited from MGLStyleFunction
+  Programmatic = 1,
 
-  static functionWithInterpolationModeStopsOptions<T>(interpolationMode: MGLInterpolationMode, stops: NSDictionary<any, MGLStyleValue<T>>, options: NSDictionary<string, any>): MGLCameraStyleFunction<T>;
+  ResetNorth = 2,
 
-  static functionWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLCameraStyleFunction<T>; // inherited from MGLStyleFunction
+  GesturePan = 4,
 
-  static new<T>(): MGLCameraStyleFunction<T>; // inherited from NSObject
+  GesturePinch = 8,
 
-  static valueWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLCameraStyleFunction<T>; // inherited from MGLStyleValue
+  GestureRotate = 16,
 
-  static valueWithInterpolationModeCameraStopsOptions<T>(interpolationMode: MGLInterpolationMode, cameraStops: NSDictionary<any, MGLStyleValue<T>>, options: NSDictionary<string, any>): MGLCameraStyleFunction<T>; // inherited from MGLStyleValue
+  GestureZoomIn = 32,
 
-  static valueWithInterpolationModeCompositeStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, compositeStops: NSDictionary<any, NSDictionary<any, MGLStyleValue<T>>>, attributeName: string, options: NSDictionary<string, any>): MGLCameraStyleFunction<T>; // inherited from MGLStyleValue
+  GestureZoomOut = 64,
 
-  static valueWithInterpolationModeSourceStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, sourceStops: NSDictionary<any, MGLStyleValue<T>>, attributeName: string, options: NSDictionary<string, any>): MGLCameraStyleFunction<T>; // inherited from MGLStyleValue
+  GestureOneFingerZoom = 128,
 
-  static valueWithRawValue<T>(rawValue: T): MGLCameraStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLCameraStyleFunction<T>; // inherited from MGLStyleValue
+  GestureTilt = 256
 }
 
 declare const enum MGLCirclePitchAlignment {
@@ -267,41 +263,41 @@ declare class MGLCircleStyleLayer extends MGLVectorStyleLayer {
 
   static new(): MGLCircleStyleLayer; // inherited from NSObject
 
-  circleBlur: MGLStyleValue<number>;
+  circleBlur: NSExpression;
 
   circleBlurTransition: MGLTransition;
 
-  circleColor: MGLStyleValue<UIColor>;
+  circleColor: NSExpression;
 
   circleColorTransition: MGLTransition;
 
-  circleOpacity: MGLStyleValue<number>;
+  circleOpacity: NSExpression;
 
   circleOpacityTransition: MGLTransition;
 
-  circlePitchAlignment: MGLStyleValue<NSValue>;
+  circlePitchAlignment: NSExpression;
 
-  circleRadius: MGLStyleValue<number>;
+  circleRadius: NSExpression;
 
   circleRadiusTransition: MGLTransition;
 
-  circleScaleAlignment: MGLStyleValue<NSValue>;
+  circleScaleAlignment: NSExpression;
 
-  circleStrokeColor: MGLStyleValue<UIColor>;
+  circleStrokeColor: NSExpression;
 
   circleStrokeColorTransition: MGLTransition;
 
-  circleStrokeOpacity: MGLStyleValue<number>;
+  circleStrokeOpacity: NSExpression;
 
   circleStrokeOpacityTransition: MGLTransition;
 
-  circleStrokeWidth: MGLStyleValue<number>;
+  circleStrokeWidth: NSExpression;
 
   circleStrokeWidthTransition: MGLTransition;
 
-  circleTranslation: MGLStyleValue<NSValue>;
+  circleTranslation: NSExpression;
 
-  circleTranslationAnchor: MGLStyleValue<NSValue>;
+  circleTranslationAnchor: NSExpression;
 
   circleTranslationTransition: MGLTransition;
 
@@ -339,59 +335,42 @@ declare class MGLCompassDirectionFormatter extends NSFormatter {
   stringFromDirection(direction: number): string;
 }
 
-declare class MGLCompositeStyleFunction<T> extends MGLStyleFunction<T> {
+declare class MGLComputedShapeSource extends MGLSource {
 
-  static alloc<T>(): MGLCompositeStyleFunction<T>; // inherited from NSObject
+  static alloc(): MGLComputedShapeSource; // inherited from NSObject
 
-  static functionWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLCompositeStyleFunction<T>; // inherited from MGLStyleFunction
+  static new(): MGLComputedShapeSource; // inherited from NSObject
 
-  static functionWithInterpolationModeStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, stops: NSDictionary<any, NSDictionary<any, MGLStyleValue<T>>>, attributeName: string, options: NSDictionary<string, any>): MGLCompositeStyleFunction<T>;
+  dataSource: MGLComputedShapeSourceDataSource;
 
-  static functionWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLCompositeStyleFunction<T>; // inherited from MGLStyleFunction
+  readonly requestQueue: NSOperationQueue;
 
-  static new<T>(): MGLCompositeStyleFunction<T>; // inherited from NSObject
+  constructor(o: { identifier: string; dataSource: MGLComputedShapeSourceDataSource; options: NSDictionary<string, any>; });
 
-  static valueWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLCompositeStyleFunction<T>; // inherited from MGLStyleValue
+  constructor(o: { identifier: string; options: NSDictionary<string, any>; });
 
-  static valueWithInterpolationModeCameraStopsOptions<T>(interpolationMode: MGLInterpolationMode, cameraStops: NSDictionary<any, MGLStyleValue<T>>, options: NSDictionary<string, any>): MGLCompositeStyleFunction<T>; // inherited from MGLStyleValue
+  initWithIdentifierDataSourceOptions(identifier: string, dataSource: MGLComputedShapeSourceDataSource, options: NSDictionary<string, any>): this;
 
-  static valueWithInterpolationModeCompositeStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, compositeStops: NSDictionary<any, NSDictionary<any, MGLStyleValue<T>>>, attributeName: string, options: NSDictionary<string, any>): MGLCompositeStyleFunction<T>; // inherited from MGLStyleValue
+  initWithIdentifierOptions(identifier: string, options: NSDictionary<string, any>): this;
 
-  static valueWithInterpolationModeSourceStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, sourceStops: NSDictionary<any, MGLStyleValue<T>>, attributeName: string, options: NSDictionary<string, any>): MGLCompositeStyleFunction<T>; // inherited from MGLStyleValue
+  invalidateBounds(bounds: MGLCoordinateBounds): void;
 
-  static valueWithRawValue<T>(rawValue: T): MGLCompositeStyleFunction<T>; // inherited from MGLStyleValue
+  invalidateTileAtXYZoomLevel(x: number, y: number, zoomLevel: number): void;
 
-  static valueWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLCompositeStyleFunction<T>; // inherited from MGLStyleValue
-
-  attributeName: string;
-
-  defaultValue: MGLStyleValue<T>;
+  setFeaturesInTileAtXYZoomLevel(features: NSArray<MGLShape>, x: number, y: number, zoomLevel: number): void;
 }
 
-declare class MGLConstantStyleValue<T> extends MGLStyleValue<T> {
+interface MGLComputedShapeSourceDataSource extends NSObjectProtocol {
 
-  static alloc<T>(): MGLConstantStyleValue<T>; // inherited from NSObject
+  featuresInCoordinateBoundsZoomLevel?(bounds: MGLCoordinateBounds, zoomLevel: number): NSArray<MGLShape>;
 
-  static new<T>(): MGLConstantStyleValue<T>; // inherited from NSObject
-
-  static valueWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLConstantStyleValue<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeCameraStopsOptions<T>(interpolationMode: MGLInterpolationMode, cameraStops: NSDictionary<any, MGLStyleValue<T>>, options: NSDictionary<string, any>): MGLConstantStyleValue<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeCompositeStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, compositeStops: NSDictionary<any, NSDictionary<any, MGLStyleValue<T>>>, attributeName: string, options: NSDictionary<string, any>): MGLConstantStyleValue<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeSourceStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, sourceStops: NSDictionary<any, MGLStyleValue<T>>, attributeName: string, options: NSDictionary<string, any>): MGLConstantStyleValue<T>; // inherited from MGLStyleValue
-
-  static valueWithRawValue<T>(rawValue: T): MGLConstantStyleValue<T>; // inherited from MGLStyleValue
-
-  static valueWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLConstantStyleValue<T>; // inherited from MGLStyleValue
-
-  rawValue: T;
-
-  constructor(o: { rawValue: T; });
-
-  initWithRawValue(rawValue: T): this;
+  featuresInTileAtXYZoomLevel?(x: number, y: number, zoomLevel: number): NSArray<MGLShape>;
 }
+
+declare var MGLComputedShapeSourceDataSource: {
+
+  prototype: MGLComputedShapeSourceDataSource;
+};
 
 interface MGLCoordinateBounds {
   sw: CLLocationCoordinate2D;
@@ -433,6 +412,13 @@ declare var MGLCoordinateSpan: interop.StructType<MGLCoordinateSpan>;
 
 declare var MGLCoordinateSpanZero: MGLCoordinateSpan;
 
+declare const enum MGLDEMEncoding {
+
+  Mapbox = 0,
+
+  Terrarium = 1
+}
+
 declare class MGLDistanceFormatter extends NSLengthFormatter {
 
   static alloc(): MGLDistanceFormatter; // inherited from NSObject
@@ -461,6 +447,12 @@ declare const enum MGLErrorCode {
 
 declare var MGLErrorDomain: string;
 
+declare var MGLExpressionInterpolationModeCubicBezier: string;
+
+declare var MGLExpressionInterpolationModeExponential: string;
+
+declare var MGLExpressionInterpolationModeLinear: string;
+
 interface MGLFeature extends MGLAnnotation {
 
   attributes: NSDictionary<string, any>;
@@ -483,29 +475,29 @@ declare class MGLFillExtrusionStyleLayer extends MGLVectorStyleLayer {
 
   static new(): MGLFillExtrusionStyleLayer; // inherited from NSObject
 
-  fillExtrusionBase: MGLStyleValue<number>;
+  fillExtrusionBase: NSExpression;
 
   fillExtrusionBaseTransition: MGLTransition;
 
-  fillExtrusionColor: MGLStyleValue<UIColor>;
+  fillExtrusionColor: NSExpression;
 
   fillExtrusionColorTransition: MGLTransition;
 
-  fillExtrusionHeight: MGLStyleValue<number>;
+  fillExtrusionHeight: NSExpression;
 
   fillExtrusionHeightTransition: MGLTransition;
 
-  fillExtrusionOpacity: MGLStyleValue<number>;
+  fillExtrusionOpacity: NSExpression;
 
   fillExtrusionOpacityTransition: MGLTransition;
 
-  fillExtrusionPattern: MGLStyleValue<string>;
+  fillExtrusionPattern: NSExpression;
 
   fillExtrusionPatternTransition: MGLTransition;
 
-  fillExtrusionTranslation: MGLStyleValue<NSValue>;
+  fillExtrusionTranslation: NSExpression;
 
-  fillExtrusionTranslationAnchor: MGLStyleValue<NSValue>;
+  fillExtrusionTranslationAnchor: NSExpression;
 
   fillExtrusionTranslationTransition: MGLTransition;
 
@@ -527,27 +519,27 @@ declare class MGLFillStyleLayer extends MGLVectorStyleLayer {
 
   static new(): MGLFillStyleLayer; // inherited from NSObject
 
-  fillAntialiased: MGLStyleValue<number>;
+  fillAntialiased: NSExpression;
 
-  fillColor: MGLStyleValue<UIColor>;
+  fillColor: NSExpression;
 
   fillColorTransition: MGLTransition;
 
-  fillOpacity: MGLStyleValue<number>;
+  fillOpacity: NSExpression;
 
   fillOpacityTransition: MGLTransition;
 
-  fillOutlineColor: MGLStyleValue<UIColor>;
+  fillOutlineColor: NSExpression;
 
   fillOutlineColorTransition: MGLTransition;
 
-  fillPattern: MGLStyleValue<string>;
+  fillPattern: NSExpression;
 
   fillPatternTransition: MGLTransition;
 
-  fillTranslation: MGLStyleValue<NSValue>;
+  fillTranslation: NSExpression;
 
-  fillTranslationAnchor: MGLStyleValue<NSValue>;
+  fillTranslationAnchor: NSExpression;
 
   fillTranslationTransition: MGLTransition;
 
@@ -570,6 +562,71 @@ declare class MGLForegroundStyleLayer extends MGLStyleLayer {
   static new(): MGLForegroundStyleLayer; // inherited from NSObject
 
   readonly sourceIdentifier: string;
+}
+
+declare class MGLHeatmapStyleLayer extends MGLVectorStyleLayer {
+
+  static alloc(): MGLHeatmapStyleLayer; // inherited from NSObject
+
+  static new(): MGLHeatmapStyleLayer; // inherited from NSObject
+
+  heatmapColor: NSExpression;
+
+  heatmapIntensity: NSExpression;
+
+  heatmapIntensityTransition: MGLTransition;
+
+  heatmapOpacity: NSExpression;
+
+  heatmapOpacityTransition: MGLTransition;
+
+  heatmapRadius: NSExpression;
+
+  heatmapRadiusTransition: MGLTransition;
+
+  heatmapWeight: NSExpression;
+
+  constructor(o: { identifier: string; source: MGLSource; });
+
+  initWithIdentifierSource(identifier: string, source: MGLSource): this;
+}
+
+declare const enum MGLHillshadeIlluminationAnchor {
+
+  Map = 0,
+
+  Viewport = 1
+}
+
+declare class MGLHillshadeStyleLayer extends MGLForegroundStyleLayer {
+
+  static alloc(): MGLHillshadeStyleLayer; // inherited from NSObject
+
+  static new(): MGLHillshadeStyleLayer; // inherited from NSObject
+
+  hillshadeAccentColor: NSExpression;
+
+  hillshadeAccentColorTransition: MGLTransition;
+
+  hillshadeExaggeration: NSExpression;
+
+  hillshadeExaggerationTransition: MGLTransition;
+
+  hillshadeHighlightColor: NSExpression;
+
+  hillshadeHighlightColorTransition: MGLTransition;
+
+  hillshadeIlluminationAnchor: NSExpression;
+
+  hillshadeIlluminationDirection: NSExpression;
+
+  hillshadeShadowColor: NSExpression;
+
+  hillshadeShadowColorTransition: MGLTransition;
+
+  constructor(o: { identifier: string; source: MGLSource; });
+
+  initWithIdentifierSource(identifier: string, source: MGLSource): this;
 }
 
 declare const enum MGLIconAnchor {
@@ -650,34 +707,23 @@ declare class MGLImageSource extends MGLSource {
   initWithIdentifierCoordinateQuadURL(identifier: string, coordinateQuad: MGLCoordinateQuad, url: NSURL): this;
 }
 
-declare const enum MGLInterpolationMode {
-
-  Exponential = 0,
-
-  Interval = 1,
-
-  Categorical = 2,
-
-  Identity = 3
-}
-
 declare class MGLLight extends NSObject {
 
   static alloc(): MGLLight; // inherited from NSObject
 
   static new(): MGLLight; // inherited from NSObject
 
-  anchor: MGLStyleValue<NSValue>;
+  anchor: NSExpression;
 
-  color: MGLStyleValue<UIColor>;
+  color: NSExpression;
 
   colorTransition: MGLTransition;
 
-  intensity: MGLStyleValue<number>;
+  intensity: NSExpression;
 
   intensityTransition: MGLTransition;
 
-  position: MGLStyleValue<NSValue>;
+  position: NSExpression;
 
   positionTransition: MGLTransition;
 }
@@ -713,49 +759,49 @@ declare class MGLLineStyleLayer extends MGLVectorStyleLayer {
 
   static new(): MGLLineStyleLayer; // inherited from NSObject
 
-  lineBlur: MGLStyleValue<number>;
+  lineBlur: NSExpression;
 
   lineBlurTransition: MGLTransition;
 
-  lineCap: MGLStyleValue<NSValue>;
+  lineCap: NSExpression;
 
-  lineColor: MGLStyleValue<UIColor>;
+  lineColor: NSExpression;
 
   lineColorTransition: MGLTransition;
 
-  lineDashPattern: MGLStyleValue<NSArray<number>>;
+  lineDashPattern: NSExpression;
 
   lineDashPatternTransition: MGLTransition;
 
-  lineGapWidth: MGLStyleValue<number>;
+  lineGapWidth: NSExpression;
 
   lineGapWidthTransition: MGLTransition;
 
-  lineJoin: MGLStyleValue<NSValue>;
+  lineJoin: NSExpression;
 
-  lineMiterLimit: MGLStyleValue<number>;
+  lineMiterLimit: NSExpression;
 
-  lineOffset: MGLStyleValue<number>;
+  lineOffset: NSExpression;
 
   lineOffsetTransition: MGLTransition;
 
-  lineOpacity: MGLStyleValue<number>;
+  lineOpacity: NSExpression;
 
   lineOpacityTransition: MGLTransition;
 
-  linePattern: MGLStyleValue<string>;
+  linePattern: NSExpression;
 
   linePatternTransition: MGLTransition;
 
-  lineRoundLimit: MGLStyleValue<number>;
+  lineRoundLimit: NSExpression;
 
-  lineTranslation: MGLStyleValue<NSValue>;
+  lineTranslation: NSExpression;
 
-  lineTranslationAnchor: MGLStyleValue<NSValue>;
+  lineTranslationAnchor: NSExpression;
 
   lineTranslationTransition: MGLTransition;
 
-  lineWidth: MGLStyleValue<number>;
+  lineWidth: NSExpression;
 
   lineWidthTransition: MGLTransition;
 
@@ -816,6 +862,16 @@ declare const enum MGLMapDebugMaskOptions {
 
   OverdrawVisualizationMask = 32
 }
+
+interface MGLMapPoint {
+  x: number;
+  y: number;
+  zoomLevel: number;
+}
+
+declare var MGLMapPoint: interop.StructType<MGLMapPoint>;
+
+declare function MGLMapPointForCoordinate(coordinate: CLLocationCoordinate2D, zoomLevel: number): MGLMapPoint;
 
 declare class MGLMapSnapshot extends NSObject {
 
@@ -902,8 +958,6 @@ declare class MGLMapView extends UIView {
 
   readonly attributionButton: UIButton;
 
-  readonly bundledStyleURLs: NSArray<NSURL>;
-
   camera: MGLMapCamera;
 
   centerCoordinate: CLLocationCoordinate2D;
@@ -911,8 +965,6 @@ declare class MGLMapView extends UIView {
   readonly compassView: UIImageView;
 
   contentInset: UIEdgeInsets;
-
-  debugActive: boolean;
 
   debugMask: MGLMapDebugMaskOptions;
 
@@ -923,6 +975,8 @@ declare class MGLMapView extends UIView {
   direction: number;
 
   displayHeadingCalibration: boolean;
+
+  hapticFeedbackEnabled: boolean;
 
   latitude: number;
 
@@ -948,13 +1002,13 @@ declare class MGLMapView extends UIView {
 
   showsHeading: boolean;
 
+  showsScale: boolean;
+
   showsUserHeadingIndicator: boolean;
 
   showsUserLocation: boolean;
 
   readonly style: MGLStyle;
-
-  styleClasses: NSArray<string>;
 
   styleURL: NSURL;
 
@@ -986,8 +1040,6 @@ declare class MGLMapView extends UIView {
 
   addOverlays(overlays: NSArray<MGLOverlay>): void;
 
-  addStyleClass(styleClass: string): void;
-
   anchorPointForGesture(gesture: UIGestureRecognizer): CGPoint;
 
   cameraThatFitsCoordinateBounds(bounds: MGLCoordinateBounds): MGLMapCamera;
@@ -1010,15 +1062,11 @@ declare class MGLMapView extends UIView {
 
   deselectAnnotationAnimated(annotation: MGLAnnotation, animated: boolean): void;
 
-  emptyMemoryCache(): void;
-
   flyToCameraCompletionHandler(camera: MGLMapCamera, completion: () => void): void;
 
   flyToCameraWithDurationCompletionHandler(camera: MGLMapCamera, duration: number, completion: () => void): void;
 
   flyToCameraWithDurationPeakAltitudeCompletionHandler(camera: MGLMapCamera, duration: number, peakAltitude: number, completion: () => void): void;
-
-  hasStyleClass(styleClass: string): boolean;
 
   initWithFrameStyleURL(frame: CGRect, styleURL: NSURL): this;
 
@@ -1035,8 +1083,6 @@ declare class MGLMapView extends UIView {
   removeOverlay(overlay: MGLOverlay): void;
 
   removeOverlays(overlays: NSArray<MGLOverlay>): void;
-
-  removeStyleClass(styleClass: string): void;
 
   resetNorth(): void;
 
@@ -1085,8 +1131,6 @@ declare class MGLMapView extends UIView {
   showAnnotationsEdgePaddingAnimated(annotations: NSArray<MGLAnnotation>, insets: UIEdgeInsets, animated: boolean): void;
 
   showAttribution(sender: any): void;
-
-  toggleDebug(): void;
 
   viewForAnnotation(annotation: MGLAnnotation): MGLAnnotationView;
 
@@ -1159,13 +1203,21 @@ interface MGLMapViewDelegate extends NSObjectProtocol {
 
   mapViewRegionDidChangeAnimated?(mapView: MGLMapView, animated: boolean): void;
 
+  mapViewRegionDidChangeWithReasonAnimated?(mapView: MGLMapView, reason: MGLCameraChangeReason, animated: boolean): void;
+
   mapViewRegionIsChanging?(mapView: MGLMapView): void;
 
+  mapViewRegionIsChangingWithReason?(mapView: MGLMapView, reason: MGLCameraChangeReason): void;
+
   mapViewRegionWillChangeAnimated?(mapView: MGLMapView, animated: boolean): void;
+
+  mapViewRegionWillChangeWithReasonAnimated?(mapView: MGLMapView, reason: MGLCameraChangeReason, animated: boolean): void;
 
   mapViewRightCalloutAccessoryViewForAnnotation?(mapView: MGLMapView, annotation: MGLAnnotation): UIView;
 
   mapViewShouldChangeFromCameraToCamera?(mapView: MGLMapView, oldCamera: MGLMapCamera, newCamera: MGLMapCamera): boolean;
+
+  mapViewShouldChangeFromCameraToCameraReason?(mapView: MGLMapView, oldCamera: MGLMapCamera, newCamera: MGLMapCamera, reason: MGLCameraChangeReason): boolean;
 
   mapViewStrokeColorForShapeAnnotation?(mapView: MGLMapView, annotation: MGLShape): UIColor;
 
@@ -1186,6 +1238,27 @@ declare var MGLMapViewDelegate: {
 
   prototype: MGLMapViewDelegate;
 };
+
+interface MGLMatrix4 {
+  m00: number;
+  m01: number;
+  m02: number;
+  m03: number;
+  m10: number;
+  m11: number;
+  m12: number;
+  m13: number;
+  m20: number;
+  m21: number;
+  m22: number;
+  m23: number;
+  m30: number;
+  m31: number;
+  m32: number;
+  m33: number;
+}
+
+declare var MGLMatrix4: interop.StructType<MGLMatrix4>;
 
 declare class MGLMultiPoint extends MGLShape {
 
@@ -1459,10 +1532,6 @@ declare class MGLOfflinePack extends NSObject {
 
 declare var MGLOfflinePackErrorNotification: string;
 
-declare var MGLOfflinePackErrorUserInfoKey: string;
-
-declare var MGLOfflinePackMaximumCountUserInfoKey: string;
-
 declare var MGLOfflinePackMaximumMapboxTilesReachedNotification: string;
 
 interface MGLOfflinePackProgress {
@@ -1478,8 +1547,6 @@ declare var MGLOfflinePackProgress: interop.StructType<MGLOfflinePackProgress>;
 
 declare var MGLOfflinePackProgressChangedNotification: string;
 
-declare var MGLOfflinePackProgressUserInfoKey: string;
-
 declare const enum MGLOfflinePackState {
 
   Unknown = 0,
@@ -1492,8 +1559,6 @@ declare const enum MGLOfflinePackState {
 
   Invalid = 4
 }
-
-declare var MGLOfflinePackStateUserInfoKey: string;
 
 declare var MGLOfflinePackUserInfoKeyError: string;
 
@@ -1517,13 +1582,13 @@ declare class MGLOfflineStorage extends NSObject {
 
   static new(): MGLOfflineStorage; // inherited from NSObject
 
-  static sharedOfflineStorage(): MGLOfflineStorage;
-
   readonly countOfBytesCompleted: number;
 
   delegate: MGLOfflineStorageDelegate;
 
   readonly packs: NSArray<MGLOfflinePack>;
+
+  static readonly sharedOfflineStorage: MGLOfflineStorage;
 
   addPackForRegionWithContextCompletionHandler(region: MGLOfflineRegion, context: NSData, completion: (p1: MGLOfflinePack, p2: NSError) => void): void;
 
@@ -1983,11 +2048,55 @@ declare class MGLPolylineFeature extends MGLPolyline implements MGLFeature {
   self(): this;
 }
 
-declare class MGLRasterSource extends MGLTileSource {
+declare class MGLRasterDEMSource extends MGLRasterTileSource {
 
-  static alloc(): MGLRasterSource; // inherited from NSObject
+  static alloc(): MGLRasterDEMSource; // inherited from NSObject
 
-  static new(): MGLRasterSource; // inherited from NSObject
+  static new(): MGLRasterDEMSource; // inherited from NSObject
+}
+
+declare class MGLRasterStyleLayer extends MGLForegroundStyleLayer {
+
+  static alloc(): MGLRasterStyleLayer; // inherited from NSObject
+
+  static new(): MGLRasterStyleLayer; // inherited from NSObject
+
+  maximumRasterBrightness: NSExpression;
+
+  maximumRasterBrightnessTransition: MGLTransition;
+
+  minimumRasterBrightness: NSExpression;
+
+  minimumRasterBrightnessTransition: MGLTransition;
+
+  rasterContrast: NSExpression;
+
+  rasterContrastTransition: MGLTransition;
+
+  rasterFadeDuration: NSExpression;
+
+  rasterHueRotation: NSExpression;
+
+  rasterHueRotationTransition: MGLTransition;
+
+  rasterOpacity: NSExpression;
+
+  rasterOpacityTransition: MGLTransition;
+
+  rasterSaturation: NSExpression;
+
+  rasterSaturationTransition: MGLTransition;
+
+  constructor(o: { identifier: string; source: MGLSource; });
+
+  initWithIdentifierSource(identifier: string, source: MGLSource): this;
+}
+
+declare class MGLRasterTileSource extends MGLTileSource {
+
+  static alloc(): MGLRasterTileSource; // inherited from NSObject
+
+  static new(): MGLRasterTileSource; // inherited from NSObject
 
   constructor(o: { identifier: string; configurationURL: NSURL; });
 
@@ -2000,45 +2109,6 @@ declare class MGLRasterSource extends MGLTileSource {
   initWithIdentifierConfigurationURLTileSize(identifier: string, configurationURL: NSURL, tileSize: number): this;
 
   initWithIdentifierTileURLTemplatesOptions(identifier: string, tileURLTemplates: NSArray<string>, options: NSDictionary<string, any>): this;
-}
-
-declare class MGLRasterStyleLayer extends MGLForegroundStyleLayer {
-
-  static alloc(): MGLRasterStyleLayer; // inherited from NSObject
-
-  static new(): MGLRasterStyleLayer; // inherited from NSObject
-
-  maximumRasterBrightness: MGLStyleValue<number>;
-
-  maximumRasterBrightnessTransition: MGLTransition;
-
-  minimumRasterBrightness: MGLStyleValue<number>;
-
-  minimumRasterBrightnessTransition: MGLTransition;
-
-  rasterContrast: MGLStyleValue<number>;
-
-  rasterContrastTransition: MGLTransition;
-
-  rasterFadeDuration: MGLStyleValue<number>;
-
-  rasterFadeDurationTransition: MGLTransition;
-
-  rasterHueRotation: MGLStyleValue<number>;
-
-  rasterHueRotationTransition: MGLTransition;
-
-  rasterOpacity: MGLStyleValue<number>;
-
-  rasterOpacityTransition: MGLTransition;
-
-  rasterSaturation: MGLStyleValue<number>;
-
-  rasterSaturationTransition: MGLTransition;
-
-  constructor(o: { identifier: string; source: MGLSource; });
-
-  initWithIdentifierSource(identifier: string, source: MGLSource): this;
 }
 
 declare const enum MGLResourceKind {
@@ -2218,6 +2288,8 @@ declare class MGLShapeSource extends MGLSource {
 
 declare var MGLShapeSourceOptionBuffer: string;
 
+declare var MGLShapeSourceOptionClipsCoordinates: string;
+
 declare var MGLShapeSourceOptionClusterRadius: string;
 
 declare var MGLShapeSourceOptionClustered: string;
@@ -2226,7 +2298,11 @@ declare var MGLShapeSourceOptionMaximumZoomLevel: string;
 
 declare var MGLShapeSourceOptionMaximumZoomLevelForClustering: string;
 
+declare var MGLShapeSourceOptionMinimumZoomLevel: string;
+
 declare var MGLShapeSourceOptionSimplificationTolerance: string;
+
+declare var MGLShapeSourceOptionWrapsCoordinates: string;
 
 declare class MGLSource extends NSObject {
 
@@ -2241,35 +2317,6 @@ declare class MGLSource extends NSObject {
   initWithIdentifier(identifier: string): this;
 }
 
-declare class MGLSourceStyleFunction<T> extends MGLStyleFunction<T> {
-
-  static alloc<T>(): MGLSourceStyleFunction<T>; // inherited from NSObject
-
-  static functionWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLSourceStyleFunction<T>; // inherited from MGLStyleFunction
-
-  static functionWithInterpolationModeStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, stops: NSDictionary<any, MGLStyleValue<T>>, attributeName: string, options: NSDictionary<string, any>): MGLSourceStyleFunction<T>;
-
-  static functionWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLSourceStyleFunction<T>; // inherited from MGLStyleFunction
-
-  static new<T>(): MGLSourceStyleFunction<T>; // inherited from NSObject
-
-  static valueWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLSourceStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeCameraStopsOptions<T>(interpolationMode: MGLInterpolationMode, cameraStops: NSDictionary<any, MGLStyleValue<T>>, options: NSDictionary<string, any>): MGLSourceStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeCompositeStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, compositeStops: NSDictionary<any, NSDictionary<any, MGLStyleValue<T>>>, attributeName: string, options: NSDictionary<string, any>): MGLSourceStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeSourceStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, sourceStops: NSDictionary<any, MGLStyleValue<T>>, attributeName: string, options: NSDictionary<string, any>): MGLSourceStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithRawValue<T>(rawValue: T): MGLSourceStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLSourceStyleFunction<T>; // inherited from MGLStyleValue
-
-  attributeName: string;
-
-  defaultValue: MGLStyleValue<T>;
-}
-
 interface MGLSphericalPosition {
   radial: number;
   azimuthal: number;
@@ -2282,65 +2329,45 @@ declare class MGLStyle extends NSObject {
 
   static alloc(): MGLStyle; // inherited from NSObject
 
-  static darkStyleURL(): NSURL;
-
   static darkStyleURLWithVersion(version: number): NSURL;
-
-  static emeraldStyleURL(): NSURL;
-
-  static hybridStyleURL(): NSURL;
-
-  static lightStyleURL(): NSURL;
 
   static lightStyleURLWithVersion(version: number): NSURL;
 
   static new(): MGLStyle; // inherited from NSObject
 
-  static outdoorsStyleURL(): NSURL;
-
   static outdoorsStyleURLWithVersion(version: number): NSURL;
-
-  static satelliteStreetsStyleURL(): NSURL;
 
   static satelliteStreetsStyleURLWithVersion(version: number): NSURL;
 
-  static satelliteStyleURL(): NSURL;
-
   static satelliteStyleURLWithVersion(version: number): NSURL;
 
-  static streetsStyleURL(): NSURL;
-
   static streetsStyleURLWithVersion(version: number): NSURL;
-
-  static trafficDayStyleURL(): NSURL;
-
-  static trafficDayStyleURLWithVersion(version: number): NSURL;
-
-  static trafficNightStyleURL(): NSURL;
-
-  static trafficNightStyleURLWithVersion(version: number): NSURL;
 
   layers: NSArray<MGLStyleLayer>;
 
   light: MGLLight;
 
-  localizesLabels: boolean;
-
   readonly name: string;
 
   sources: NSSet<MGLSource>;
 
-  styleClasses: NSArray<string>;
-
   transition: MGLTransition;
+
+  static readonly darkStyleURL: NSURL;
+
+  static readonly lightStyleURL: NSURL;
+
+  static readonly outdoorsStyleURL: NSURL;
+
+  static readonly satelliteStreetsStyleURL: NSURL;
+
+  static readonly satelliteStyleURL: NSURL;
+
+  static readonly streetsStyleURL: NSURL;
 
   addLayer(layer: MGLStyleLayer): void;
 
   addSource(source: MGLSource): void;
-
-  addStyleClass(styleClass: string): void;
-
-  hasStyleClass(styleClass: string): boolean;
 
   imageForName(name: string): UIImage;
 
@@ -2352,13 +2379,13 @@ declare class MGLStyle extends NSObject {
 
   layerWithIdentifier(identifier: string): MGLStyleLayer;
 
+  localizeLabelsIntoLocale(locale: NSLocale): void;
+
   removeImageForName(name: string): void;
 
   removeLayer(layer: MGLStyleLayer): void;
 
   removeSource(source: MGLSource): void;
-
-  removeStyleClass(styleClass: string): void;
 
   setImageForName(image: UIImage, name: string): void;
 
@@ -2366,43 +2393,6 @@ declare class MGLStyle extends NSObject {
 }
 
 declare var MGLStyleDefaultVersion: number;
-
-declare class MGLStyleFunction<T> extends MGLStyleValue<T> {
-
-  static alloc<T>(): MGLStyleFunction<T>; // inherited from NSObject
-
-  static functionWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLStyleFunction<T>;
-
-  static functionWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLStyleFunction<T>;
-
-  static new<T>(): MGLStyleFunction<T>; // inherited from NSObject
-
-  static valueWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeCameraStopsOptions<T>(interpolationMode: MGLInterpolationMode, cameraStops: NSDictionary<any, MGLStyleValue<T>>, options: NSDictionary<string, any>): MGLStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeCompositeStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, compositeStops: NSDictionary<any, NSDictionary<any, MGLStyleValue<T>>>, attributeName: string, options: NSDictionary<string, any>): MGLStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithInterpolationModeSourceStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, sourceStops: NSDictionary<any, MGLStyleValue<T>>, attributeName: string, options: NSDictionary<string, any>): MGLStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithRawValue<T>(rawValue: T): MGLStyleFunction<T>; // inherited from MGLStyleValue
-
-  static valueWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLStyleFunction<T>; // inherited from MGLStyleValue
-
-  interpolationBase: number;
-
-  interpolationMode: MGLInterpolationMode;
-
-  stops: NSDictionary<any, any>;
-
-  constructor(o: { interpolationBase: number; stops: NSDictionary<number, MGLStyleValue<T>>; });
-
-  initWithInterpolationBaseStops(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): this;
-}
-
-declare var MGLStyleFunctionOptionDefaultValue: string;
-
-declare var MGLStyleFunctionOptionInterpolationBase: string;
 
 declare class MGLStyleLayer extends NSObject {
 
@@ -2426,28 +2416,10 @@ interface MGLStyleLayerDrawingContext {
   direction: number;
   pitch: number;
   fieldOfView: number;
+  projectionMatrix: MGLMatrix4;
 }
 
 declare var MGLStyleLayerDrawingContext: interop.StructType<MGLStyleLayerDrawingContext>;
-
-declare class MGLStyleValue<T> extends NSObject {
-
-  static alloc<T>(): MGLStyleValue<T>; // inherited from NSObject
-
-  static new<T>(): MGLStyleValue<T>; // inherited from NSObject
-
-  static valueWithInterpolationBaseStops<T>(interpolationBase: number, stops: NSDictionary<number, MGLStyleValue<T>>): MGLStyleValue<T>;
-
-  static valueWithInterpolationModeCameraStopsOptions<T>(interpolationMode: MGLInterpolationMode, cameraStops: NSDictionary<any, MGLStyleValue<T>>, options: NSDictionary<string, any>): MGLStyleValue<T>;
-
-  static valueWithInterpolationModeCompositeStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, compositeStops: NSDictionary<any, NSDictionary<any, MGLStyleValue<T>>>, attributeName: string, options: NSDictionary<string, any>): MGLStyleValue<T>;
-
-  static valueWithInterpolationModeSourceStopsAttributeNameOptions<T>(interpolationMode: MGLInterpolationMode, sourceStops: NSDictionary<any, MGLStyleValue<T>>, attributeName: string, options: NSDictionary<string, any>): MGLStyleValue<T>;
-
-  static valueWithRawValue<T>(rawValue: T): MGLStyleValue<T>;
-
-  static valueWithStops<T>(stops: NSDictionary<number, MGLStyleValue<T>>): MGLStyleValue<T>;
-}
 
 declare const enum MGLSymbolPlacement {
 
@@ -2462,127 +2434,127 @@ declare class MGLSymbolStyleLayer extends MGLVectorStyleLayer {
 
   static new(): MGLSymbolStyleLayer; // inherited from NSObject
 
-  iconAllowsOverlap: MGLStyleValue<number>;
+  iconAllowsOverlap: NSExpression;
 
-  iconAnchor: MGLStyleValue<NSValue>;
+  iconAnchor: NSExpression;
 
-  iconColor: MGLStyleValue<UIColor>;
+  iconColor: NSExpression;
 
   iconColorTransition: MGLTransition;
 
-  iconHaloBlur: MGLStyleValue<number>;
+  iconHaloBlur: NSExpression;
 
   iconHaloBlurTransition: MGLTransition;
 
-  iconHaloColor: MGLStyleValue<UIColor>;
+  iconHaloColor: NSExpression;
 
   iconHaloColorTransition: MGLTransition;
 
-  iconHaloWidth: MGLStyleValue<number>;
+  iconHaloWidth: NSExpression;
 
   iconHaloWidthTransition: MGLTransition;
 
-  iconIgnoresPlacement: MGLStyleValue<number>;
+  iconIgnoresPlacement: NSExpression;
 
-  iconImageName: MGLStyleValue<string>;
+  iconImageName: NSExpression;
 
-  iconOffset: MGLStyleValue<NSValue>;
+  iconOffset: NSExpression;
 
-  iconOpacity: MGLStyleValue<number>;
+  iconOpacity: NSExpression;
 
   iconOpacityTransition: MGLTransition;
 
-  iconOptional: MGLStyleValue<number>;
+  iconOptional: NSExpression;
 
-  iconPadding: MGLStyleValue<number>;
+  iconPadding: NSExpression;
 
-  iconPitchAlignment: MGLStyleValue<NSValue>;
+  iconPitchAlignment: NSExpression;
 
-  iconRotation: MGLStyleValue<number>;
+  iconRotation: NSExpression;
 
-  iconRotationAlignment: MGLStyleValue<NSValue>;
+  iconRotationAlignment: NSExpression;
 
-  iconScale: MGLStyleValue<number>;
+  iconScale: NSExpression;
 
-  iconTextFit: MGLStyleValue<NSValue>;
+  iconTextFit: NSExpression;
 
-  iconTextFitPadding: MGLStyleValue<NSValue>;
+  iconTextFitPadding: NSExpression;
 
-  iconTranslation: MGLStyleValue<NSValue>;
+  iconTranslation: NSExpression;
 
-  iconTranslationAnchor: MGLStyleValue<NSValue>;
+  iconTranslationAnchor: NSExpression;
 
   iconTranslationTransition: MGLTransition;
 
-  keepsIconUpright: MGLStyleValue<number>;
+  keepsIconUpright: NSExpression;
 
-  keepsTextUpright: MGLStyleValue<number>;
+  keepsTextUpright: NSExpression;
 
-  maximumTextAngle: MGLStyleValue<number>;
+  maximumTextAngle: NSExpression;
 
-  maximumTextWidth: MGLStyleValue<number>;
+  maximumTextWidth: NSExpression;
 
-  symbolAvoidsEdges: MGLStyleValue<number>;
+  symbolAvoidsEdges: NSExpression;
 
-  symbolPlacement: MGLStyleValue<NSValue>;
+  symbolPlacement: NSExpression;
 
-  symbolSpacing: MGLStyleValue<number>;
+  symbolSpacing: NSExpression;
 
-  text: MGLStyleValue<string>;
+  text: NSExpression;
 
-  textAllowsOverlap: MGLStyleValue<number>;
+  textAllowsOverlap: NSExpression;
 
-  textAnchor: MGLStyleValue<NSValue>;
+  textAnchor: NSExpression;
 
-  textColor: MGLStyleValue<UIColor>;
+  textColor: NSExpression;
 
   textColorTransition: MGLTransition;
 
-  textFontNames: MGLStyleValue<NSArray<string>>;
+  textFontNames: NSExpression;
 
-  textFontSize: MGLStyleValue<number>;
+  textFontSize: NSExpression;
 
-  textHaloBlur: MGLStyleValue<number>;
+  textHaloBlur: NSExpression;
 
   textHaloBlurTransition: MGLTransition;
 
-  textHaloColor: MGLStyleValue<UIColor>;
+  textHaloColor: NSExpression;
 
   textHaloColorTransition: MGLTransition;
 
-  textHaloWidth: MGLStyleValue<number>;
+  textHaloWidth: NSExpression;
 
   textHaloWidthTransition: MGLTransition;
 
-  textIgnoresPlacement: MGLStyleValue<number>;
+  textIgnoresPlacement: NSExpression;
 
-  textJustification: MGLStyleValue<NSValue>;
+  textJustification: NSExpression;
 
-  textLetterSpacing: MGLStyleValue<number>;
+  textLetterSpacing: NSExpression;
 
-  textLineHeight: MGLStyleValue<number>;
+  textLineHeight: NSExpression;
 
-  textOffset: MGLStyleValue<NSValue>;
+  textOffset: NSExpression;
 
-  textOpacity: MGLStyleValue<number>;
+  textOpacity: NSExpression;
 
   textOpacityTransition: MGLTransition;
 
-  textOptional: MGLStyleValue<number>;
+  textOptional: NSExpression;
 
-  textPadding: MGLStyleValue<number>;
+  textPadding: NSExpression;
 
-  textPitchAlignment: MGLStyleValue<NSValue>;
+  textPitchAlignment: NSExpression;
 
-  textRotation: MGLStyleValue<number>;
+  textRotation: NSExpression;
 
-  textRotationAlignment: MGLStyleValue<NSValue>;
+  textRotationAlignment: NSExpression;
 
-  textTransform: MGLStyleValue<NSValue>;
+  textTransform: NSExpression;
 
-  textTranslation: MGLStyleValue<NSValue>;
+  textTranslation: NSExpression;
 
-  textTranslationAnchor: MGLStyleValue<NSValue>;
+  textTranslationAnchor: NSExpression;
 
   textTranslationTransition: MGLTransition;
 
@@ -2740,6 +2712,10 @@ declare var MGLTileSourceOptionAttributionHTMLString: string;
 
 declare var MGLTileSourceOptionAttributionInfos: string;
 
+declare var MGLTileSourceOptionCoordinateBounds: string;
+
+declare var MGLTileSourceOptionDEMEncoding: string;
+
 declare var MGLTileSourceOptionMaximumZoomLevel: string;
 
 declare var MGLTileSourceOptionMinimumZoomLevel: string;
@@ -2854,11 +2830,22 @@ declare const enum MGLUserTrackingMode {
   FollowWithCourse = 3
 }
 
-declare class MGLVectorSource extends MGLTileSource {
+declare class MGLVectorStyleLayer extends MGLForegroundStyleLayer {
 
-  static alloc(): MGLVectorSource; // inherited from NSObject
+  static alloc(): MGLVectorStyleLayer; // inherited from NSObject
 
-  static new(): MGLVectorSource; // inherited from NSObject
+  static new(): MGLVectorStyleLayer; // inherited from NSObject
+
+  predicate: NSPredicate;
+
+  sourceLayerIdentifier: string;
+}
+
+declare class MGLVectorTileSource extends MGLTileSource {
+
+  static alloc(): MGLVectorTileSource; // inherited from NSObject
+
+  static new(): MGLVectorTileSource; // inherited from NSObject
 
   constructor(o: { identifier: string; configurationURL: NSURL; });
 
@@ -2869,17 +2856,6 @@ declare class MGLVectorSource extends MGLTileSource {
   initWithIdentifierConfigurationURL(identifier: string, configurationURL: NSURL): this;
 
   initWithIdentifierTileURLTemplatesOptions(identifier: string, tileURLTemplates: NSArray<string>, options: NSDictionary<string, any>): this;
-}
-
-declare class MGLVectorStyleLayer extends MGLForegroundStyleLayer {
-
-  static alloc(): MGLVectorStyleLayer; // inherited from NSObject
-
-  static new(): MGLVectorStyleLayer; // inherited from NSObject
-
-  predicate: NSPredicate;
-
-  sourceLayerIdentifier: string;
 }
 
 declare var MapboxVersionNumber: number;

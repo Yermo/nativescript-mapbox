@@ -6,14 +6,28 @@ import { Color } from "tns-core-modules/color";
 import * as http from "tns-core-modules/http";
 
 import {
+  AddExtrusionOptions,
   AddGeoJsonClusteredOptions,
-  MapboxMarker, AddPolygonOptions, AddPolylineOptions, AnimateCameraOptions, DeleteOfflineRegionOptions,
-  DownloadOfflineRegionOptions, LatLng,
+  AddPolygonOptions,
+  AddPolylineOptions,
+  AnimateCameraOptions,
+  DeleteOfflineRegionOptions,
+  DownloadOfflineRegionOptions,
+  LatLng,
+  ListOfflineRegionsOptions,
   MapboxApi,
   MapboxCommon,
+  MapboxMarker,
   MapboxViewBase,
-  MapStyle, OfflineRegion, SetCenterOptions, SetTiltOptions, SetViewportOptions, SetZoomLevelOptions, ShowOptions,
-  Viewport, AddExtrusionOptions, UserLocation, ListOfflineRegionsOptions
+  MapStyle,
+  OfflineRegion,
+  SetCenterOptions,
+  SetTiltOptions,
+  SetViewportOptions,
+  SetZoomLevelOptions,
+  ShowOptions,
+  UserLocation,
+  Viewport
 } from "./mapbox.common";
 
 // Export the enums for devs not using TS
@@ -117,7 +131,7 @@ const _getMapStyle = (input: any) => {
     return Style.OUTDOORS;
   } else if (input === MapStyle.SATELLITE || input === MapStyle.SATELLITE.toString()) {
     return Style.SATELLITE;
-  } else if (input === MapStyle.HYBRID || input === MapStyle.SATELLITE_STREETS || input === MapStyle.HYBRID.toString() || input === MapStyle.SATELLITE_STREETS.toString()) {
+  } else if (input === MapStyle.SATELLITE_STREETS || input === MapStyle.SATELLITE_STREETS.toString()) {
     return Style.SATELLITE_STREETS;
   } else if (input === MapStyle.TRAFFIC_DAY || input === MapStyle.TRAFFIC_DAY.toString()) {
     return Style.TRAFFIC_DAY;
@@ -169,14 +183,17 @@ const _fineLocationPermissionGranted = () => {
 };
 
 const _showLocation = (theMapView, mapboxMap) => {
+  // From https://github.com/mapbox/mapbox-plugins-android/blob/master/app/src/main/java/com/mapbox/mapboxsdk/plugins/testapp/activity/location/LocationLayerModesActivity.java
   if (!_locationEngine) {
-    _locationEngine = new com.mapbox.services.android.location.LostLocationEngine(application.android.context);
-    _locationEngine.setPriority(com.mapbox.services.android.telemetry.location.LocationEnginePriority.HIGH_ACCURACY);
+    _locationEngine = new com.mapbox.android.core.location.LocationEngineProvider(application.android.context).obtainBestLocationEngineAvailable();
+    _locationEngine.setPriority(com.mapbox.android.core.location.LocationEnginePriority.HIGH_ACCURACY);
+    _locationEngine.setFastestInterval(1000);
+
     _locationEngine.activate();
   }
 
   const locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap, _locationEngine);
-  locationLayerPlugin.setLocationLayerEnabled(com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerMode.TRACKING);
+  locationLayerPlugin.setCameraMode(com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode.TRACKING);
 };
 
 const _getClickedMarkerDetails = (clicked) => {
@@ -330,18 +347,15 @@ const _removeMarkers = (ids, nativeMap?) => {
   }
   for (let m in _markers) {
     let marker = _markers[m];
-    if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
-      // don't remove the location markers in case 'removeAll' was invoked
-      if (ids || (marker.id !== 999997 && marker.id !== 999998)) {
+    if (!ids || (marker && marker.id && ids.indexOf(marker.id) > -1)) {
+      if (ids) {
         theMap.mapboxMap.removeAnnotation(marker.android);
       }
     }
   }
   // remove markers from cache
   if (ids) {
-    _markers = _markers.filter((marker) => {
-      return ids.indexOf(marker.id) < 0;
-    });
+    _markers = _markers.filter(marker => ids.indexOf(marker.id) === -1);
   } else {
     _markers = [];
   }
@@ -382,7 +396,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
 
       // grab the permission dialog result
-      application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, (args: any) => {
+      const permissionCallback = (args: any) => {
         if (args.requestCode !== ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
           return;
         }
@@ -392,8 +406,11 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             return;
           }
         }
+        application.android.off(application.AndroidApplication.activityRequestPermissionsEvent, permissionCallback);
         resolve();
-      });
+      };
+
+      application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, permissionCallback);
 
       // invoke the permission dialog
       android.support.v4.app.ActivityCompat.requestPermissions(
@@ -841,7 +858,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        theMap.mapboxMap.setOnMapClickListener(
+        theMap.mapboxMap.addOnMapClickListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener({
               onMapClick: point => {
                 listener({
@@ -860,7 +877,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?): Promise<any> {
+  setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         const theMap = nativeMap || _mapbox;
@@ -870,11 +887,18 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        theMap.mapboxMap.setOnScrollListener(
-            new com.mapbox.mapboxsdk.maps.MapboxMap.OnScrollListener({
-              onScroll: () => {
-                listener();
-              }
+        // the 'onMove' event seems like the one closest to the iOS implementation
+        theMap.mapboxMap.addOnMoveListener(
+            new com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener({
+              onMoveBegin: (detector: any /* MoveGestureDetector */) => {},
+              onMove: (detector: any /* MoveGestureDetector */) => {
+                const coordinate = theMap.mapboxMap.getCameraPosition().target;
+                listener({
+                  lat: coordinate.getLatitude(),
+                  lng: coordinate.getLongitude()
+                });
+              },
+              onMoveEnd: (detector: any /* MoveGestureDetector */) => {}
             })
         );
 
@@ -896,7 +920,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        theMap.mapboxMap.setOnFlingListener(
+        theMap.mapboxMap.addOnFlingListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnFlingListener({
               onFling: () => {
                 listener();
@@ -922,7 +946,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        theMap.mapboxMap.setOnCameraMoveListener(
+        theMap.mapboxMap.addOnCameraMoveListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveListener({
               onCameraMove: () => {
                 listener();
@@ -948,7 +972,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        theMap.mapboxMap.setOnCameraMoveCancelListener(
+        theMap.mapboxMap.addOnCameraMoveCancelListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveCanceledListener({
               onCameraMoveCanceled: () => {
                 listener();
@@ -974,7 +998,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        theMap.mapboxMap.setOnCameraIdleListener(
+        theMap.mapboxMap.addOnCameraIdleListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener({
               onCameraIdle: () => {
                 listener();
@@ -1297,7 +1321,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(18.0)),
           com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
         ]);
-        unclustered.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.neq("cluster", new java.lang.Boolean(true)));
+        // TODO Filter is undefined
+        // unclustered.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.neq("cluster", new java.lang.Boolean(true)));
         theMap.mapboxMap.addLayer(unclustered); // , "building");
 
         for (let i = 0; i < layers.length; i++) {

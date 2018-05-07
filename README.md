@@ -118,7 +118,7 @@ All currently supported options for your XML based map are (__don't__ use other 
 |---|---|---
 |`accesstoken`|-|see 'Prerequisites' above
 |`delay`|0|A delay in milliseconds - you can set this to have better control over when Mapbox is invoked so it won't clash with other computations your app may need to perform. 
-|`mapStyle`|streets|streets, light, dark, emerald, hybrid, satellite, traffic_day, traffic_night
+|`mapStyle`|streets|streets, light, dark, satellite_streets, satellite, traffic_day, traffic_night
 |`latitude `|-|Set the center of the map by passing this in
 |`longitude`|-|.. and this as well
 |`zoomLevel`|0|0-20
@@ -525,7 +525,7 @@ Add a listener to retrieve lat and lng of where the user taps the map (not a mar
 ```
 
 ### setOnScrollListener
-Add a listener to retrieve lat and lng of where the user scrolls to on the map (lat/lng only returned on iOS though).
+Add a listener to retrieve lat and lng of where the user scrolls to on the map.
 
 ```typescript
   mapbox.setOnScrollListener((point?: LatLng) => {

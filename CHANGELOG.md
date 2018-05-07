@@ -1,5 +1,14 @@
 # Change Log
 
+## [4.0.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.0.0) (2018-05-07)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.3.0...4.0.0)
+
+**Implemented enhancements:**
+
+- Polygons for iOS [\#204](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/204)
+- Bump Mapbox iOS SDK to 4.0.0 and Android to 6.0.1 [\#219](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/219)
+
+
 ## [3.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.3.0) (2018-01-20)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.2.0...3.3.0)
 
