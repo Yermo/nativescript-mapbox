@@ -3,11 +3,15 @@
 ## [4.0.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.0.0) (2018-05-07)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.3.0...4.0.0)
 
+**Fixed bugs:**
+
+- The App crashs on Android when using nativescript-vue - missing toHumanReadableAscii method[\#216](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/216)
+
 **Implemented enhancements:**
 
 - Polygons for iOS [\#204](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/204)
+- animateCamera with target increases the zoomLevel to maximum in iOS [\#215](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/215)
 - Bump Mapbox iOS SDK to 4.0.0 and Android to 6.0.1 [\#219](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/219)
-
 
 ## [3.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/3.3.0) (2018-01-20)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.2.0...3.3.0)

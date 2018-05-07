@@ -537,7 +537,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        let cam = MGLMapCamera.camera();
+        let cam = theMap.camera;
 
         cam.centerCoordinate = CLLocationCoordinate2DMake(target.lat, target.lng);
 

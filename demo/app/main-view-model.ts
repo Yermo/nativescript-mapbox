@@ -450,7 +450,7 @@ export class HelloWorldModel extends Observable {
           altitude: 500, // iOS
           bearing: 270,
           tilt: 50,
-          duration: 10000
+          duration: 7000
         }
     ).then(
         result => {

@@ -193,7 +193,8 @@ const _showLocation = (theMapView, mapboxMap) => {
   }
 
   const locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap, _locationEngine);
-  locationLayerPlugin.setCameraMode(com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode.TRACKING);
+  // with the foloowing line enabled, the camera moves to the user's location once it's determined
+  // locationLayerPlugin.setCameraMode(com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode.TRACKING);
 };
 
 const _getClickedMarkerDetails = (clicked) => {
@@ -816,7 +817,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        const cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder()
+        const cameraPositionBuilder = new com.mapbox.mapboxsdk.camera.CameraPosition.Builder(theMap.mapboxMap.getCameraPosition())
             .target(new com.mapbox.mapboxsdk.geometry.LatLng(target.lat, target.lng));
 
         if (options.bearing) {
