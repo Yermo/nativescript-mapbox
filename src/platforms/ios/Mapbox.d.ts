@@ -1313,7 +1313,6 @@ declare class MGLMultiPolygon extends MGLShape implements MGLOverlay {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   class(): typeof NSObject;
 
@@ -1368,7 +1367,6 @@ declare class MGLMultiPolygonFeature extends MGLMultiPolygon implements MGLFeatu
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   attributeForKey(key: string): any;
 
@@ -1425,7 +1423,6 @@ declare class MGLMultiPolyline extends MGLShape implements MGLOverlay {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   class(): typeof NSObject;
 
@@ -1480,7 +1477,6 @@ declare class MGLMultiPolylineFeature extends MGLMultiPolyline implements MGLFea
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   attributeForKey(key: string): any;
 
@@ -1681,7 +1677,6 @@ declare class MGLPointCollection extends MGLShape implements MGLOverlay {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   class(): typeof NSObject;
 
@@ -1738,7 +1733,6 @@ declare class MGLPointCollectionFeature extends MGLPointCollection implements MG
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   attributeForKey(key: string): any;
 
@@ -1793,7 +1787,6 @@ declare class MGLPointFeature extends MGLPointAnnotation implements MGLFeature {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   attributeForKey(key: string): any;
 
@@ -1852,7 +1845,6 @@ declare class MGLPolygon extends MGLMultiPoint implements MGLOverlay {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   class(): typeof NSObject;
 
@@ -1909,7 +1901,6 @@ declare class MGLPolygonFeature extends MGLPolygon implements MGLFeature {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   attributeForKey(key: string): any;
 
@@ -1964,7 +1955,6 @@ declare class MGLPolyline extends MGLMultiPoint implements MGLOverlay {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   class(): typeof NSObject;
 
@@ -2019,7 +2009,6 @@ declare class MGLPolylineFeature extends MGLPolyline implements MGLFeature {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   attributeForKey(key: string): any;
 
@@ -2154,7 +2143,6 @@ declare class MGLShape extends NSObject implements MGLAnnotation, NSSecureCoding
 
   readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-  readonly  // inherited from NSObjectProtocol
 
   static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2228,7 +2216,6 @@ declare class MGLShapeCollectionFeature extends MGLShapeCollection implements MG
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
 
   attributeForKey(key: string): any;
 
@@ -2658,7 +2645,6 @@ declare class MGLTilePyramidOfflineRegion extends NSObject implements MGLOffline
 
   readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-  readonly  // inherited from NSObjectProtocol
 
   static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2759,7 +2745,6 @@ declare class MGLUserLocation extends NSObject implements MGLAnnotation, NSSecur
 
   readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-  readonly  // inherited from NSObjectProtocol
 
   static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
