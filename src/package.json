@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox",
   "typings": "index.d.ts",
@@ -17,7 +17,7 @@
     }
   },
   "scripts": {
-    "build": "npm i && tsc",
+    "build": "npm i && tsc --skipLibCheck",
     "demo.ios": "npm run build && cd ../demo && tns run ios --syncAllFiles",
     "demo.android": "npm run build && cd ../demo && tns run android --syncAllFiles",
     "test": "npm run tslint && npm run tslint.demo && cd ../demo && tns build ios && tns build android",
