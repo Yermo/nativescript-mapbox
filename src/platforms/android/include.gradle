@@ -17,3 +17,10 @@ dependencies {
     // plugins
     compile 'com.mapbox.mapboxsdk:mapbox-android-plugin-locationlayer:0.5.0'
 }
+
+android {
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
