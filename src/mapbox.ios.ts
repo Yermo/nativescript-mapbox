@@ -454,6 +454,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions(polygonID, shape, null);
       theMap.style.addSource(source);
 
+      if (options.strokeColor || options.strokeWidth || options.strokeOpacity) {
+        const strokeLayer = MGLLineStyleLayer.alloc().initWithIdentifierSource(polygonID + "_stroke", source);
+        strokeLayer.lineColor = NSExpression.expressionForConstantValue(!options.strokeColor ? UIColor.blackColor : (options.strokeColor instanceof Color ? options.strokeColor.ios : new Color(options.strokeColor).ios));
+        strokeLayer.lineWidth = NSExpression.expressionForConstantValue(options.strokeWidth || 5);
+        strokeLayer.lineOpacity = NSExpression.expressionForConstantValue(options.strokeOpacity === undefined ? 1 : options.strokeOpacity);
+        theMap.style.addLayer(strokeLayer);
+      }
+
       const layer = MGLFillStyleLayer.alloc().initWithIdentifierSource(polygonID, source);
       layer.fillColor = NSExpression.expressionForConstantValue(!options.fillColor ? UIColor.blackColor : (options.fillColor instanceof Color ? options.fillColor.ios : new Color(options.fillColor).ios));
       layer.fillOpacity = NSExpression.expressionForConstantValue(options.fillOpacity === undefined ? 1 : options.fillOpacity);

@@ -30,6 +30,19 @@ export interface AddPolygonOptions {
    * Default fully opaque (1).
    */
   fillOpacity?: number;
+
+  /**
+   * The line around the polygon. Barely visible on Android.
+   */
+  strokeColor?: string | Color;
+  /**
+   * iOS only.
+   */
+  strokeWidth?: number;
+  /**
+   * iOS only.
+   */
+  strokeOpacity?: number;
 }
 
 export interface UserLocation {

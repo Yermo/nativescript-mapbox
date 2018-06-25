@@ -748,8 +748,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           let point = points[p];
           polygonOptions.add(new com.mapbox.mapboxsdk.geometry.LatLng(point.lat, point.lng));
         }
+
         polygonOptions.fillColor(Mapbox.getAndroidColor(options.fillColor));
         polygonOptions.alpha(options.fillOpacity === undefined ? 1 : options.fillOpacity);
+
+        // Note that the stroke is barely visible, see https://github.com/mapbox/mapbox-gl-native/issues/5676
+        if (options.strokeColor) {
+          polygonOptions.strokeColor(Mapbox.getAndroidColor(options.strokeColor));
+        }
+
         theMap.mapboxMap.addPolygon(polygonOptions);
         resolve();
       } catch (ex) {

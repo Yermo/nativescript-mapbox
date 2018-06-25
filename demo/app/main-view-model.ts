@@ -22,7 +22,7 @@ export class HelloWorldModel extends Observable {
       margins: {
         left: 18,
         right: 18,
-        top: isIOS ? 384 : 424,
+        top: isIOS ? 390 : 424,
         bottom: isIOS ? 50 : 8
       },
       center: {
@@ -55,12 +55,10 @@ export class HelloWorldModel extends Observable {
         }
       ]
     }).then(
-        (showResult) => {
+        showResult => {
           console.log(`Mapbox show done for ${showResult.ios ? "iOS" : "Android"}, native object received: ${showResult.ios ? showResult.ios : showResult.android}`);
 
-          this.mapbox.setOnMapClickListener(point => {
-            console.log(`>> Map clicked: ${JSON.stringify(point)}`);
-          });
+          this.mapbox.setOnMapClickListener(point => console.log(`>> Map clicked: ${JSON.stringify(point)}`));
 
           this.mapbox.setOnScrollListener((point?: LatLng) => {
             // note that only iOS returns the point
@@ -71,9 +69,7 @@ export class HelloWorldModel extends Observable {
             console.log(`>> Map flinged"}`);
           }).catch(err => console.log(err));
         },
-        (error: string) => {
-          console.log("mapbox show error: " + error);
-        }
+        (error: string) => console.log("mapbox show error: " + error)
     );
   }
 
@@ -533,6 +529,12 @@ export class HelloWorldModel extends Observable {
           id: 1,
           fillColor: new Color("red"),
           fillOpacity: 0.7,
+
+          // 'stroke*' is only effective on iOS
+          strokeColor: new Color("green"),
+          strokeWidth: 8,
+          strokeOpacity: 0.5,
+
           points: [
             {
               lat: 52.3923633970718,

@@ -4,7 +4,6 @@
 
 # NativeScript Mapbox plugin
 
-[![Build Status][build-status]][build-url]
 [![NPM version][npm-image]][npm-url]
 [![Downloads][downloads-image]][npm-url]
 [![Twitter Follow][twitter-image]][twitter-url]
@@ -449,6 +448,12 @@ The first person to tweet a snowman drawn with this function gets a T-shirt.
         id: 1,
         fillColor: new Color("red"),
         fillOpacity: 0.7,
+
+        // stroke-related properties are only effective on iOS
+        strokeColor: new Color("green"),
+        strokeWidth: 8,
+        strokeOpacity: 0.5,
+
         points: [
           {
             lat: 52.3923633970718,
