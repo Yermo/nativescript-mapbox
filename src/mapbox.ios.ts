@@ -24,7 +24,9 @@ import {
   SetViewportOptions,
   SetZoomLevelOptions,
   ShowOptions,
+  TrackUserOptions,
   UserLocation,
+  UserTrackingMode,
   Viewport
 } from "./mapbox.common";
 import { Color } from "tns-core-modules/color";
@@ -41,7 +43,6 @@ let _delegate: any;
 const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
   mapView.logoView.hidden = settings.hideLogo;
   mapView.attributionButton.hidden = settings.hideAttribution;
-  mapView.showsUserLocation = settings.showUserLocation;
   mapView.compassView.hidden = settings.hideCompass;
   mapView.rotateEnabled = !settings.disableRotation;
   mapView.scrollEnabled = !settings.disableScroll;
@@ -58,11 +59,12 @@ const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
     mapView.setZoomLevelAnimated(settings.zoomLevel, false);
   }
 
-  // TODO not sure this works as planned.. perhaps better to listen for rotate events ([..didrotate..] and fix the frame
+  mapView.showsUserLocation = settings.showUserLocation;
+
   mapView.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
 };
 
-const _getMapStyle = (input: any) => {
+const _getMapStyle = (input: any): NSURL => {
   if (/^mapbox:\/\/styles/.test(input)) {
     // allow for a style URL to be passed
     return NSURL.URLWithString(input);
@@ -82,6 +84,18 @@ const _getMapStyle = (input: any) => {
     return NSURL.URLWithString("mapbox://styles/mapbox/traffic-night-v2");
   } else {
     return MGLStyle.streetsStyleURL;
+  }
+};
+
+const _getTrackingMode = (input: UserTrackingMode): MGLUserTrackingMode => {
+  if (input === "FOLLOW") {
+    return MGLUserTrackingMode.Follow;
+  } else if (input === "FOLLOW_WITH_HEADING") {
+    return MGLUserTrackingMode.FollowWithHeading;
+  } else if (input === "FOLLOW_WITH_COURSE") {
+    return MGLUserTrackingMode.FollowWithCourse;
+  } else {
+    return MGLUserTrackingMode.None;
   }
 };
 
@@ -896,6 +910,31 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
     throw new Error('Method not implemented.');
   }
+
+  trackUser(options: TrackUserOptions, nativeMap?): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        if (!theMap.showsUserLocation) {
+          reject("The map is not currently showing the user location");
+          return;
+        }
+
+        theMap.setUserTrackingModeAnimated(_getTrackingMode(options.mode), options.animated !== false);
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.trackUser: " + ex);
+        reject(ex);
+      }
+    });
+  }
 }
 
 const _addObserver = (eventName, callback) => {
@@ -1007,6 +1046,10 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     console.log("mapViewDidFailLoadingMapWithError: " + error);
   }
 
+  mapViewDidChangeUserTrackingModeAnimated(mapView: MGLMapView, mode: MGLUserTrackingMode, animated: boolean): void {
+    console.log("mapViewDidChangeUserTrackingModeAnimated: " + mode);
+  }
+
   // fired when the marker icon is about to be rendered - return null for the default icon
   mapViewImageForAnnotation(mapView: MGLMapView, annotation: MGLAnnotation): MGLAnnotationImage {
     let cachedMarker = this.getTappedMarkerDetails(annotation);
@@ -1053,7 +1096,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     return null;
   }
 
-  // fired when on of the callout's accessoryviews is tapped (not currently used)
+  // fired when one of the callout's accessoryviews is tapped (not currently used)
   mapViewAnnotationCalloutAccessoryControlTapped(mapView: MGLMapView, annotation: MGLAnnotation, control: UIControl): void {
   }
 

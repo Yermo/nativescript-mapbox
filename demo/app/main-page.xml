@@ -2,7 +2,7 @@
   <TabView>
     <TabView.items>
 
-      <!--TabViewItem title="By XML">
+      <TabViewItem title="By XML">
         <TabViewItem.view>
           <GridLayout columns="*, *" rows="110, *, 160" horizontalAlignment="stretch">
             <ContentView row="0" style="margin-right: 3; border-color: #fff">
@@ -35,7 +35,7 @@
                   latitude="52.3702160"
                   longitude="4.8951680"
                   zoomLevel="7"
-                  mapStyle="satellite"
+                  mapStyle="streets"
                   mapReady="onMapReady"
                   locationPermissionGranted="onLocationPermissionGranted"
                   showUserLocation="true"
@@ -74,7 +74,7 @@
             </ContentView>
           </GridLayout>
         </TabViewItem.view>
-      </TabViewItem-->
+      </TabViewItem>
 
       <TabViewItem title="By Code">
         <TabViewItem.view>
@@ -102,14 +102,15 @@
             <Button row="4" col="2" colSpan="2" text="remove all markers" tap="{{ doRemoveAllMarkers }}" class="button" />
 
             <Button row="5" colSpan="2" text="get user location" tap="{{ doGetUserLocation }}" class="button" />
-            <Button row="5" colSpan="2" text="Add polygon" tap="{{ doAddPolygon }}" class="button" />
+            <Button row="5" col="2" colSpan="2" text="track user" tap="{{ doTrackUser }}" class="button" />
 
             <Android>
               <Button row="6" colSpan="4" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />
             </Android>
 
             <Button row="7" colSpan="2" text="Add polyline" tap="{{ doAddPolyline }}" class="button" />
-            <Button row="7" col="2" colSpan="2" text="Remove polyline" tap="{{ doRemovePolyline }}" class="button" />
+            <Button row="7" col="2" colSpan="2" text="Add polygon" tap="{{ doAddPolygon }}" class="button" />
+            <!--<Button row="7" col="2" colSpan="2" text="Remove polyline" tap="{{ doRemovePolyline }}" class="button" />-->
 
             <Button row="8" colSpan="2" text="DL Amsterdam" tap="{{ doDownloadAmsterdam }}" class="button button-offline" />
             <Button row="8" col="2" colSpan="2"  text="DL current view" tap="{{ doDownloadCurrentViewportAsOfflineRegion }}" class="button button-offline" />

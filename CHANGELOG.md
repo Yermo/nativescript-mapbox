@@ -1,5 +1,18 @@
 # Change Log
 
+[Android SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/android/CHANGELOG.md)
+
+[iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
+
+
+## [4.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.1.0) (2018-06-28)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.0.0...4.1.0)
+
+**Implemented enhancements:**
+
+- User Tracking Mode [\#144](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/144)
+
+
 ## [4.0.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.0.0) (2018-05-07)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.3.0...4.0.0)
 

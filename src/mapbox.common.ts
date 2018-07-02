@@ -179,6 +179,16 @@ export interface AddGeoJsonClusteredOptions {
   clusters?: Array<MapboxCluster>;
 }
 
+export type UserTrackingMode = "NONE" | "FOLLOW" | "FOLLOW_WITH_HEADING" | "FOLLOW_WITH_COURSE";
+
+export interface TrackUserOptions {
+  mode: UserTrackingMode;
+  /**
+   * iOS only, as Android is always animated. Default true (because of Android).
+   */
+  animated?: boolean;
+}
+
 export interface AddExtrusionOptions {
 
 }
@@ -332,6 +342,8 @@ export interface MapboxApi {
 
   getUserLocation(nativeMap?: any): Promise<UserLocation>;
 
+  trackUser(options: TrackUserOptions, nativeMap?: any): Promise<void>;
+
   addPolygon(options: AddPolygonOptions, nativeMap?: any): Promise<any>;
 
   addPolyline(options: AddPolylineOptions, nativeMap?: any): Promise<any>;
@@ -461,6 +473,10 @@ export interface MapboxViewApi {
 
   setTilt(options: SetTiltOptions): Promise<any>;
 
+  getUserLocation(): Promise<UserLocation>;
+
+  trackUser(options: TrackUserOptions): Promise<any>;
+
   addPolygon(options: AddPolygonOptions): Promise<any>;
 
   addPolyline(options: AddPolylineOptions): Promise<any>;
@@ -547,6 +563,10 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   getUserLocation(): Promise<UserLocation> {
     return this.mapbox.getUserLocation(this.getNativeMapView());
+  }
+
+  trackUser(options: TrackUserOptions): Promise<any> {
+    return this.mapbox.trackUser(options, this.getNativeMapView());
   }
 
   addPolygon(options: AddPolygonOptions): Promise<any> {

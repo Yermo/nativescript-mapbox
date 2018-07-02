@@ -26,7 +26,9 @@ import {
   SetViewportOptions,
   SetZoomLevelOptions,
   ShowOptions,
+  TrackUserOptions,
   UserLocation,
+  UserTrackingMode,
   Viewport
 } from "./mapbox.common";
 
@@ -41,6 +43,7 @@ let _markers = [];
 let _polylines = [];
 let _markerIconDownloadCache = [];
 let _locationEngine = null;
+let _locationLayerPlugin = null;
 
 const ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
 
@@ -117,7 +120,7 @@ export class MapboxView extends MapboxViewBase {
 
 /*************** XML definition END ****************/
 
-const _getMapStyle = (input: any) => {
+const _getMapStyle = (input: any): any => {
   const Style = com.mapbox.mapboxsdk.constants.Style;
   // allow for a style URL to be passed
   if (/^mapbox:\/\/styles/.test(input)) {
@@ -140,6 +143,32 @@ const _getMapStyle = (input: any) => {
   } else {
     // default
     return Style.MAPBOX_STREETS;
+  }
+};
+
+const _getUserLocationRenderMode = (input: UserTrackingMode): any => {
+  // see https://github.com/mapbox/mapbox-plugins-android/blob/3a92bdf28b3bd76c9e83627f985baeff1b26d401/plugin-locationlayer/src/main/java/com/mapbox/mapboxsdk/plugins/locationlayer/modes/RenderMode.java#L28
+  const RenderMode = com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode;
+  if (input === "FOLLOW_WITH_HEADING") {
+    return RenderMode.COMPASS;
+  } else if (input === "FOLLOW_WITH_COURSE") {
+    return RenderMode.GPS;
+  } else {
+    return RenderMode.NORMAL;
+  }
+};
+
+const _getUserLocationCameraMode = (input: UserTrackingMode): any => {
+  // see https://github.com/mapbox/mapbox-plugins-android/blob/3a92bdf28b3bd76c9e83627f985baeff1b26d401/plugin-locationlayer/src/main/java/com/mapbox/mapboxsdk/plugins/locationlayer/modes/CameraMode.java#L28
+  const CameraMode = com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode;
+  if (input === "FOLLOW") {
+    return CameraMode.TRACKING;
+  } else if (input === "FOLLOW_WITH_HEADING") {
+    return CameraMode.TRACKING_COMPASS;
+  } else if (input === "FOLLOW_WITH_COURSE") {
+    return CameraMode.TRACKING_COMPASS;
+  } else {
+    return CameraMode.NONE;
   }
 };
 
@@ -185,16 +214,15 @@ const _fineLocationPermissionGranted = () => {
 const _showLocation = (theMapView, mapboxMap) => {
   // From https://github.com/mapbox/mapbox-plugins-android/blob/master/app/src/main/java/com/mapbox/mapboxsdk/plugins/testapp/activity/location/LocationLayerModesActivity.java
   if (!_locationEngine) {
-    _locationEngine = new com.mapbox.android.core.location.LocationEngineProvider(application.android.context).obtainBestLocationEngineAvailable();
+    _locationEngine = new com.mapbox.android.core.location.LocationEngineProvider(application.android.foregroundActivity || application.android.startActivity).obtainBestLocationEngineAvailable();
     _locationEngine.setPriority(com.mapbox.android.core.location.LocationEnginePriority.HIGH_ACCURACY);
     _locationEngine.setFastestInterval(1000);
 
+    // TODO deactivate when the map is destroyed
     _locationEngine.activate();
   }
 
-  const locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap, _locationEngine);
-  // with the foloowing line enabled, the camera moves to the user's location once it's determined
-  // locationLayerPlugin.setCameraMode(com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode.TRACKING);
+  _locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap, _locationEngine);
 };
 
 const _getClickedMarkerDetails = (clicked) => {
@@ -341,7 +369,7 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
   });
 };
 
-const _removeMarkers = (ids, nativeMap?) => {
+const _removeMarkers = (ids?, nativeMap?) => {
   const theMap = nativeMap || _mapbox;
   if (!theMap || !theMap.mapboxMap) {
     return;
@@ -349,7 +377,7 @@ const _removeMarkers = (ids, nativeMap?) => {
   for (let m in _markers) {
     let marker = _markers[m];
     if (!ids || (marker && marker.id && ids.indexOf(marker.id) > -1)) {
-      if (ids) {
+      if (marker && marker.android) {
         theMap.mapboxMap.removeAnnotation(marker.android);
       }
     }
@@ -561,7 +589,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         const theMap = nativeMap || _mapbox;
-        theMap.mapboxMap.setStyleUrl(_getMapStyle(style));
+        const mapStyle = _getMapStyle(style);
+        theMap.mapboxMap.setStyleUrl(mapStyle);
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.setMapStyle: " + ex);
@@ -898,7 +927,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         // the 'onMove' event seems like the one closest to the iOS implementation
         theMap.mapboxMap.addOnMoveListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener({
-              onMoveBegin: (detector: any /* MoveGestureDetector */) => {},
+              onMoveBegin: (detector: any /* MoveGestureDetector */) => {
+              },
               onMove: (detector: any /* MoveGestureDetector */) => {
                 const coordinate = theMap.mapboxMap.getCameraPosition().target;
                 listener({
@@ -906,7 +936,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                   lng: coordinate.getLongitude()
                 });
               },
-              onMoveEnd: (detector: any /* MoveGestureDetector */) => {}
+              onMoveEnd: (detector: any /* MoveGestureDetector */) => {
+              }
             })
         );
 
@@ -1275,7 +1306,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         // Create fill extrusion layer
         const fillExtrusionLayer = new com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer("3d-buildings", "composite");
         fillExtrusionLayer.setSourceLayer("building");
-        fillExtrusionLayer.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.eq("extrude", "true"));
+        fillExtrusionLayer.setFilter(com.mapbox.mapboxsdk.style.expressions.Expression.eq(com.mapbox.mapboxsdk.style.expressions.Expression.get("extrude"), "true"));
         fillExtrusionLayer.setMinZoom(15);
 
         // Set data-driven styling properties
@@ -1322,20 +1353,19 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           layers.push([0, new Color("blue").android]);
         }
 
-        // for some reason unclustered doesn't show up :(
-        const unclustered = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("unclustered-points", "earthquakes");
+        const unclustered = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("unclustered-points", options.name);
         unclustered.setProperties([
           com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(new Color("red").android),
-          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(18.0)),
+          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(16.0)),
           com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
         ]);
-        // TODO Filter is undefined
-        // unclustered.setFilter(com.mapbox.mapboxsdk.style.layers.Filter.neq("cluster", new java.lang.Boolean(true)));
+        console.log(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"));
+        unclustered.setFilter(com.mapbox.mapboxsdk.style.expressions.Expression.neq(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"), true));
         theMap.mapboxMap.addLayer(unclustered); // , "building");
 
         for (let i = 0; i < layers.length; i++) {
           // Add some nice circles
-          const circles = new com.mapbox.mapboxsdk.style.layers.CircleLayer("cluster-" + i, "earthquakes");
+          const circles = new com.mapbox.mapboxsdk.style.layers.CircleLayer("cluster-" + i, options.name);
           circles.setProperties([
                 // com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage("icon")
                 com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(layers[i][1]),
@@ -1344,22 +1374,24 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               ]
           );
 
+          const pointCount = com.mapbox.mapboxsdk.style.expressions.Expression.toNumber(com.mapbox.mapboxsdk.style.expressions.Expression.get("point_count"));
+
           circles.setFilter(
-              i === 0
-                  ? com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0]))
-                  : com.mapbox.mapboxsdk.style.layers.Filter.all([
-                    com.mapbox.mapboxsdk.style.layers.Filter.gte("point_count", new java.lang.Integer(layers[i][0])),
-                    com.mapbox.mapboxsdk.style.layers.Filter.lt("point_count", new java.lang.Integer(layers[i - 1][0]))
+              i === 0 ?
+                  com.mapbox.mapboxsdk.style.expressions.Expression.gte(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i][0]))) :
+                  com.mapbox.mapboxsdk.style.expressions.Expression.all([
+                    com.mapbox.mapboxsdk.style.expressions.Expression.gte(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i][0]))),
+                    com.mapbox.mapboxsdk.style.expressions.Expression.lt(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i - 1][0])))
                   ])
           );
 
           theMap.mapboxMap.addLayer(circles); // , "building");
         }
 
-        // Add the count labels
-        const count = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("count", "earthquakes");
+        // Add the count labels (note that this doesn't show.. #sad)
+        const count = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("count", options.name);
         count.setProperties([
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField("{point_count}"),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField(com.mapbox.mapboxsdk.style.expressions.Expression.get("point_count")),
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(12.0)),
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android)
             ]
@@ -1369,6 +1401,32 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.addGeoJsonClustered: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  trackUser(options: TrackUserOptions, nativeMap?): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        if (!_locationLayerPlugin) {
+          reject("The map is not currently showing the user location");
+          return;
+        }
+
+        _locationLayerPlugin.setRenderMode(_getUserLocationRenderMode(options.mode));
+        _locationLayerPlugin.setCameraMode(_getUserLocationCameraMode(options.mode));
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.trackUser: " + ex);
         reject(ex);
       }
     });

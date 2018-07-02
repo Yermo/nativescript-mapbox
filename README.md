@@ -185,7 +185,7 @@ exports.onMapReady = onMapReady;
 ```
 
 The methods you can invoke like this from an XML-declared map are:
-`addMarkers`, `setViewport`, `removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `getTilt`, `setTilt`, `setMapStyle`, `animateCamera`, `addPolygon`, `addPolyline`, `removePolylines`, `setOnMapClickListener` and `destroy`.
+`addMarkers`, `setViewport`, `removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `getTilt`, `setTilt`, `setMapStyle`, `animateCamera`, `addPolygon`, `addPolyline`, `removePolylines`, `getUserLocation`, `trackUser`, `setOnMapClickListener` and `destroy`.
 
 Check out the usage details on the functions below.
 
@@ -266,7 +266,9 @@ To clean up the map entirely you can destroy instead of hide it:
 ```
 
 ### setMapStyle
-You can update the map style after you've loaded it. How neat is that!?
+You can update the map style after you've loaded it.
+
+> With Mapbox Android SDK 6.1.x (used in plugin version 4.1.0) I've seen Android crash a few seconds after this has been used, so test this well and perhaps don't use it when in doubt.
 
 ```js
   mapbox.setMapStyle(mapbox.MapStyle.DARK);
@@ -434,6 +436,17 @@ If the user's location is shown on the map you can get their coordinates and spe
         console.log("Current user speed: " +  userLocation.speed);
       }
   )
+```
+
+### trackUser
+In case you're showing the user's location, you can have the map track the position.
+The map will continuously move along with the last known location.
+
+```js
+  mapbox.trackUser({
+    mode: "FOLLOW_WITH_HEADING", // "NONE" | "FOLLOW" | "FOLLOW_WITH_HEADING" | "FOLLOW_WITH_COURSE"
+    animated: true
+  });
 ```
 
 ### addPolygon

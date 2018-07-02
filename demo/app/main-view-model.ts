@@ -22,7 +22,7 @@ export class HelloWorldModel extends Observable {
       margins: {
         left: 18,
         right: 18,
-        top: isIOS ? 390 : 424,
+        top: isIOS ? 390 : 454,
         bottom: isIOS ? 50 : 8
       },
       center: {
@@ -46,12 +46,8 @@ export class HelloWorldModel extends Observable {
           title: 'Nice location',
           subtitle: 'Really really nice location',
           iconPath: 'res/markers/green_pin_marker.png',
-          onTap: () => {
-            console.log("'Nice location' marker tapped");
-          },
-          onCalloutTap: () => {
-            console.log("'Nice location' marker callout tapped");
-          }
+          onTap: () => console.log("'Nice location' marker tapped"),
+          onCalloutTap: () => console.log("'Nice location' marker callout tapped")
         }
       ]
     }).then(
@@ -60,9 +56,8 @@ export class HelloWorldModel extends Observable {
 
           this.mapbox.setOnMapClickListener(point => console.log(`>> Map clicked: ${JSON.stringify(point)}`));
 
-          this.mapbox.setOnScrollListener((point?: LatLng) => {
-            // note that only iOS returns the point
-            console.log(`>> Map scrolled: ${JSON.stringify(point)}`);
+          this.mapbox.setOnScrollListener((point: LatLng) => {
+            // console.log(`>> Map scrolled: ${JSON.stringify(point)}`);
           });
 
           this.mapbox.setOnFlingListener(() => {
@@ -107,28 +102,16 @@ export class HelloWorldModel extends Observable {
   }
 
   public doRemoveAllMarkers(): void {
-    this.mapbox.removeMarkers(
-    ).then(
-        () => {
-          console.log("Mapbox doRemoveAllMarkers done");
-        },
-        (error: string) => {
-          console.log("mapbox doRemoveAllMarkers error: " + error);
-        }
+    this.mapbox.removeMarkers().then(
+        () => console.log("Mapbox doRemoveAllMarkers done"),
+        error => console.log("mapbox doRemoveAllMarkers error: " + error)
     );
   }
 
   public doRemove2Markers(): void {
-    this.mapbox.removeMarkers([
-      1,
-      2
-    ]).then(
-        () => {
-          console.log("Mapbox doRemove2Markers done");
-        },
-        (error: string) => {
-          console.log("mapbox doRemove2Markers error: " + error);
-        }
+    this.mapbox.removeMarkers([2, 3]).then(
+        () => console.log("Mapbox doRemove2Markers done"),
+        error => console.log("mapbox doRemove2Markers error: " + error)
     );
   }
 
@@ -178,13 +161,13 @@ export class HelloWorldModel extends Observable {
         lng: 5.1,
         title: 'This title is cut off on iOS, but multi-line on Android', // no popup unless set
         subtitle: 'Same for this subtitle. Same for this subtitle. Same for this subtitle. Same for this subtitle. Same for this subtitle.',
-        icon: 'http://maryjanewa.com/wp-content/uploads/2016/01/map-marker.png',
+        icon: 'https://maryjanekirkland.com/wp-content/uploads/2016/01/map-marker.png',
         onTap: () => console.log("Marker tapped"),
         onCalloutTap: () => console.log("Marker callout tapped")
       }
     ]).then(
         () => console.log("Mapbox addMarkers done"),
-        (error: string) => console.log("mapbox addMarkers error: " + error)
+        error => console.log("mapbox addMarkers error: " + error)
     );
   }
 
@@ -275,9 +258,7 @@ export class HelloWorldModel extends Observable {
                 minZoom: viewport.zoomLevel,
                 maxZoom: viewport.zoomLevel + 2,
                 bounds: viewport.bounds,
-                onProgress: (progress: DownloadProgress) => {
-                  console.log(`Download progress: ${JSON.stringify(progress)}`);
-                }
+                onProgress: (progress: DownloadProgress) => console.log(`Download progress: ${JSON.stringify(progress)}`)
               }
           ).then(
               () => {
@@ -288,9 +269,7 @@ export class HelloWorldModel extends Observable {
                 };
                 alert(alertOptions);
               },
-              (error: string) => {
-                console.log("mapbox doDownloadCurrentViewportAsOfflineRegion error: " + error);
-              }
+              (error: string) => console.log("mapbox doDownloadCurrentViewportAsOfflineRegion error: " + error)
           );
         },
         (error: string) => {
@@ -417,6 +396,13 @@ export class HelloWorldModel extends Observable {
           console.log("mapbox getUserLocation error: " + error);
         }
     );
+  }
+
+  public doTrackUser(): void {
+    this.mapbox.trackUser({
+      mode: "FOLLOW_WITH_HEADING",
+      animated: true
+    }).then(() => console.log("Following"));
   }
 
   public doSetTilt(): void {

@@ -2,7 +2,7 @@ import * as observable from "tns-core-modules/data/observable";
 import * as pages from "tns-core-modules/ui/page";
 import { Color } from "tns-core-modules/color";
 import { HelloWorldModel } from "./main-view-model";
-import { MapboxViewApi, MapStyle, LatLng } from "nativescript-mapbox";
+import { MapboxViewApi, LatLng } from "nativescript-mapbox";
 
 // Event handler for Page 'loaded' event attached in main-page.xml
 export function pageLoaded(args: observable.EventData) {
@@ -22,14 +22,10 @@ function onMapReady(args) {
   const nativeMapView = args.ios ? args.ios : args.android;
   console.log(`Mapbox onMapReady for ${args.ios ? "iOS" : "Android"}, native object received: ${nativeMapView}`);
 
-  map.setOnMapClickListener((point: LatLng) => {
-    console.log(`~~~~~ Map clicked: ${JSON.stringify(point)}`);
-  });
+  map.setOnMapClickListener((point: LatLng) => console.log(`Map tapped: ${JSON.stringify(point)}`));
 
-  map.setOnScrollListener((point?: LatLng) => {
-    // note that only iOS returns the point
-    console.log(`~~~~~ Map scrolled: ${JSON.stringify(point)}`);
-  });
+  // this works perfectly fine, but generates a lot of noise
+  // map.setOnScrollListener((point?: LatLng) => console.log(`Map scrolled: ${JSON.stringify(point)}`));
 
   // .. or use the convenience methods exposed on args.map, for instance:
   map.addMarkers([
@@ -63,9 +59,10 @@ function onMapReady(args) {
     );
   }, 3000);
 
-  setTimeout(() => {
-    map.setMapStyle(MapStyle.TRAFFIC_NIGHT);
-  }, 6000);
+  // note that this makes the app crash with/since Android SDK 6.1.2 and 6.1.3 (not sure about more recent versions)
+  // setTimeout(() => {
+  //   map.setMapStyle(MapStyle.DARK);
+  // }, 6000);
 
   setTimeout(() => {
     map.addPolyline({
@@ -129,6 +126,14 @@ function onMapReady(args) {
   setTimeout(() => {
     map.removePolylines([10]);
   }, 24000);
+
+  // this works just fine, but it interferes with the programmatic map so not doing this in the demo
+  // setTimeout(() => {
+  //   map.trackUser({
+  //     mode: "FOLLOW_WITH_HEADING",
+  //     animated: true
+  //   });
+  // }, 25000);
 }
 
 exports.onMapReady = onMapReady;
