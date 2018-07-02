@@ -65,6 +65,13 @@ export class MapboxView extends MapboxViewBase {
     return nativeView;
   }
 
+  disposeNativeView(): void {
+    if (_locationEngine) {
+      _locationEngine.deactivate();
+      _locationEngine = null;
+    }
+  }
+
   initMap(): void {
     if (!this.mapView && this.config.accessToken) {
       this.mapbox = new Mapbox();
@@ -217,8 +224,6 @@ const _showLocation = (theMapView, mapboxMap) => {
     _locationEngine = new com.mapbox.android.core.location.LocationEngineProvider(application.android.foregroundActivity || application.android.startActivity).obtainBestLocationEngineAvailable();
     _locationEngine.setPriority(com.mapbox.android.core.location.LocationEnginePriority.HIGH_ACCURACY);
     _locationEngine.setFastestInterval(1000);
-
-    // TODO deactivate when the map is destroyed
     _locationEngine.activate();
   }
 
@@ -576,6 +581,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const viewGroup = theMap.mapView.getParent();
         if (viewGroup !== null) {
           viewGroup.removeView(theMap.mapView);
+        }
+        if (_locationEngine) {
+          _locationEngine.deactivate();
+          _locationEngine = null;
         }
         theMap.mapView = null;
         theMap.mapboxMap = null;

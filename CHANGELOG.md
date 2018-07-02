@@ -18,7 +18,7 @@
 - User Tracking Mode [\#144](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/144)
 - Build error on Android, related to source level 1.8 [\#234](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/234)
 - Add support for a 'stroke' around a Polygon [\#235](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/235)
-
+- Deactivate location updates when the map is destroyed [\#236](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/236)
 
 ## [4.0.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.0.0) (2018-05-07)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/3.3.0...4.0.0)
