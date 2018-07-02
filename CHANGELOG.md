@@ -8,9 +8,16 @@
 ## [4.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.1.0) (2018-06-28)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.0.0...4.1.0)
 
+**Fixed bugs:**
+
+- RemoveMarkers doesnt work [\#229](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/229)
+- removeMarkers broken on Android. [\#231](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/231)
+
 **Implemented enhancements:**
 
 - User Tracking Mode [\#144](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/144)
+- Build error on Android, related to source level 1.8 [\#234](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/234)
+- Add support for a 'stroke' around a Polygon [\#235](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/235)
 
 
 ## [4.0.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.0.0) (2018-05-07)
