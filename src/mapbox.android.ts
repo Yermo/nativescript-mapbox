@@ -41,6 +41,7 @@ let _mapbox: any = {};
 let _accessToken: string;
 let _markers = [];
 let _polylines = [];
+let _polygons = [];
 let _markerIconDownloadCache = [];
 let _locationEngine = null;
 let _locationLayerPlugin = null;
@@ -91,6 +92,7 @@ export class MapboxView extends MapboxViewBase {
                 this.mapView.mapboxMap = mbMap;
 
                 // note that this is not multi-map friendly, but I don't think that's used in real apps anyway
+                _polygons = [];
                 _polylines = [];
                 _markers = [];
 
@@ -491,6 +493,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                   _mapbox.mapView.mapboxMap = mbMap;
 
                   _polylines = [];
+                  _polygons = [];
                   _markers = [];
                   _addMarkers(settings.markers, _mapbox.mapView);
 
@@ -794,8 +797,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         if (options.strokeColor) {
           polygonOptions.strokeColor(Mapbox.getAndroidColor(options.strokeColor));
         }
-
-        theMap.mapboxMap.addPolygon(polygonOptions);
+        _polygons.push({
+          id: options.id || new Date().getTime(),
+          android: theMap.mapboxMap.addPolygon(polygonOptions)
+        });
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.addPolygon: " + ex);
@@ -829,6 +834,24 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.addPolyline: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  removePolygons(ids?: Array<any>, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        for (let p in _polygons) {
+          let polygon = _polygons[p];
+          if (!ids || (polygon.id && ids.indexOf(polygon.id) > -1)) {
+            theMap.mapboxMap.removePolygon(polygon.android);
+          }
+        }
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.removePolygons: " + ex);
         reject(ex);
       }
     });

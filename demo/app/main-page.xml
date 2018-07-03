@@ -108,9 +108,10 @@
               <Button row="6" colSpan="4" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />
             </Android>
 
-            <Button row="7" colSpan="2" text="Add polyline" tap="{{ doAddPolyline }}" class="button" />
-            <Button row="7" col="2" colSpan="2" text="Add polygon" tap="{{ doAddPolygon }}" class="button" />
-            <!--<Button row="7" col="2" colSpan="2" text="Remove polyline" tap="{{ doRemovePolyline }}" class="button" />-->
+            <Button row="7" col="0" text="+polyline" tap="{{ doAddPolyline }}" class="button" />
+            <Button row="7" col="1" text="-polyline" tap="{{ doRemovePolyline }}" class="button" />
+            <Button row="7" col="2" text="+polygon" tap="{{ doAddPolygon }}" class="button" />
+            <Button row="7" col="3" text="-polygon" tap="{{ doRemovePolygon }}" class="button" />
 
             <Button row="8" colSpan="2" text="DL Amsterdam" tap="{{ doDownloadAmsterdam }}" class="button button-offline" />
             <Button row="8" col="2" colSpan="2"  text="DL current view" tap="{{ doDownloadCurrentViewportAsOfflineRegion }}" class="button button-offline" />

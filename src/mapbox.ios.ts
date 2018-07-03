@@ -452,10 +452,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         coordinateArray.push([points[p].lng, points[p].lat]);
       }
 
-      const polygonID = "polyline_" + (options.id || new Date().getTime());
+      const polygonID = "polygon_" + (options.id || new Date().getTime());
 
       if (theMap.style.sourceWithIdentifier(polygonID)) {
-        reject("Remove the polyline with this id first with 'removePolylines': " + polygonID);
+        reject("Remove the polygon with this id first with 'removePolygons': " + polygonID);
         return;
       }
 
@@ -527,23 +527,34 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  private removePolylineById(theMap, id: any): void {
-    const polylineID = "polyline_" + id;
-    const layer = theMap.style.layerWithIdentifier(polylineID);
+  private removePolyById(theMap, id: string): void {
+    let layer = theMap.style.layerWithIdentifier(id);
     if (layer !== null) {
       theMap.style.removeLayer(layer);
     }
-    const source = theMap.style.sourceWithIdentifier(polylineID);
+    // polygons may have a 'stroke' layer
+    layer = theMap.style.layerWithIdentifier(id + "_stroke");
+    if (layer !== null) {
+      theMap.style.removeLayer(layer);
+    }
+    const source = theMap.style.sourceWithIdentifier(id);
     if (source !== null) {
-      console.log(">>> removing source " + polylineID);
       theMap.style.removeSource(source);
     }
+  }
+
+  removePolygons(ids?: Array<any>, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+      ids.map(id => this.removePolyById(theMap, "polygon_" + id));
+      resolve();
+    });
   }
 
   removePolylines(ids?: Array<any>, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-      ids.map(id => this.removePolylineById(theMap, id));
+      ids.map(id => this.removePolyById(theMap, "polyline_" + id));
       resolve();
     });
   }

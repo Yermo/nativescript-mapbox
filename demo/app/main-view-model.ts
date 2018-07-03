@@ -596,12 +596,15 @@ export class HelloWorldModel extends Observable {
 
   public doRemovePolyline(): void {
     this.mapbox.removePolylines([1]).then(
-        result => {
-          console.log("Mapbox removePolylines done");
-        },
-        (error: string) => {
-          console.log("mapbox removePolylines error: " + error);
-        }
+        result => console.log("Mapbox removePolylines done"),
+        (error: string) => console.log("mapbox removePolylines error: " + error)
+    );
+  }
+
+  public doRemovePolygon(): void {
+    this.mapbox.removePolygons([1]).then(
+        result => console.log("Mapbox removePolygons done"),
+        (error: string) => console.log("mapbox removePolygons error: " + error)
     );
   }
 

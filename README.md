@@ -185,7 +185,7 @@ exports.onMapReady = onMapReady;
 ```
 
 The methods you can invoke like this from an XML-declared map are:
-`addMarkers`, `setViewport`, `removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `getTilt`, `setTilt`, `setMapStyle`, `animateCamera`, `addPolygon`, `addPolyline`, `removePolylines`, `getUserLocation`, `trackUser`, `setOnMapClickListener` and `destroy`.
+`addMarkers`, `setViewport`, `removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `getTilt`, `setTilt`, `setMapStyle`, `animateCamera`, `addPolygon`, `removePolygons`, `addPolyline`, `removePolylines`, `getUserLocation`, `trackUser`, `setOnMapClickListener` and `destroy`.
 
 Check out the usage details on the functions below.
 
@@ -458,7 +458,7 @@ The first person to tweet a snowman drawn with this function gets a T-shirt.
   // after adding this, scroll to Amsterdam to see a semi-transparent red square
   mapbox.addPolygon(
       {
-        id: 1,
+        id: 1, // optional, can be used in 'removePolygons'
         fillColor: new Color("red"),
         fillOpacity: 0.7,
 
@@ -492,6 +492,18 @@ The first person to tweet a snowman drawn with this function gets a T-shirt.
       })
       .then(result => console.log("Mapbox addPolygon done"))
       .catch((error: string) => console.log("mapbox addPolygon error: " + error));
+```
+
+### removePolygons
+You can either remove all polygons by not passing in an argument,
+or remove specific polygon id's (which you specified previously). 
+
+```js
+  // remove all polygons
+  mapbox.removePolygons();
+  
+  // remove specific polygons by id
+  mapbox.removePolygons([1, 2]);
 ```
 
 ### addPolyline

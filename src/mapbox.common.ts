@@ -346,6 +346,8 @@ export interface MapboxApi {
 
   addPolygon(options: AddPolygonOptions, nativeMap?: any): Promise<any>;
 
+  removePolygons(ids?: Array<any>, nativeMap?: any): Promise<any>;
+
   addPolyline(options: AddPolylineOptions, nativeMap?: any): Promise<any>;
 
   removePolylines(ids?: Array<any>, nativeMap?: any): Promise<any>;
@@ -479,6 +481,8 @@ export interface MapboxViewApi {
 
   addPolygon(options: AddPolygonOptions): Promise<any>;
 
+  removePolygons(ids?: Array<any>): Promise<any>;
+
   addPolyline(options: AddPolylineOptions): Promise<any>;
 
   removePolylines(ids?: Array<any>): Promise<any>;
@@ -571,6 +575,10 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   addPolygon(options: AddPolygonOptions): Promise<any> {
     return this.mapbox.addPolygon(options, this.getNativeMapView());
+  }
+
+  removePolygons(ids?: Array<any>): Promise<any> {
+    return this.mapbox.removePolygons(ids, this.getNativeMapView());
   }
 
   addPolyline(options: AddPolylineOptions): Promise<any> {

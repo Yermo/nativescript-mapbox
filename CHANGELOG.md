@@ -5,7 +5,14 @@
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
 
-## [4.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.1.0) (2018-06-28)
+## [4.1.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.1.1) (2018-07-03)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.1.0...4.1.1)
+
+**Implemented enhancements:**
+
+- Add a method to remove polygons [\#237](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/237)
+
+## [4.1.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.1.0) (2018-07-02)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.0.0...4.1.0)
 
 **Fixed bugs:**
