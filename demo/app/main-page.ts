@@ -15,6 +15,11 @@ function onLocationPermissionGranted(args) {
   console.log("onLocationPermissionGranted, map: " + map);
 }
 
+function onLocationPermissionDenied(args) {
+  let map: MapboxViewApi = args.map;
+  console.log("onLocationPermissionDenied, map: " + map);
+}
+
 function onMapReady(args) {
   let map: MapboxViewApi = args.map;
 
@@ -138,3 +143,4 @@ function onMapReady(args) {
 
 exports.onMapReady = onMapReady;
 exports.onLocationPermissionGranted = onLocationPermissionGranted;
+exports.onLocationPermissionDenied = onLocationPermissionDenied;

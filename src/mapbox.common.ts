@@ -676,6 +676,7 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
   static mapReadyEvent: string = "mapReady";
   static locationPermissionGrantedEvent: string = "locationPermissionGranted";
+  static locationPermissionDeniedEvent: string = "locationPermissionDenied";
 
   protected config: any = {};
 

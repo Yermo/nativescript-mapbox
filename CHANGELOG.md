@@ -5,6 +5,13 @@
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
 
+## [4.1.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.1.2) (2018-08-13)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.1.1...4.1.2)
+
+**Implemented enhancements:**
+
+- OnPermissionDenied [\#247](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/247)
+
 ## [4.1.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.1.1) (2018-07-03)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.1.0...4.1.1)
 

@@ -38,6 +38,7 @@
                   mapStyle="streets"
                   mapReady="onMapReady"
                   locationPermissionGranted="onLocationPermissionGranted"
+                  locationPermissionDenied="onLocationPermissionDenied"
                   showUserLocation="true"
                   hideLogo="true"
                   hideCompass="false"

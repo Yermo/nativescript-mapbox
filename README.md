@@ -131,6 +131,7 @@ All currently supported options for your XML based map are (__don't__ use other 
 |`disableTilt`|false|Don't allow the user to tilt the map (two finger drag up or down)
 |`mapReady`|-|The name of a callback function you can declare to interact with the map after it has been drawn
 |`locationPermissionGranted`|-|The name of a callback function you can declare to get notified when the user granted location permissions
+|`locationPermissionDenied`|-|The name of a callback function you can declare to get notified when the user denied location permissions (will never fire on iOS because there's nothing to deny)
 
 ### Want to add markers?
 This is where that last option in the table above comes in - `mapReady`.

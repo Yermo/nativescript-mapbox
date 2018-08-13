@@ -97,17 +97,26 @@ export class MapboxView extends MapboxViewBase {
                 _markers = [];
 
                 if (settings.showUserLocation) {
-                  this.mapbox.requestFineLocationPermission().then(() => {
-                    setTimeout(() => {
-                      _showLocation(this.mapView, mbMap);
-                    }, 1000);
-                    this.notify({
-                      eventName: MapboxViewBase.locationPermissionGrantedEvent,
-                      object: this,
-                      map: this,
-                      android: this.mapView
-                    });
-                  });
+                  this.mapbox.requestFineLocationPermission()
+                      .then(() => {
+                        setTimeout(() => {
+                          _showLocation(this.mapView, mbMap);
+                        }, 1000);
+                        this.notify({
+                          eventName: MapboxViewBase.locationPermissionGrantedEvent,
+                          object: this,
+                          map: this,
+                          android: this.mapView
+                        });
+                      })
+                      .catch(err => {
+                        this.notify({
+                          eventName: MapboxViewBase.locationPermissionDeniedEvent,
+                          object: this,
+                          map: this,
+                          android: this.mapView
+                        });
+                      });
                 }
 
                 this.notify({
