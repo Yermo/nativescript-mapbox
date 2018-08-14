@@ -116,15 +116,36 @@ export class HelloWorldModel extends Observable {
   }
 
   public doAddMarkers(): void {
-    const onTap = (marker: MapboxMarker) => {
-      console.log(`Marker tapped with title: ${marker.title}`);
+    const onTap = (marker: MapboxMarker) => console.log(`Marker tapped with title: ${marker.title}`);
+
+    const onCalloutTap = (marker: MapboxMarker) => alert(`Marker callout tapped with title: ${marker.title}`);
+
+    const firstMarker = <MapboxMarker>{
+      id: 2,
+      lat: 52.3602160,
+      lng: 4.8891680,
+      title: 'One-line title here', // no popup unless set
+      subtitle: 'With a res://icon-40 image',
+      icon: isIOS ? 'res://icon-40' : 'res://icon',
+      selected: false,
+      onTap,
+      onCalloutTap
     };
 
-    const onCalloutTap = (marker: MapboxMarker) => {
-      alert(`Marker callout tapped with title: ${marker.title}`);
-    };
+    setTimeout(() => {
+      firstMarker.update({
+        lat: 52.3622160,
+        lng: 4.8911680,
+        title: 'One-line title here (UPDATE)',
+        subtitle: 'Updated subtitle',
+        selected: true,
+        onTap: (marker: MapboxMarker) => console.log(`UPDATED Marker tapped with title: ${marker.title}`),
+        onCalloutTap: (marker: MapboxMarker) => alert(`UPDATED Marker callout tapped with title: ${marker.title}`)
+      })
+    }, 8000);
 
     this.mapbox.addMarkers([
+      firstMarker,
       {
         id: 2,
         lat: 52.3602160,
@@ -133,8 +154,8 @@ export class HelloWorldModel extends Observable {
         subtitle: 'With a res://icon-40 image',
         icon: isIOS ? 'res://icon-40' : 'res://icon',
         selected: false,
-        onTap: onTap,
-        onCalloutTap: onCalloutTap
+        onTap,
+        onCalloutTap
       },
       {
         // this is a marker without a popup (because no title/subtitle are set)
@@ -152,8 +173,8 @@ export class HelloWorldModel extends Observable {
         subtitle: 'And a one-liner here as well.',
         iconPath: 'res/markers/home_marker.png',
         selected: true,
-        onTap: onTap,
-        onCalloutTap: onCalloutTap
+        onTap,
+        onCalloutTap
       },
       {
         id: 5,
@@ -197,12 +218,8 @@ export class HelloWorldModel extends Observable {
           animated: true // default true
         }
     ).then(
-        () => {
-          console.log("Viewport set");
-        },
-        (error: string) => {
-          console.log("mapbox doSetViewport error: " + error);
-        }
+        () => console.log("Viewport set"),
+        (error: string) => console.log("mapbox doSetViewport error: " + error)
     );
   }
 
@@ -235,9 +252,7 @@ export class HelloWorldModel extends Observable {
           };
           alert(alertOptions);
         },
-        (error: string) => {
-          console.log("mapbox doDownloadAmsterdam error: " + error);
-        }
+        error => console.log("mapbox doDownloadAmsterdam error: " + error)
     );
 
     let alertOptions: AlertOptions = {
@@ -245,6 +260,7 @@ export class HelloWorldModel extends Observable {
       message: "This takes a while, progress is logged via console.log",
       okButtonText: "Understood"
     };
+
     alert(alertOptions);
   }
 

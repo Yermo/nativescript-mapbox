@@ -381,6 +381,36 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
       if (marker.selected) {
         theMap.mapboxMap.selectMarker(marker.android);
       }
+
+      marker.update = (newSettings: MapboxMarker) => {
+        for (let m in _markers) {
+          let _marker: MapboxMarker = _markers[m];
+          if (marker.id === _marker.id) {
+            if (newSettings.onTap !== undefined) {
+              _marker.onTap = newSettings.onTap;
+            }
+            if (newSettings.onCalloutTap !== undefined) {
+              _marker.onCalloutTap = newSettings.onCalloutTap;
+            }
+            if (newSettings.title !== undefined) {
+              _marker.title = newSettings.title;
+              _marker.android.setTitle(newSettings.title);
+            }
+            if (newSettings.subtitle !== undefined) {
+              _marker.subtitle = newSettings.title;
+              _marker.android.setSnippet(newSettings.subtitle);
+            }
+            if (newSettings.lat && newSettings.lng) {
+              _marker.lat = newSettings.lat;
+              _marker.lng = newSettings.lng;
+              _marker.android.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(parseFloat(<any>newSettings.lat), parseFloat(<any>newSettings.lng)));
+            }
+            if (newSettings.selected) {
+              theMap.mapboxMap.selectMarker(_marker.android);
+            }
+          }
+        }
+      }
     }
   });
 };

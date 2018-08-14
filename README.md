@@ -276,32 +276,44 @@ You can update the map style after you've loaded it.
 ```
 
 ### addMarkers
-```js
-  var onTap = function(marker) {
-    console.log("Marker tapped with title: '" + marker.title + "'");
-  };
-  var onCalloutTap = function(marker) {
-    alert("Marker callout tapped with title: '" + marker.title + "'");
+
+```typescript
+  const firstMarker = {
+    id: 2, // can be user in 'removeMarkers()'
+    lat: 52.3602160, // mandatory
+    lng: 4.8891680, // mandatory
+    title: 'One-line title here', // no popup unless set
+    subtitle: 'Infamous subtitle!',
+    // icon: 'res://cool_marker', // preferred way, otherwise use:
+    icon: 'http(s)://website/coolimage.png', // from the internet (see the note at the bottom of this readme), or:
+    iconPath: 'res/markers/home_marker.png',
+    selected: true, // makes the callout show immediately when the marker is added (note: only 1 marker can be selected at a time)
+    onTap: marker => console.log("Marker tapped with title: '" + marker.title + "'"),
+    onCalloutTap: marker => alert("Marker callout tapped with title: '" + marker.title + "'")
   };
 
   mapbox.addMarkers([
-    {
-      id: 2, // can be user in 'removeMarkers()'
-      lat: 52.3602160, // mandatory
-      lng: 4.8891680, // mandatory
-      title: 'One-line title here', // no popup unless set
-      subtitle: 'Infamous subtitle!',
-      // icon: 'res://cool_marker', // preferred way, otherwise use:
-      icon: 'http(s)://website/coolimage.png', // from the internet (see the note at the bottom of this readme), or:
-      iconPath: 'res/markers/home_marker.png',
-      selected: true, // makes the callout show immediately when the marker is added (note: only 1 marker can be selected at a time)
-      onTap: onTap,
-      onCalloutTap: onCalloutTap
-    },
+    firstMarker,
     {
       // more markers..
     }
   ])
+```
+
+#### Updating markers
+Plugin version 4.2.0 added the option to update makers. Just call `update` on the marker reference you created above.
+You can update the following properties (all but the icon really):
+
+```typescript
+  firstMarker.update({
+    lat: 52.3622160,
+    lng: 4.8911680,
+    title: 'One-line title here (UPDATE)',
+    subtitle: 'Updated subtitle',
+    selected: true, // this will trigger the callout upon update
+    onTap: (marker: MapboxMarker) => console.log(`UPDATED Marker tapped with title: ${marker.title}`),
+    onCalloutTap: (marker: MapboxMarker) => alert(`UPDATED Marker callout tapped with title: ${marker.title}`)
+  })
 ```
 
 ### removeMarkers

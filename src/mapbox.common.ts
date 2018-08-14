@@ -107,6 +107,9 @@ export interface MapboxMarker extends LatLng {
    * Default false.
    */
   selected?: boolean;
+  update?: (newSettings: MapboxMarker) => void;
+  ios?: any;
+  android?: any;
 }
 
 export interface SetZoomLevelOptions {

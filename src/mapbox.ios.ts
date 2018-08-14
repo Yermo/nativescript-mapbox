@@ -288,18 +288,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       try {
         const theMap = nativeMap || _mapbox.mapView;
         let markersToRemove: Array<MGLAnnotation> = [];
-        for (let m in _markers) {
-          let marker = _markers[m];
+        _markers.forEach(marker => {
           if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
             markersToRemove.push(marker.ios);
           }
-        }
+        });
 
         // remove markers from cache
         if (ids) {
-          _markers = _markers.filter((marker) => {
-            return ids.indexOf(marker.id) < 0;
-          });
+          _markers = _markers.filter(marker => ids.indexOf(marker.id) < 0);
         } else {
           _markers = [];
         }
@@ -448,9 +445,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
 
       const coordinateArray = [];
-      for (const p in points) {
-        coordinateArray.push([points[p].lng, points[p].lat]);
-      }
+      points.forEach(point => coordinateArray.push([point.lng, point.lat]));
 
       const polygonID = "polygon_" + (options.id || new Date().getTime());
 
@@ -495,9 +490,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
 
       const coordinateArray = [];
-      for (const p in points) {
-        coordinateArray.push([points[p].lng, points[p].lat]);
-      }
+      points.forEach(point => coordinateArray.push([point.lng, point.lat]));
 
       const polylineID = "polyline_" + (options.id || new Date().getTime());
 
@@ -953,11 +946,13 @@ const _addObserver = (eventName, callback) => {
       eventName, null, utils.ios.getter(NSOperationQueue, NSOperationQueue.mainQueue), callback);
 };
 
-const _downloadImage = (marker) => {
+const _downloadImage = marker => {
   return new Promise((resolve, reject) => {
+    console.log(">> _downloadImage");
     // to cache..
     if (_markerIconDownloadCache[marker.icon]) {
       marker.iconDownloaded = _markerIconDownloadCache[marker.icon];
+      console.log(">> marker.iconDownloaded: " + marker.iconDownloaded);
       resolve(marker);
       return;
     }
@@ -974,24 +969,19 @@ const _downloadImage = (marker) => {
   });
 };
 
-const _downloadMarkerImages = (markers) => {
+const _downloadMarkerImages = (markers: Array<MapboxMarker>) => {
   let iterations = [];
   let result = [];
-  for (let i = 0; i < markers.length; i++) {
-    let marker = markers[i];
+  markers.forEach(marker => {
     if (marker.icon && marker.icon.startsWith("http")) {
-      let p = _downloadImage(marker).then((mark) => {
-        result.push(mark);
-      });
+      let p = _downloadImage(marker).then(mark => result.push(mark));
       iterations.push(p);
     } else {
       result.push(marker);
     }
-  }
-
-  return Promise.all(iterations).then((output) => {
-    return result;
   });
+
+  return Promise.all(iterations).then(() => result);
 };
 
 const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
@@ -1005,9 +995,8 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
   }
   let theMap: MGLMapView = nativeMap || _mapbox.mapView;
 
-  _downloadMarkerImages(markers).then((updatedMarkers: any) => {
-    for (let m in updatedMarkers) {
-      let marker = updatedMarkers[m];
+  _downloadMarkerImages(markers).then((updatedMarkers: Array<MapboxMarker>) => {
+    updatedMarkers.forEach(marker => {
       let lat = marker.lat;
       let lng = marker.lng;
       let point = MGLPointAnnotation.new();
@@ -1023,7 +1012,34 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
       }
 
       marker.ios = point;
-    }
+
+      marker.update = (newSettings: MapboxMarker) => {
+        _markers.forEach(_marker => {
+          if (marker.id === _marker.id) {
+            if (newSettings.onTap !== undefined) {
+              _marker.onTap = newSettings.onTap;
+            }
+            if (newSettings.onCalloutTap !== undefined) {
+              _marker.onCalloutTap = newSettings.onCalloutTap;
+            }
+            if (newSettings.title !== undefined) {
+              _marker.ios.title = _marker.title = newSettings.title;
+            }
+            if (newSettings.subtitle !== undefined) {
+              _marker.ios.subtitle = _marker.subtitle = newSettings.subtitle;
+            }
+            if (newSettings.lat && newSettings.lng) {
+              _marker.lat = newSettings.lat;
+              _marker.lng = newSettings.lng;
+              _marker.ios.coordinate = CLLocationCoordinate2DMake(newSettings.lat, newSettings.lng);
+            }
+            if (newSettings.selected) {
+              theMap.selectAnnotationAnimated(_marker.ios, false);
+            }
+          }
+        });
+      }
+    });
   });
 };
 
@@ -1054,11 +1070,11 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   }
 
   mapViewDidFailLoadingMapWithError(mapView: MGLMapView, error: NSError): void {
-    console.log("mapViewDidFailLoadingMapWithError: " + error);
+    // console.log("mapViewDidFailLoadingMapWithError: " + error);
   }
 
   mapViewDidChangeUserTrackingModeAnimated(mapView: MGLMapView, mode: MGLUserTrackingMode, animated: boolean): void {
-    console.log("mapViewDidChangeUserTrackingModeAnimated: " + mode);
+    // console.log("mapViewDidChangeUserTrackingModeAnimated: " + mode);
   }
 
   // fired when the marker icon is about to be rendered - return null for the default icon
@@ -1113,7 +1129,6 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
 
   // fired when a marker is tapped
   mapViewDidSelectAnnotation(mapView: MGLMapView, annotation: MGLAnnotation): void {
-    // console.log(">>>>> mapViewDidSelectAnnotation " + annotation.class() + " @ " + new Date().getTime());
     let cachedMarker = this.getTappedMarkerDetails(annotation);
     if (cachedMarker && cachedMarker.onTap) {
       cachedMarker.onTap(cachedMarker);
