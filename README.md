@@ -20,6 +20,8 @@ Awesome native OpenGL-powered maps - by Mapbox
 
 <img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
+> Plugin version 4.2.0 requires iOS 9 or higher. Need to target a lower iOS version? Use a lower plugin version.
+
 ## Prerequisites
 You need a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
 Once you've registered go to your Account > Apps > New token. The 'Default Secret Token' is what you'll need.

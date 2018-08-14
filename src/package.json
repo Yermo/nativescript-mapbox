@@ -19,7 +19,7 @@
   "scripts": {
     "build": "npm i && tsc --skipLibCheck",
     "demo.ios": "npm run build && cd ../demo && tns run ios --syncAllFiles",
-    "demo.android": "npm run build && cd ../demo && tns run android --syncAllFiles",
+    "demo.android": "npm run build && cd ../demo && tns run android --log debug",
     "test": "npm run tslint && npm run tslint.demo && cd ../demo && tns build ios && tns build android",
     "test.ios": "cd ../demo && tns test ios --emulator",
     "test.ios.device": "cd ../demo && tns test ios",
@@ -58,8 +58,8 @@
   "homepage": "https://github.com/eddyverbruggen/nativescript-mapbox",
   "readmeFilename": "README.md",
   "devDependencies": {
-    "tns-core-modules": "~4.0.0",
-    "tns-platform-declarations": "~4.0.0",
+    "tns-core-modules": "~4.2.0",
+    "tns-platform-declarations": "~4.2.0",
     "tslint": "^5.1.0",
     "typescript": "~2.7.0"
   }
