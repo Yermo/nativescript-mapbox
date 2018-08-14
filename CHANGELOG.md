@@ -5,6 +5,14 @@
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
 
+## [4.2.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.2.0) (2018-08-14)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.1.2...4.2.0)
+
+**Implemented enhancements:**
+
+- Feature Request: Move Map Markers [\#226](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/226)
+- Update Mapbox iOS SDK to 4.2.0 [\#248](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/248)
+
 ## [4.1.2](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.1.2) (2018-08-13)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.1.1...4.1.2)
 
