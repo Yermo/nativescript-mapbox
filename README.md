@@ -118,7 +118,7 @@ All currently supported options for your XML based map are (__don't__ use other 
 |option|default|description
 |---|---|---
 |`accesstoken`|-|see 'Prerequisites' above
-|`delay`|0|A delay in milliseconds - you can set this to have better control over when Mapbox is invoked so it won't clash with other computations your app may need to perform. 
+|`delay`|0|A delay in milliseconds - you can set this to have better control over when Mapbox is invoked so it won't clash with other computations your app may need to perform.
 |`mapStyle`|streets|streets, light, dark, satellite_streets, satellite, traffic_day, traffic_night
 |`latitude `|-|Set the center of the map by passing this in
 |`longitude`|-|.. and this as well
@@ -280,7 +280,9 @@ You can update the map style after you've loaded it.
 ### addMarkers
 
 ```typescript
-  const firstMarker = {
+  import { MapboxMarker } from "nativescript-mapbox";
+
+  const firstMarker = <MapboxMarker>{ //cast as a MapboxMarker to pick up helper functions such as update()
     id: 2, // can be user in 'removeMarkers()'
     lat: 52.3602160, // mandatory
     lng: 4.8891680, // mandatory
@@ -303,7 +305,7 @@ You can update the map style after you've loaded it.
 ```
 
 #### Updating markers
-Plugin version 4.2.0 added the option to update makers. Just call `update` on the marker reference you created above.
+Plugin version 4.2.0 added the option to update makers. Just call `update` on the `MapboxMarker` reference you created above.
 You can update the following properties (all but the icon really):
 
 ```typescript
@@ -320,19 +322,19 @@ You can update the following properties (all but the icon really):
 
 ### removeMarkers
 You can either remove all markers by not passing in an argument,
-or remove specific marker id's (which you specified previously). 
+or remove specific marker id's (which you specified previously).
 
 ```js
   // remove all markers
   mapbox.removeMarkers();
-  
+
   // remove specific markers by id
   mapbox.removeMarkers([1, 2]);
 ```
 
 ### setViewport
 If you want to for instance make the viewport contain all markers you
-can set the bounds to the lat/lng of the outermost markers using this function. 
+can set the bounds to the lat/lng of the outermost markers using this function.
 
 ```js
   mapbox.setViewport(
@@ -511,12 +513,12 @@ The first person to tweet a snowman drawn with this function gets a T-shirt.
 
 ### removePolygons
 You can either remove all polygons by not passing in an argument,
-or remove specific polygon id's (which you specified previously). 
+or remove specific polygon id's (which you specified previously).
 
 ```js
   // remove all polygons
   mapbox.removePolygons();
-  
+
   // remove specific polygons by id
   mapbox.removePolygons([1, 2]);
 ```
@@ -550,12 +552,12 @@ Draw a polyline. Connect the points given as parameters.
 
 ### removePolylines
 You can either remove all polylines by not passing in an argument,
-or remove specific polyline id's (which you specified previously). 
+or remove specific polyline id's (which you specified previously).
 
 ```js
   // remove all polylines
   mapbox.removePolylines();
-  
+
   // remove specific polylines by id
   mapbox.removePolylines([1, 2]);
 ```
