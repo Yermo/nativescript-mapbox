@@ -144,6 +144,9 @@ const _getMapStyle = (input: any): any => {
   if (/^mapbox:\/\/styles/.test(input)) {
     return input;
   }
+  if (/^http:\/\//.test(input) || /^https:\/\//.test(input) || /^file:\/\//.test(input)) {
+    return input;
+  }
   if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
     return Style.LIGHT;
   } else if (input === MapStyle.DARK || input === MapStyle.DARK.toString()) {

@@ -68,6 +68,8 @@ const _getMapStyle = (input: any): NSURL => {
   if (/^mapbox:\/\/styles/.test(input)) {
     // allow for a style URL to be passed
     return NSURL.URLWithString(input);
+  } else if (/^http:\/\//.test(input) || /^https:\/\//.test(input) || /^file:\/\//.test(input)) {
+    return NSURL.URLWithString(input);
   } else if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
     return MGLStyle.lightStyleURL;
   } else if (input === MapStyle.DARK || input === MapStyle.DARK.toString()) {
