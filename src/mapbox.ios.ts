@@ -65,7 +65,11 @@ const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
 };
 
 const _getMapStyle = (input: any): NSURL => {
-  if (/^mapbox:\/\/styles/.test(input) || /^http:\/\//.test(input) || /^https:\/\//.test(input) || /^file:\/\//.test(input)) {
+  if (/^mapbox:\/\/styles/.test(input) || /^http:\/\//.test(input) || /^https:\/\//.test(input)) {
+    return NSURL.URLWithString(input);
+  } else if (/^assets:\/\//.test(input)) {
+    let assetPath = 'file://' + fs.knownFolders.currentApp().path + '/assets/';
+    input = input.replace('assets://', assetPath);
     return NSURL.URLWithString(input);
   } else if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
     return MGLStyle.lightStyleURL;
