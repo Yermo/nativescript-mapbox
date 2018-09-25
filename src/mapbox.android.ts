@@ -143,9 +143,9 @@ const _getMapStyle = (input: any): any => {
   // allow for a style URL to be passed
   if (/^mapbox:\/\/styles/.test(input) || /^http:\/\//.test(input) || /^https:\/\//.test(input)) {
     return input;
-  } else if (/^assets:\/\//.test(input)) {
-    let assetsPath = 'asset://app/assets/';
-    input = input.replace('assets://', assetsPath);
+  } else if (/^~\//.test(input)) {
+    let assetsPath = 'asset://app/';
+    input = input.replace(/^~\//, assetsPath);
     return input;
   } else if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
     return Style.LIGHT;
