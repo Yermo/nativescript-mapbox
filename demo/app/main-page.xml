@@ -10,7 +10,7 @@
                   latitude="52.3702160"
                   longitude="4.8951680"
                   zoomLevel="3"
-                  mapStyle="light"
+                  mapStyle="~/OSM-map-style.json"
                   hideAttribution="true"
                   hideCompass="false"
                   accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
