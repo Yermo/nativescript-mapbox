@@ -5,6 +5,14 @@
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
 
+## [4.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.2.0) (2018-09-25)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.2.0...4.3.0)
+
+**Implemented enhancements:**
+
+- Allow Mapbox to load local json map style definition [\#261](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/261)
+
+
 ## [4.2.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.2.0) (2018-08-14)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.1.2...4.2.0)
 
