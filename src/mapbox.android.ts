@@ -141,10 +141,13 @@ export class MapboxView extends MapboxViewBase {
 const _getMapStyle = (input: any): any => {
   const Style = com.mapbox.mapboxsdk.constants.Style;
   // allow for a style URL to be passed
-  if (/^mapbox:\/\/styles/.test(input)) {
+  if (/^mapbox:\/\/styles/.test(input) || /^http:\/\//.test(input) || /^https:\/\//.test(input)) {
     return input;
-  }
-  if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
+  } else if (/^~\//.test(input)) {
+    let assetsPath = 'asset://app/';
+    input = input.replace(/^~\//, assetsPath);
+    return input;
+  } else if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
     return Style.LIGHT;
   } else if (input === MapStyle.DARK || input === MapStyle.DARK.toString()) {
     return Style.DARK;

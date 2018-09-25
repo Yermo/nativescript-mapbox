@@ -1,0 +1,30 @@
+{
+    "version": 8,
+    "name": "OpenStreetMap Tiles",
+    "sources": {
+        "OSMTileLayer": {
+            "type": "raster",
+            "attribution": "(c) OpenStreetMap contributors, CC-BY-SA",
+            "scheme": "xyz",
+            "tiles": [
+                "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            ],
+            "minzoom": 0,
+            "maxzoom": 18,
+            "tileSize": 256,
+            "bounds": [ -180, -85, 180, 85 ]
+        }
+    },
+    "layers": [
+        {
+            "id": "OSMTileLayer",
+            "type": "raster",
+            "source": "OSMTileLayer",
+            "paint": {
+                "raster-fade-duration": 100
+            }
+        }
+    ]
+}
