@@ -5,7 +5,15 @@
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
 
-## [4.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.2.0) (2018-09-25)
+## [4.3.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.3.1) (2018-10-11)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.3.0...4.3.1)
+
+**Implemented enhancements:**
+
+- LongPress functionality for android and ios [\#266](https://github.com/EddyVerbruggen/nativescript-mapbox/pull/266)
+
+
+## [4.3.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.3.0) (2018-09-25)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.2.0...4.3.0)
 
 **Implemented enhancements:**
