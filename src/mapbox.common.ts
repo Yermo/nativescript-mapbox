@@ -359,6 +359,8 @@ export interface MapboxApi {
 
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any>;
 
+  setOnMapLongClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any>;
+
   setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void>;
 
   setOnFlingListener(listener: () => void, nativeMap?: any): Promise<any>;
@@ -450,6 +452,8 @@ export interface MapboxViewApi {
 
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
 
+  setOnMapLongClickListener(listener: (data: LatLng) => void): Promise<any>;
+
   setOnScrollListener(listener: (data?: LatLng) => void): Promise<void>;
 
   setOnFlingListener(listener: () => void): Promise<any>;
@@ -510,6 +514,10 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any> {
     return this.mapbox.setOnMapClickListener(listener, this.getNativeMapView());
+  }
+
+  setOnMapLongClickListener(listener: (data: LatLng) => void): Promise<any> {
+    return this.mapbox.setOnMapLongClickListener(listener, this.getNativeMapView());
   }
 
   setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void> {

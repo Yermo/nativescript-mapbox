@@ -631,6 +631,38 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  setOnMapLongClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        // adding the longPress handler to the map oject so it's not GC'd
+        theMap['mapLongPressHandler'] = MapLongPressHandlerImpl.initWithOwnerAndListenerForMap(new WeakRef(this), listener, theMap);
+        const longPressGestureRecognizer = UILongPressGestureRecognizer.alloc().initWithTargetAction(theMap['mapLongPressHandler'], "longPress");
+
+        // cancel the default longPress handler
+        for (let i = 0; i < theMap.gestureRecognizers.count; i++) {
+          let recognizer: UIGestureRecognizer = theMap.gestureRecognizers.objectAtIndex(i);
+          if (recognizer instanceof UILongPressGestureRecognizer) {
+            longPressGestureRecognizer.requireGestureRecognizerToFail(recognizer);
+          }
+        }
+
+        theMap.addGestureRecognizer(longPressGestureRecognizer);
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setOnMapClickListener: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
   setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
@@ -1192,6 +1224,32 @@ class MapTapHandlerImpl extends NSObject {
   };
 }
 
+class MapLongPressHandlerImpl extends NSObject {
+  private _owner: WeakRef<Mapbox>;
+  private _listener: (data?: LatLng) => void;
+  private _mapView: MGLMapView;
+
+  public static initWithOwnerAndListenerForMap(owner: WeakRef<Mapbox>, listener: (data?: LatLng) => void, mapView: MGLMapView): MapLongPressHandlerImpl {
+    let handler = <MapLongPressHandlerImpl>MapLongPressHandlerImpl.new();
+    handler._owner = owner;
+    handler._listener = listener;
+    handler._mapView = mapView;
+    return handler;
+  }
+
+  public longPress(recognizer: UILongPressGestureRecognizer): void {
+    const longPressPoint = recognizer.locationInView(this._mapView);
+    const longPressCoordinate = this._mapView.convertPointToCoordinateFromView(longPressPoint, this._mapView);
+    this._listener({
+      lat: longPressCoordinate.latitude,
+      lng: longPressCoordinate.longitude
+    });
+  }
+
+  public static ObjCExposedMethods = {
+    "longPress": {returns: interop.types.void, params: [interop.types.id]}
+  };
+}
 class MapPanHandlerImpl extends NSObject {
   private _owner: WeakRef<Mapbox>;
   private _listener: (data?: LatLng) => void;
