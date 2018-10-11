@@ -988,6 +988,35 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  setOnMapLongClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        theMap.mapboxMap.addOnMapLongClickListener(
+            new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapLongClickListener({
+              onMapLongClick: point => {
+                listener({
+                  lat: point.getLatitude(),
+                  lng: point.getLongitude()
+                });
+              }
+            })
+        );
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setOnMapLongClickListener: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
   setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
