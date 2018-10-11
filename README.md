@@ -188,7 +188,7 @@ exports.onMapReady = onMapReady;
 ```
 
 The methods you can invoke like this from an XML-declared map are:
-`addMarkers`, `setViewport`, `removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `getTilt`, `setTilt`, `setMapStyle`, `animateCamera`, `addPolygon`, `removePolygons`, `addPolyline`, `removePolylines`, `getUserLocation`, `trackUser`, `setOnMapClickListener` and `destroy`.
+`addMarkers`, `setViewport`, `removeMarkers`, `getCenter`, `setCenter`, `getZoomLevel`, `setZoomLevel`, `getViewport`, `getTilt`, `setTilt`, `setMapStyle`, `animateCamera`, `addPolygon`, `removePolygons`, `addPolyline`, `removePolylines`, `getUserLocation`, `trackUser`, `setOnMapClickListener`, `setOnMapLongClickListener` and `destroy`.
 
 Check out the usage details on the functions below.
 
@@ -568,6 +568,15 @@ Add a listener to retrieve lat and lng of where the user taps the map (not a mar
 ```typescript
   mapbox.setOnMapClickListener((point: LatLng) => {
     console.log("Map clicked at latitude: " + point.lat + ", longitude: " + point.lng);
+  });
+```
+
+### setOnMapLongClickListener
+Add a listener to retrieve lat and lng of where the user longpresses the map (not a marker).
+
+```typescript
+  mapbox.setOnMapLongClickListener((point: LatLng) => {
+    console.log("Map longpressed at latitude: " + point.lat + ", longitude: " + point.lng);
   });
 ```
 

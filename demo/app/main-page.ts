@@ -29,6 +29,8 @@ function onMapReady(args) {
 
   map.setOnMapClickListener((point: LatLng) => console.log(`Map tapped: ${JSON.stringify(point)}`));
 
+  map.setOnMapLongClickListener((point: LatLng) => console.log(`Map longpressed: ${JSON.stringify(point)}`));
+
   // this works perfectly fine, but generates a lot of noise
   // map.setOnScrollListener((point?: LatLng) => console.log(`Map scrolled: ${JSON.stringify(point)}`));
 

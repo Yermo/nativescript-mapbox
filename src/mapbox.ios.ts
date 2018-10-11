@@ -1250,6 +1250,7 @@ class MapLongPressHandlerImpl extends NSObject {
     "longPress": {returns: interop.types.void, params: [interop.types.id]}
   };
 }
+
 class MapPanHandlerImpl extends NSObject {
   private _owner: WeakRef<Mapbox>;
   private _listener: (data?: LatLng) => void;
