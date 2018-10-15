@@ -5,6 +5,18 @@
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
 
+## [4.4.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.4.0) (2018-10-15)
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.3.1...4.4.0)
+
+**Implemented enhancements:**
+
+- Bump Mapbox iOS and Android SDK [\#269](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/269)
+
+**Fixed bugs:**
+
+- draw the user trip [\#268](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/268)
+
+
 ## [4.3.1](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.3.1) (2018-10-11)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.3.0...4.3.1)
 

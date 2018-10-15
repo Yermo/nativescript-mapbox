@@ -43,7 +43,6 @@ let _markers = [];
 let _polylines = [];
 let _polygons = [];
 let _markerIconDownloadCache = [];
-let _locationEngine = null;
 let _locationLayerPlugin = null;
 
 const ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
@@ -67,9 +66,8 @@ export class MapboxView extends MapboxViewBase {
   }
 
   disposeNativeView(): void {
-    if (_locationEngine) {
-      _locationEngine.deactivate();
-      _locationEngine = null;
+    if (_locationLayerPlugin) {
+      _locationLayerPlugin.onStop();
     }
   }
 
@@ -233,15 +231,7 @@ const _fineLocationPermissionGranted = () => {
 };
 
 const _showLocation = (theMapView, mapboxMap) => {
-  // From https://github.com/mapbox/mapbox-plugins-android/blob/master/app/src/main/java/com/mapbox/mapboxsdk/plugins/testapp/activity/location/LocationLayerModesActivity.java
-  if (!_locationEngine) {
-    _locationEngine = new com.mapbox.android.core.location.LocationEngineProvider(application.android.foregroundActivity || application.android.startActivity).obtainBestLocationEngineAvailable();
-    _locationEngine.setPriority(com.mapbox.android.core.location.LocationEnginePriority.HIGH_ACCURACY);
-    _locationEngine.setFastestInterval(1000);
-    _locationEngine.activate();
-  }
-
-  _locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap, _locationEngine);
+  _locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap);
 };
 
 const _getClickedMarkerDetails = (clicked) => {
@@ -627,9 +617,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         if (viewGroup !== null) {
           viewGroup.removeView(theMap.mapView);
         }
-        if (_locationEngine) {
-          _locationEngine.deactivate();
-          _locationEngine = null;
+        if (_locationLayerPlugin) {
+          _locationLayerPlugin.onStop();
         }
         theMap.mapView = null;
         theMap.mapboxMap = null;
@@ -797,7 +786,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   getUserLocation(): Promise<UserLocation> {
     return new Promise((resolve, reject) => {
       try {
-        const loc = _locationEngine ? _locationEngine.getLastLocation() : null;
+        const loc = _locationLayerPlugin ? _locationLayerPlugin.getLocationEngine().getLastLocation() : null;
         if (loc === null) {
           reject("Location not available");
         } else {
