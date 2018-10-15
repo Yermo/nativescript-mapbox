@@ -419,7 +419,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-        const loc = theMap.userLocation;
+        const loc: MGLUserLocation = theMap.userLocation;
         if (loc === null) {
           reject("Location not available");
         } else {
@@ -428,7 +428,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               lat: loc.coordinate.latitude,
               lng: loc.coordinate.longitude
             },
-            speed: loc.location.speed
+            speed: loc.location ? loc.location.speed : 0
           });
         }
       } catch (ex) {
