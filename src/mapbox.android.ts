@@ -61,6 +61,27 @@ export class MapboxView extends MapboxViewBase {
     let nativeView = new android.widget.FrameLayout(this._context);
     setTimeout(() => {
       this.initMap();
+
+      application.on(application.suspendEvent, arg => {
+        console.log(application.suspendEvent + ", this.mapView: " + this.mapView);
+        if (this.mapView) {
+          // remember a few properties so resume doesn't reset the entire map :)
+          const camPosition = this.mapView.mapboxMap.getCameraPosition();
+          this.config.center.lat = camPosition.target.getLatitude();
+          this.config.center.lng = camPosition.target.getLongitude();
+          this.config.zoomLevel = camPosition.zoom;
+
+          // this.mapView.onPause();
+          this.destroy().then(() => console.log("destroyed"));
+        }
+      });
+
+      application.on(application.resumeEvent, arg => {
+        setTimeout(() => {
+          console.log(application.resumeEvent + ", this.mapView: " + this.mapView);
+          this.initMap();
+        }, 50);
+      });
     }, 0);
     return nativeView;
   }
@@ -69,6 +90,7 @@ export class MapboxView extends MapboxViewBase {
     if (_locationLayerPlugin) {
       _locationLayerPlugin.onStop();
     }
+    this.mapView.onDestroy();
   }
 
   initMap(): void {
@@ -81,8 +103,6 @@ export class MapboxView extends MapboxViewBase {
         this.mapView = new com.mapbox.mapboxsdk.maps.MapView(
             this._context,
             _getMapboxMapOptions(settings));
-
-        this.mapView.onCreate(null);
 
         this.mapView.getMapAsync(
             new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
