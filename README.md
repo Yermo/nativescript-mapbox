@@ -20,7 +20,7 @@ Awesome native OpenGL-powered maps - by Mapbox
 
 <img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
-> Plugin version 4.2.0 requires iOS 9 or higher. Need to target a lower iOS version? Use a lower plugin version.
+> Plugin version 4.4.0 may crash on Android when pausing and resuming the app. If this affects you, pin your version to "4.3.1" for now. So in package.json do `"nativescript-mapbox": "4.1.3"` (without the `~` / `^` version prefix).
 
 ## Prerequisites
 You need a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
