@@ -18,7 +18,7 @@ export interface LatLng {
   lng: number;
 }
 
-export interface RenderedFeaturesOptions {
+export interface QueryRenderedFeaturesOptions {
   point: LatLng;
 }
 
@@ -351,7 +351,7 @@ export interface MapboxApi {
 
   trackUser(options: TrackUserOptions, nativeMap?: any): Promise<void>;
 
-  renderedFeatures(options: RenderedFeaturesOptions, nativeMap?: any): Promise<void>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<void>;
 
   addPolygon(options: AddPolygonOptions, nativeMap?: any): Promise<any>;
 
@@ -492,7 +492,7 @@ export interface MapboxViewApi {
 
   trackUser(options: TrackUserOptions): Promise<any>;
 
-  renderedFeatures(options: RenderedFeaturesOptions): Promise<void>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<void>;
 
   addPolygon(options: AddPolygonOptions): Promise<any>;
 
@@ -592,8 +592,8 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
     return this.mapbox.trackUser(options, this.getNativeMapView());
   }
 
-  renderedFeatures(options: RenderedFeaturesOptions): Promise<any> {
-    return this.mapbox.renderedFeatures(options, this.getNativeMapView());
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<any> {
+    return this.mapbox.queryRenderedFeatures(options, this.getNativeMapView());
   }
 
   addPolygon(options: AddPolygonOptions): Promise<any> {

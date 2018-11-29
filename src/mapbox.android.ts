@@ -21,7 +21,7 @@ import {
   MapboxViewBase,
   MapStyle,
   OfflineRegion,
-  RenderedFeaturesOptions,
+  QueryRenderedFeaturesOptions,
   SetCenterOptions,
   SetTiltOptions,
   SetViewportOptions,
@@ -806,7 +806,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  renderedFeatures(options: RenderedFeaturesOptions, nativeMap?): Promise<any> {
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
         const theMap = nativeMap || _mapbox;
@@ -819,7 +819,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const features = theMap.mapboxMap.queryRenderedFeatures(mapboxPoint);
         resolve(features);
       } catch (ex) {
-        console.log("Error in mapbox.renderedFeatures: " + ex);
+        console.log("Error in mapbox.queryRenderedFeatures: " + ex);
         reject(ex);
       }
     });
