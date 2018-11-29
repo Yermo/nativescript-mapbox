@@ -19,6 +19,7 @@ import {
   MapboxViewBase,
   MapStyle,
   OfflineRegion,
+  RenderedFeaturesOptions,
   SetCenterOptions,
   SetTiltOptions,
   SetViewportOptions,
@@ -433,6 +434,25 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
       } catch (ex) {
         console.log("Error in mapbox.getUserLocation: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  renderedFeatures(options: RenderedFeaturesOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const point = options.point;
+        if (point === undefined) {
+          reject("Please set the 'point' parameter");
+          return;
+        }
+        const mapboxPoint = [point.lng, point.lat];
+        const features = theMap.mapboxMap.queryRenderedFeatures(mapboxPoint);
+        resolve(features);
+      } catch (ex) {
+        console.log("Error in mapbox.renderedFeatures: " + ex);
         reject(ex);
       }
     });
