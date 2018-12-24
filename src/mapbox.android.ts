@@ -816,8 +816,24 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
         const mapboxPoint = new com.mapbox.mapboxsdk.geometry.LatLng(options.point.lat, options.point.lng);
-        const features = theMap.mapboxMap.queryRenderedFeatures(mapboxPoint);
-        resolve(features);
+        const screenLocation = theMap.mapboxMap.getProjection().toScreenLocation(mapboxPoint);
+        if (theMap.mapboxMap.queryRenderedFeatures) {
+          const features /* List<Feature> */ = theMap.mapboxMap.queryRenderedFeatures(screenLocation, null, null);
+          const result = [];
+          for (let i = 0; i < features.size(); i++) {
+            // see https://www.mapbox.com/android-docs/api/mapbox-java/libjava-geojson/3.4.1/com/mapbox/geojson/Feature.html
+            const feature = features.get(i);
+            result.push({
+              id: feature.id(),
+              type: feature.type(),
+              properties: JSON.parse(feature.properties().toString()),
+              geoJsonString: feature.toJson()
+            });
+          }
+          resolve(result);
+        } else {
+          reject("Feature not supported by this Mapbox version");
+        }
       } catch (ex) {
         console.log("Error in mapbox.queryRenderedFeatures: " + ex);
         reject(ex);

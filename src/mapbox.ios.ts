@@ -442,15 +442,27 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const theMap = nativeMap || _mapbox;
+        const theMap: MGLMapView = nativeMap || _mapbox.mapView;
         const point = options.point;
         if (point === undefined) {
           reject("Please set the 'point' parameter");
           return;
         }
-        const mapboxPoint = [point.lng, point.lat];
-        const features = theMap.mapboxMap.queryRenderedFeatures(mapboxPoint);
-        resolve(features);
+
+        const {x, y} = theMap.convertCoordinateToPointToView({latitude: point.lat, longitude: point.lng}, theMap);
+        const features = theMap.visibleFeaturesAtPoint({x, y});
+
+        const result = [];
+        for (let i = 0; i < features.count; i++) {
+          let feature: MGLFeature = features.objectAtIndex(i);
+          result.push({
+            id: feature.identifier,
+            properties: feature.attributes.toString(),
+            geoJsonString: feature.geoJSONDictionary().toString()
+          });
+        }
+
+        resolve(result);
       } catch (ex) {
         console.log("Error in mapbox.queryRenderedFeatures: " + ex);
         reject(ex);

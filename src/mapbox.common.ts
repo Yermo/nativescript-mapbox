@@ -351,7 +351,7 @@ export interface MapboxApi {
 
   trackUser(options: TrackUserOptions, nativeMap?: any): Promise<void>;
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<void>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<any>;
 
   addPolygon(options: AddPolygonOptions, nativeMap?: any): Promise<any>;
 
@@ -455,6 +455,8 @@ export interface MapboxViewApi {
   addMarkers(markers: MapboxMarker[]): Promise<any>;
 
   removeMarkers(options?: any): Promise<any>;
+
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<void>;
 
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
 

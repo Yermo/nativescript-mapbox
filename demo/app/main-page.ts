@@ -53,7 +53,17 @@ function onMapReady(args) {
         console.log("'Nice location' marker callout tapped");
       }
     }]
-  );
+  ).then(() => {
+    console.log("Markers added");
+    setTimeout(() => {
+      map.queryRenderedFeatures({
+        point: {
+          lat: 52.3602160,
+          lng: 4.8891680
+        }
+      }).then(result => console.log(JSON.stringify(result)));
+    }, 1000);
+  });
 
   setTimeout(() => {
     map.setViewport(
