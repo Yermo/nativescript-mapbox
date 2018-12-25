@@ -20,6 +20,7 @@ export interface LatLng {
 
 export interface QueryRenderedFeaturesOptions {
   point: LatLng;
+  layerIds?: string[];
 }
 
 export interface AddPolygonOptions {
