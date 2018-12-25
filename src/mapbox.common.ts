@@ -23,6 +23,12 @@ export interface QueryRenderedFeaturesOptions {
   layerIds?: string[];
 }
 
+export interface Feature {
+  id: any;
+  type?: string;
+  properties: Object;
+}
+
 export interface AddPolygonOptions {
   /**
    * Set this in case you want to later pass it to 'removePolygons'. TODO doesn't exist yet ;)
@@ -352,7 +358,7 @@ export interface MapboxApi {
 
   trackUser(options: TrackUserOptions, nativeMap?: any): Promise<void>;
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<any>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<Array<Feature>>;
 
   addPolygon(options: AddPolygonOptions, nativeMap?: any): Promise<any>;
 
@@ -457,7 +463,7 @@ export interface MapboxViewApi {
 
   removeMarkers(options?: any): Promise<any>;
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<void>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
 
   setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
 
@@ -495,7 +501,7 @@ export interface MapboxViewApi {
 
   trackUser(options: TrackUserOptions): Promise<any>;
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<void>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
 
   addPolygon(options: AddPolygonOptions): Promise<any>;
 
@@ -595,7 +601,7 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
     return this.mapbox.trackUser(options, this.getNativeMapView());
   }
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<any> {
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>> {
     return this.mapbox.queryRenderedFeatures(options, this.getNativeMapView());
   }
 

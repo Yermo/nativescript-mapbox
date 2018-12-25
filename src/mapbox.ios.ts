@@ -11,6 +11,7 @@ import {
   AnimateCameraOptions,
   DeleteOfflineRegionOptions,
   DownloadOfflineRegionOptions,
+  Feature,
   LatLng,
   ListOfflineRegionsOptions,
   MapboxApi,
@@ -439,7 +440,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<any> {
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
     return new Promise((resolve, reject) => {
       try {
         const theMap: MGLMapView = nativeMap || _mapbox.mapView;
@@ -457,8 +458,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           let feature: MGLFeature = features.objectAtIndex(i);
           result.push({
             id: feature.identifier,
-            properties: feature.attributes.toString(),
-            geoJsonString: feature.geoJSONDictionary().toString()
+            properties: JSON.parse(feature.attributes.toString()),
           });
         }
 

@@ -13,6 +13,7 @@ import {
   AnimateCameraOptions,
   DeleteOfflineRegionOptions,
   DownloadOfflineRegionOptions,
+  Feature,
   LatLng,
   ListOfflineRegionsOptions,
   MapboxApi,
@@ -806,7 +807,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<any> {
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
     return new Promise((resolve, reject) => {
       try {
         const theMap = nativeMap || _mapbox;
@@ -819,15 +820,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const screenLocation = theMap.mapboxMap.getProjection().toScreenLocation(mapboxPoint);
         if (theMap.mapboxMap.queryRenderedFeatures) {
           const features /* List<Feature> */ = theMap.mapboxMap.queryRenderedFeatures(screenLocation, null, options.layerIds);
-          const result = [];
+          const result:Array<Feature> = [];
           for (let i = 0; i < features.size(); i++) {
             // see https://www.mapbox.com/android-docs/api/mapbox-java/libjava-geojson/3.4.1/com/mapbox/geojson/Feature.html
             const feature = features.get(i);
             result.push({
               id: feature.id(),
               type: feature.type(),
-              properties: JSON.parse(feature.properties().toString()),
-              geoJsonString: feature.toJson()
+              properties: JSON.parse(feature.properties().toString())
             });
           }
           resolve(result);
