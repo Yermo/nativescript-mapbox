@@ -13,6 +13,7 @@ import {
   AnimateCameraOptions,
   DeleteOfflineRegionOptions,
   DownloadOfflineRegionOptions,
+  Feature,
   LatLng,
   ListOfflineRegionsOptions,
   MapboxApi,
@@ -21,6 +22,7 @@ import {
   MapboxViewBase,
   MapStyle,
   OfflineRegion,
+  QueryRenderedFeaturesOptions,
   SetCenterOptions,
   SetTiltOptions,
   SetViewportOptions,
@@ -800,6 +802,40 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
       } catch (ex) {
         console.log("Error in mapbox.getUserLocation: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+        const point = options.point;
+        if (point === undefined) {
+          reject("Please set the 'point' parameter");
+          return;
+        }
+        const mapboxPoint = new com.mapbox.mapboxsdk.geometry.LatLng(options.point.lat, options.point.lng);
+        const screenLocation = theMap.mapboxMap.getProjection().toScreenLocation(mapboxPoint);
+        if (theMap.mapboxMap.queryRenderedFeatures) {
+          const features /* List<Feature> */ = theMap.mapboxMap.queryRenderedFeatures(screenLocation, null, options.layerIds);
+          const result:Array<Feature> = [];
+          for (let i = 0; i < features.size(); i++) {
+            // see https://www.mapbox.com/android-docs/api/mapbox-java/libjava-geojson/3.4.1/com/mapbox/geojson/Feature.html
+            const feature = features.get(i);
+            result.push({
+              id: feature.id(),
+              type: feature.type(),
+              properties: JSON.parse(feature.properties().toString())
+            });
+          }
+          resolve(result);
+        } else {
+          reject("Feature not supported by this Mapbox version");
+        }
+      } catch (ex) {
+        console.log("Error in mapbox.queryRenderedFeatures: " + ex);
         reject(ex);
       }
     });

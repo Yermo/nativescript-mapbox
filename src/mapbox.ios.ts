@@ -11,6 +11,7 @@ import {
   AnimateCameraOptions,
   DeleteOfflineRegionOptions,
   DownloadOfflineRegionOptions,
+  Feature,
   LatLng,
   ListOfflineRegionsOptions,
   MapboxApi,
@@ -19,6 +20,7 @@ import {
   MapboxViewBase,
   MapStyle,
   OfflineRegion,
+  QueryRenderedFeaturesOptions,
   SetCenterOptions,
   SetTiltOptions,
   SetViewportOptions,
@@ -433,6 +435,36 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
       } catch (ex) {
         console.log("Error in mapbox.getUserLocation: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        const point = options.point;
+        if (point === undefined) {
+          reject("Please set the 'point' parameter");
+          return;
+        }
+
+        const {x, y} = theMap.convertCoordinateToPointToView({latitude: point.lat, longitude: point.lng}, theMap);
+        const features = theMap.visibleFeaturesAtPoint({x, y});
+
+        const result = [];
+        for (let i = 0; i < features.count; i++) {
+          let feature: MGLFeature = features.objectAtIndex(i);
+          result.push({
+            id: feature.identifier,
+            properties: JSON.parse(feature.attributes.toString()),
+          });
+        }
+
+        resolve(result);
+      } catch (ex) {
+        console.log("Error in mapbox.queryRenderedFeatures: " + ex);
         reject(ex);
       }
     });
