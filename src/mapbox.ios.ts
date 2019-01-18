@@ -70,7 +70,7 @@ const _getMapStyle = (input: any): NSURL => {
   if (/^mapbox:\/\/styles/.test(input) || /^http:\/\//.test(input) || /^https:\/\//.test(input)) {
     return NSURL.URLWithString(input);
   } else if (/^~\//.test(input)) {
-    var assetPath = 'file://' + fs.knownFolders.currentApp().path + '/';
+    const assetPath = 'file://' + fs.knownFolders.currentApp().path + '/';
     input = input.replace(/^~\//, assetPath);
     return NSURL.URLWithString(input);
   } else if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
@@ -455,10 +455,24 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         const result = [];
         for (let i = 0; i < features.count; i++) {
-          let feature: MGLFeature = features.objectAtIndex(i);
+          const feature: MGLFeature = features.objectAtIndex(i);
+          const properties = [];
+
+          if (feature.attributes && feature.attributes.count > 0) {
+            const keys = utils.ios.collections.nsArrayToJSArray(
+              feature.attributes.allKeys);
+
+            for (let key of keys) {
+              properties.push({
+                key,
+                value: feature.attributes.valueForKey(key),
+              });
+            }
+          }
+
           result.push({
             id: feature.identifier,
-            properties: JSON.parse(feature.attributes.toString()),
+            properties,
           });
         }
 
@@ -474,6 +488,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       const theMap = nativeMap || _mapbox.mapView;
       const points = options.points;
+
       if (points === undefined) {
         reject("Please set the 'points' parameter");
         return;
@@ -482,20 +497,36 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       const coordinateArray = [];
       points.forEach(point => coordinateArray.push([point.lng, point.lat]));
 
-      const polygonID = "polygon_" + (options.id || new Date().getTime());
+      const polygonID = `polygon_${
+        options.id || new Date().getTime()}`;
 
       if (theMap.style.sourceWithIdentifier(polygonID)) {
         reject("Remove the polygon with this id first with 'removePolygons': " + polygonID);
         return;
       }
 
-      const geoJSON = `{"type": "FeatureCollection", "features": [{"type": "Feature","properties": {},"geometry": {"type": "Polygon", "coordinates": [${JSON.stringify(coordinateArray)}]}}]}`;
+      const geoJSON = `{
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "id": ${JSON.stringify(polygonID)},
+            "type": "Feature",
+            "properties": {
+            },
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [${JSON.stringify(coordinateArray)}]
+            }
+          }
+        ]
+      }`;
       const geoDataStr = NSString.stringWithString(geoJSON);
       const geoData = geoDataStr.dataUsingEncoding(NSUTF8StringEncoding);
       const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
       const geo = NSData.alloc().initWithBase64EncodedStringOptions(geoDataBase64Enc, null);
       const shape = MGLShape.shapeWithDataEncodingError(geo, NSUTF8StringEncoding);
       const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions(polygonID, shape, null);
+
       theMap.style.addSource(source);
 
       if (options.strokeColor || options.strokeWidth || options.strokeOpacity) {
@@ -506,10 +537,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         theMap.style.addLayer(strokeLayer);
       }
 
-      const layer = MGLFillStyleLayer.alloc().initWithIdentifierSource(polygonID, source);
+      const layer = MGLFillStyleLayer
+        .alloc()
+        .initWithIdentifierSource(polygonID, source);
       layer.fillColor = NSExpression.expressionForConstantValue(!options.fillColor ? UIColor.blackColor : (options.fillColor instanceof Color ? options.fillColor.ios : new Color(options.fillColor).ios));
       layer.fillOpacity = NSExpression.expressionForConstantValue(options.fillOpacity === undefined ? 1 : options.fillOpacity);
       theMap.style.addLayer(layer);
+
 
       resolve();
     });
@@ -1105,7 +1139,7 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
             }
           }
         });
-      }
+      };
     });
   });
 };
