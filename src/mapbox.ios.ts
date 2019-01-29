@@ -6,8 +6,10 @@ import * as http from "tns-core-modules/http";
 import {
   AddExtrusionOptions,
   AddGeoJsonClusteredOptions,
+  AddLayerOptions,
   AddPolygonOptions,
   AddPolylineOptions,
+  AddSourceOptions,
   AnimateCameraOptions,
   DeleteOfflineRegionOptions,
   DownloadOfflineRegionOptions,
@@ -1013,6 +1015,22 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   }
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  addSource(options: AddSourceOptions, nativeMap?): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  removeSource(id: String, nativeMap?): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  addLayer(options: AddLayerOptions, nativeMap?): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  removeLayer(id: String, nativeMap?): Promise<any> {
     throw new Error('Method not implemented.');
   }
 

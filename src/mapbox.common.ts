@@ -193,6 +193,23 @@ export interface AddGeoJsonClusteredOptions {
   clusters?: Array<MapboxCluster>;
 }
 
+export interface AddSourceOptions {
+  id: string;
+
+  url: string;
+  type: string;
+}
+
+export interface AddLayerOptions {
+  id: string;
+
+  source: string;
+  sourceLayer: string;
+  type: string;
+  paint?: any;
+  layout?: any;
+}
+
 export type UserTrackingMode = "NONE" | "FOLLOW" | "FOLLOW_WITH_HEADING" | "FOLLOW_WITH_COURSE";
 
 export interface TrackUserOptions {
@@ -399,6 +416,14 @@ export interface MapboxApi {
   deleteOfflineRegion(options: DeleteOfflineRegionOptions): Promise<any>;
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions): Promise<any>;
+
+  addSource(options: AddSourceOptions): Promise<any>;
+
+  removeSource(id: String, nativeMap?: any): Promise<any>;
+
+  addLayer(options: AddLayerOptions): Promise<any>;
+
+  removeLayer(id: String, nativeMap?: any): Promise<any>;
 
   // addExtrusion(options: AddExtrusionOptions): Promise<any>;
 }

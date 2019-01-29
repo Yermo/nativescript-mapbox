@@ -22,7 +22,8 @@ export class HelloWorldModel extends Observable {
       margins: {
         left: 18,
         right: 18,
-        top: isIOS ? 390 : 454,
+        top: 250,
+        //top: isIOS ? 390 : 454,
         bottom: isIOS ? 50 : 8
       },
       center: {
@@ -339,6 +340,62 @@ export class HelloWorldModel extends Observable {
     );
   }
 
+  public doAddLayerAndSource(): void {
+    this.mapbox.addSource(
+        {
+          id: "terrain-source",
+          type: "vector",
+          url: "mapbox://mapbox.mapbox-terrain-v2"
+        }
+    ).then(
+      () => {
+          this.mapbox.addLayer(
+            {
+              id: "terrain-data",
+              source: "terrain-source",
+              sourceLayer: "contour",
+              type: "line",
+              layout: {
+                "line-join": "round",
+                "line-cap": "round"
+              },
+              paint: {
+                "line-color": "#ff69b4",
+                "line-width": 1,
+              }
+            }
+          ).then(
+            () => {
+              console.log("Mapbox doAddLayerAndSource done");
+            },
+            (error: string) => {
+              console.log("mapbox doAddSource error: " + error);
+            }
+          );
+        },
+        (error: string) => {
+          console.log("mapbox doAddSource error: " + error);
+        }
+    );
+  }
+  public doRemoveLayerAndSource(): void {
+    this.mapbox.removeLayer("terrain-data").then(
+      () => {
+          this.mapbox.removeSource("terrain-source").then(
+            () => {
+              console.log("Mapbox doRemoveLayerAndSource done");
+            },
+            (error: string) => {
+              console.log("mapbox doAddSource error: " + error);
+            }
+          );
+        },
+        (error: string) => {
+          console.log("mapbox doAddSource error: " + error);
+        }
+    );
+  }
+
   public doListOfflineRegions(): void {
     this.mapbox.listOfflineRegions({
       accessToken: ACCESS_TOKEN
@@ -514,7 +571,7 @@ export class HelloWorldModel extends Observable {
   public doSetZoomLevel(): void {
     this.mapbox.setZoomLevel(
         {
-          level: 2, // shows most of the world
+          level: 9, // shows most of the world
           animated: true
         }
     ).then(
