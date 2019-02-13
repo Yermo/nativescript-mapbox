@@ -349,6 +349,7 @@ export class HelloWorldModel extends Observable {
         }
     ).then(
       () => {
+        console.log('addSource done... now let us add a layer');
           this.mapbox.addLayer(
             {
               id: "terrain-data",
@@ -369,15 +370,16 @@ export class HelloWorldModel extends Observable {
               console.log("Mapbox doAddLayerAndSource done");
             },
             (error: string) => {
-              console.log("mapbox doAddSource error: " + error);
+              console.log("mapbox doAddLayerAndSource error: " + error);
             }
           );
         },
         (error: string) => {
-          console.log("mapbox doAddSource error: " + error);
+          console.log("mapbox doAddLayerAndSource error: " + error);
         }
     );
   }
+
   public doRemoveLayerAndSource(): void {
     this.mapbox.removeLayer("terrain-data").then(
       () => {

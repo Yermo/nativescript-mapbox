@@ -1543,8 +1543,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const theMap = nativeMap || _mapbox;
         let source;
 
-        if (theMap.mapboxMap.getLayer("terrain-data")) {
-          reject("Layer exists: " + "terrain-data");
+        if (!theMap) {
+          reject("No map has been loaded");
           return;
         }
 
@@ -1582,6 +1582,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         const theMap = nativeMap || _mapbox;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
         theMap.mapboxMap.removeSource(id);
         resolve();
       } catch (ex) {
@@ -1598,16 +1604,26 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const theMap = nativeMap || _mapbox;
         let layer;
 
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        if (theMap.mapboxMap.getLayer(id)) {
+          reject("Layer exists: " + id);
+          return;
+        }
+
         switch (type) {
           case "circle":
-            layer = new com.mapbox.mapboxsdk.style.layers.CircleLayer(id, source);
-            layer.setSourceLayer(sourceLayer);
-
             const circleColor = paint["circle-color"] === undefined ? '#000000' : Mapbox.getAndroidColor(paint["circle-color"]);
             const circleOpacity = paint["circle-opacity"] === undefined ? new java.lang.Float(1) : new java.lang.Float(paint["circle-opacity"]);
             const circleRadius = paint["circle-radius"] === undefined ? new java.lang.Float(10) : new java.lang.Float(paint["circle-radius"]);
             const circleStrokeColor = paint["circle-stroke-color"] === undefined ? '#000000' : Mapbox.getAndroidColor(paint["circle-stroke-color"]);
             const circleStrokeWidth = paint["circle-stroke-width"] === undefined ? new java.lang.Float(1) : new java.lang.Float(paint["circle-stroke-width"]);
+
+            layer = new com.mapbox.mapboxsdk.style.layers.CircleLayer(id, source);
+            layer.setSourceLayer(sourceLayer);
 
             layer.setProperties([
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(circleColor),
@@ -1618,11 +1634,11 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             ]);
             break;
           case "fill":
-            layer = new com.mapbox.mapboxsdk.style.layers.FillLayer(id, source);
-            layer.setSourceLayer(sourceLayer);
-
             const fillColor = paint["fill-color"] === undefined ? '#000000' : Mapbox.getAndroidColor(paint["fill-color"]);
             const fillOpacity = paint["fill-opacity"] === undefined ? new java.lang.Float(1) : new java.lang.Float(paint["fill-opacity"]);
+
+            layer = new com.mapbox.mapboxsdk.style.layers.FillLayer(id, source);
+            layer.setSourceLayer(sourceLayer);
 
             layer.setProperties([
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillColor(fillColor),
@@ -1630,19 +1646,20 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             ]);
             break;
           case "line":
-            layer = new com.mapbox.mapboxsdk.style.layers.LineLayer(id, source);
-            layer.setSourceLayer(sourceLayer);
-
             const lineCap = layout["line-cap"] === undefined ? 'LINE_CAP_ROUND' : 'LINE_CAP_' + layout["line-cap"].toUpperCase();
             const lineJoin = layout["line-join"] === undefined ? 'LINE_JOIN_ROUND' : 'LINE_JOIN_' + layout["line-cap"].toUpperCase();
+
             const lineColor = paint["line-color"] === undefined ? '#000000' : Mapbox.getAndroidColor(paint["line-color"]);
             const lineOpacity = paint["line-opacity"] === undefined ? new java.lang.Float(1) : new java.lang.Float(paint["line-opacity"]);
             const lineWidth = paint["line-width"] === undefined ? new java.lang.Float(1) : new java.lang.Float(paint["line-width"]);
 
+            layer = new com.mapbox.mapboxsdk.style.layers.LineLayer(id, source);
+            layer.setSourceLayer(sourceLayer);
+
             layer.setProperties([
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineCap(lineCap),
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor(lineColor),
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineJoin(lineJoin),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor(lineColor),
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineOpacity(lineOpacity),
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth(lineWidth),
             ]);
@@ -1671,6 +1688,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         const theMap = nativeMap || _mapbox;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
         theMap.mapboxMap.removeLayer(id);
         resolve();
       } catch (ex) {

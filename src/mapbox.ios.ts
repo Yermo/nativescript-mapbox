@@ -1019,19 +1019,177 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   }
 
   addSource(options: AddSourceOptions, nativeMap?): Promise<any> {
-    throw new Error('Method not implemented.');
+    return new Promise((resolve, reject) => {
+      try {
+        const { id, url, type } = options;
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let source;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        if (theMap.style.sourceWithIdentifier(id)) {
+          reject("Source exists: " + id);
+          return;
+        }
+
+        switch (type) {
+          case "vector":
+            source = MGLVectorTileSource.alloc().initWithIdentifierConfigurationURL(id, NSURL.URLWithString(url));
+            break;
+          default:
+            reject("Invalid source type: " + type);
+            return;
+        }
+
+        if (!source) {
+          const ex = "No source to add"
+          console.log("Error in mapbox.addSource: " + ex);
+          reject(ex);
+          return;
+        }
+
+        theMap.style.addSource(source);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addSource: " + ex);
+        reject(ex);
+      }
+    });
   }
 
-  removeSource(id: String, nativeMap?): Promise<any> {
-    throw new Error('Method not implemented.');
+  removeSource(id: string, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        const source = theMap.style.sourceWithIdentifier(id);
+        if (!source) {
+          reject("Source does not exist");
+          return;
+        }
+
+        theMap.style.removeSource(source);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.removeSource: " + ex);
+        reject(ex);
+      }
+    });
   }
 
   addLayer(options: AddLayerOptions, nativeMap?): Promise<any> {
-    throw new Error('Method not implemented.');
+    return new Promise((resolve, reject) => {
+      try {
+        const { id, source, sourceLayer, type, layout, paint } = options;
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let layer;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        if (theMap.style.layerWithIdentifier(id)) {
+          reject("Layer exists: " + id);
+          return;
+        }
+
+        switch (type) {
+          case "circle":
+            const circleColor = !paint['circle-color'] ? UIColor.blackColor : (paint['circle-color'] instanceof Color ? paint['circle-color'].ios : new Color(paint['circle-color']).ios);
+            const circleOpacity = paint['circle-opacity'] === undefined ? 1 : paint['circle-opacity'];
+            const circleRadius = paint['circle-radius'] || 5;
+            const circleStrokeColor = !paint['circle-stroke-color'] ? UIColor.blackColor : (paint['circle-stroke-color'] instanceof Color ? paint['circle-stroke-color'].ios : new Color(paint['circle-stroke-color']).ios);
+            const circleStrokeWidth = paint['circle-stroke-width'] === undefined ? 2 : paint['circle-stroke-width'];
+
+            layer = MGLCircleStyleLayer.alloc().initWithIdentifierSource(id, theMap.style.sourceWithIdentifier(source));
+            layer.sourceLayerIdentifier = sourceLayer;
+
+            layer.circleColor = NSExpression.expressionForConstantValue(circleColor);
+            layer.circleOpacity = NSExpression.expressionForConstantValue(circleOpacity);
+            layer.circleRadius = NSExpression.expressionForConstantValue(circleRadius);
+            layer.circleStrokeColor = NSExpression.expressionForConstantValue(circleStrokeColor);
+            layer.circleStrokeWidth = NSExpression.expressionForConstantValue(circleStrokeWidth);
+            break;
+          case "fill":
+            const fillColor = !paint['fill-color'] ? UIColor.blackColor : (paint['fill-color'] instanceof Color ? paint['fill-color'].ios : new Color(paint['fill-color']).ios);
+            const fillOpacity = paint['fill-opacity'] === undefined ? 1 : paint['fill-opacity'];
+
+            layer = MGLFillStyleLayer.alloc().initWithIdentifierSource(id, theMap.style.sourceWithIdentifier(source));
+            layer.sourceLayerIdentifier = sourceLayer;
+
+            layer.fillColor = NSExpression.expressionForConstantValue(fillColor);
+            layer.fillOpacity = NSExpression.expressionForConstantValue(fillOpacity);
+            break;
+          case "line":
+            const lineCap = layout["line-cap"] === undefined ? 'round' : layout['line-cap'];
+            const lineJoin = layout["line-join"] === undefined ? 'round' : layout['line-join'];
+
+            const lineColor = paint["line-color"] === undefined ? UIColor.blackColor : (paint['line-color'] instanceof Color ? paint['line-color'].ios : new Color(paint['line-color']).ios);
+            const lineOpacity = paint["line-opacity"] === undefined ? 1 : paint['line-opacity'];
+            const lineWidth = paint["line-width"] === undefined ? 2 : paint["line-width"];
+
+            layer = MGLLineStyleLayer.alloc().initWithIdentifierSource(id, theMap.style.sourceWithIdentifier(source));
+            layer.sourceLayerIdentifier = sourceLayer;
+
+            layer.lineCap = NSExpression.expressionForConstantValue(lineCap);
+            layer.lineJoin = NSExpression.expressionForConstantValue(lineJoin);
+            layer.lineColor = NSExpression.expressionForConstantValue(lineColor);
+            layer.lineOpacity = NSExpression.expressionForConstantValue(lineOpacity);
+            layer.lineWidth = NSExpression.expressionForConstantValue(lineWidth);
+            break;
+          default:
+            reject("Invalid layer type: " + options.type);
+            break;
+        }
+
+        if (!layer) {
+          const ex = "No layer to add"
+          console.log("Error in mapbox.addLayer: " + ex);
+          reject(ex);
+        }
+        console.log('adding the layer!')
+        console.log(layer)
+        theMap.style.addLayer(layer);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addLayer: " + ex);
+        reject(ex);
+      }
+    });
   }
 
-  removeLayer(id: String, nativeMap?): Promise<any> {
-    throw new Error('Method not implemented.');
+  removeLayer(id: string, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        const layer = theMap.style.layerWithIdentifier(id);
+        if (!layer) {
+          reject("Layer does not exist");
+          return;
+        }
+
+        theMap.style.removeLayer(layer);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.removeLayer: " + ex);
+        reject(ex);
+      }
+    });
   }
 
   trackUser(options: TrackUserOptions, nativeMap?): Promise<void> {
