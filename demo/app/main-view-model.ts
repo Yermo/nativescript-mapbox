@@ -349,7 +349,6 @@ export class HelloWorldModel extends Observable {
         }
     ).then(
       () => {
-        console.log('addSource done... now let us add a layer');
           this.mapbox.addLayer(
             {
               id: "terrain-data",
