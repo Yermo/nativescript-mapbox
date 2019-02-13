@@ -22,8 +22,7 @@ export class HelloWorldModel extends Observable {
       margins: {
         left: 18,
         right: 18,
-        top: 250,
-        //top: isIOS ? 390 : 454,
+        top: isIOS ? 390 : 454,
         bottom: isIOS ? 50 : 8
       },
       center: {
@@ -572,7 +571,7 @@ export class HelloWorldModel extends Observable {
   public doSetZoomLevel(): void {
     this.mapbox.setZoomLevel(
         {
-          level: 9, // shows most of the world
+          level: 2, // shows most of the world
           animated: true
         }
     ).then(
