@@ -59,6 +59,22 @@ export class MapboxView extends MapboxViewBase {
     return this.mapView;
   }
 
+  /**
+  * Return the Mapbox() API instance
+  */
+
+  public getMap() : any {
+    return this.mapbox;
+  } 
+
+  /**
+  * Return the native mapbox instance. 
+  */
+
+  public getNativeMap() : any {
+    return this.mapView.mapboxMap;
+  }
+
   public createNativeView(): Object {
     let nativeView = new android.widget.FrameLayout(this._context);
     setTimeout(() => {
@@ -74,10 +90,15 @@ export class MapboxView extends MapboxViewBase {
   }
 
   initMap(): void {
+
+    console.log( "MapboxView:initMap(): top" );
+
     if (!this.mapView && this.config.accessToken) {
       this.mapbox = new Mapbox();
       let settings = Mapbox.merge(this.config, Mapbox.defaults);
       com.mapbox.mapboxsdk.Mapbox.getInstance(this._context, settings.accessToken);
+
+      console.log( "MapboxView:initMap(): mapbox is:", this.mapbox );
 
       let drawMap = () => {
         this.mapView = new com.mapbox.mapboxsdk.maps.MapView(
@@ -96,9 +117,19 @@ export class MapboxView extends MapboxViewBase {
                 _polylines = [];
                 _markers = [];
 
+                console.log( "MapboxView:initMap(): OnMapReadyCallback(): settings are:", settings );
+
                 if (settings.showUserLocation) {
+
+                console.log( "MapboxView:initMap(): OnMapReadyCallback(): before requestFineLocationPermission typeof this.mapbox is:", typeof this.mapbox );
+                console.log( "MapboxView:initMap(): OnMapReadyCallback(): before requestFineLocationPermission mbMap is:", mbMap );
+
                   this.mapbox.requestFineLocationPermission()
                       .then(() => {
+
+                console.log( "MapboxView:initMap(): OnMapReadyCallback(): after requestFineLocationPermission this.mapbox is:", this.mapbox );
+                console.log( "MapboxView:initMap(): OnMapReadyCallback(): after requestFineLocationPermission mbMap is:", mbMap );
+
                         setTimeout(() => {
                           _showLocation(this.mapView, mbMap);
                         }, 1000);
@@ -110,6 +141,10 @@ export class MapboxView extends MapboxViewBase {
                         });
                       })
                       .catch(err => {
+
+                console.log( "MapboxView:initMap(): OnMapReadyCallback(): error requestFineLocationPermission this.mapbox is:", this.mapbox );
+                console.log( "MapboxView:initMap(): OnMapReadyCallback(): error requestFineLocationPermission mbMap is:", mbMap );
+
                         this.notify({
                           eventName: MapboxViewBase.locationPermissionDeniedEvent,
                           object: this,
@@ -118,6 +153,9 @@ export class MapboxView extends MapboxViewBase {
                         });
                       });
                 }
+
+      console.log( "MapboxView:drawMap(): mapbox is:", this.mapbox );
+      console.log( "MapboxView:drawMap(): mapView is:", this.mapView );
 
                 this.notify({
                   eventName: MapboxViewBase.mapReadyEvent,
@@ -1453,6 +1491,93 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * draw a circle
+  *
+  * Draw a circle based on a Mapbox style.
+  *
+  *  "id": someid,
+  *  "type": 'circle',
+  *  "source": {
+  *    "type": 'geojson',
+  *    "data": {
+  *      "type": "Feature",
+  *      "geometry": {
+  *        "type": "Point",
+  *        "coordinates": [ lng, lat ]
+  *      }
+  *    }
+  *  }, 
+  *  "paint": {
+  *    "circle-radius": {
+  *      "stops": [
+  *        [0, 0],
+  *        [20, metersToPixelsAtMaxZoom( this.zone.radius, this.zone.latitude)]
+  *      ],
+  *      "base": 2
+  *    },
+  *    'circle-opacity': 0.05,
+  *    'circle-color': '#ed6498',
+  *    'circle-stroke-width': 2,
+  *    'circle-stroke-color': '#ed6498'
+  *  } 
+  */
+
+  addCircle( options, geojson, nativeMap? ): Promise<any> {
+
+    console.log( "Mapbox:addCircle(): mapbox is :", _mapbox );
+    console.log( "Mapbox:addCircle(): nativeMap is :", nativeMap );
+
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+
+        console.log( "Mapbox:addCircle(): before addSource with geojson '" + geojson + "'" );
+
+        let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojson );
+
+        theMap.getNativeMapView().mapboxMap.addSource(
+            new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
+              options.name,
+              feature
+            )
+        );
+
+        console.log( "Mapbox:addCircle(): after addSource" );
+
+        const circle = new com.mapbox.mapboxsdk.style.layers.CircleLayer( "circleLayer", options.name );
+
+        console.log( "Mapbox:addCircle(): after circleLayer" );
+
+        let exponential = com.mapbox.mapboxsdk.style.expressions.Expression.exponential;
+        let interpolate = com.mapbox.mapboxsdk.style.expressions.Expression.interpolate;
+        let stop = com.mapbox.mapboxsdk.style.expressions.Expression.stop;
+
+        circle.setProperties([
+          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor( 'red' ),
+          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(22.0)),
+          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
+        ]);
+
+        console.log( "Mapbox:addCircle(): after setProperties" );
+
+        theMap.getNativeMapView().mapboxMap.addLayer( circle ); // , "building");
+
+        console.log( "Mapbox:addCircle(): after addLayer" );
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addCircle: " + ex);
+        reject(ex);
+      }
+    });
+
+  } // end of addCircle()
+
+  // ----------------------------------------
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {

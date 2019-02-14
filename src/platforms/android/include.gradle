@@ -10,7 +10,7 @@ dependencies {
     compile "com.mapbox.mapboxsdk:mapbox-android-telemetry:3.1.5"
     compile "com.mapbox.mapboxsdk:mapbox-sdk-geojson:3.4.1"
 
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.5.0'){
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:6.8.1'){
         transitive=false
     }
 

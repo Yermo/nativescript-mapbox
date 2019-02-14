@@ -122,6 +122,10 @@ export class MapboxView extends MapboxViewBase {
     return v;
   }
 
+  getMap() : any {
+    return this.mapbox;
+  }
+
   initMap(): void {
     if (!this.mapView && this.config.accessToken) {
       this.mapbox = new Mapbox();

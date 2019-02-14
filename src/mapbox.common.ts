@@ -461,6 +461,8 @@ export interface MapboxViewApi {
   // these functions can be called after the mapReady event fired
   addMarkers(markers: MapboxMarker[]): Promise<any>;
 
+  getMap(): any;
+
   removeMarkers(options?: any): Promise<any>;
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
@@ -520,6 +522,8 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
   protected mapbox: MapboxApi;
 
   abstract getNativeMapView(): any;
+
+  abstract getMap(): any;
 
   addMarkers(markers: MapboxMarker[]): Promise<any> {
     return this.mapbox.addMarkers(markers, this.getNativeMapView());
