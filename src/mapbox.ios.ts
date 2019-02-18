@@ -122,7 +122,15 @@ export class MapboxView extends MapboxViewBase {
     return v;
   }
 
-  getMap() : any {
+  // ---------------------------------------------------
+
+  /**
+  * returns a reference to the class Mapbox API shim instance
+  *
+  * @see Mapbox
+  */
+
+  getMapboxApi() : any {
     return this.mapbox;
   }
 
@@ -167,6 +175,9 @@ export class MapboxView extends MapboxViewBase {
 /*************** XML definition END ****************/
 
 export class Mapbox extends MapboxCommon implements MapboxApi {
+
+  initEventHandlerShim() {};
+
   show(options: ShowOptions): Promise<any> {
     return new Promise((resolve, reject) => {
       try {

@@ -328,6 +328,9 @@ export interface MapboxCommonApi {
 }
 
 export interface MapboxApi {
+
+  initEventHandlerShim( nativeMap: any ) : void;
+
   show(options: ShowOptions): Promise<ShowResult>;
 
   hide(): Promise<any>;
@@ -401,6 +404,7 @@ export interface MapboxApi {
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions): Promise<any>;
 
   // addExtrusion(options: AddExtrusionOptions): Promise<any>;
+
 }
 
 export abstract class MapboxCommon implements MapboxCommonApi {
@@ -461,7 +465,7 @@ export interface MapboxViewApi {
   // these functions can be called after the mapReady event fired
   addMarkers(markers: MapboxMarker[]): Promise<any>;
 
-  getMap(): any;
+  getMapboxApi(): any;
 
   removeMarkers(options?: any): Promise<any>;
 
@@ -518,12 +522,30 @@ export interface MapboxViewApi {
   destroy(): Promise<any>;
 }
 
+// ----------------------------------------------------------------------------------------
+
+/**
+* common base for views created in XML.
+*
+* Instead of returning a reference to the Mapbox API instance (class Mapbox) from the view
+* the author decided to implement shim methods for a subset of the API. I'm not sure what the
+* reasoning was.
+*
+* @see Mapbox
+*/
+
 export abstract class MapboxViewCommonBase extends ContentView implements MapboxViewApi {
+
+  // a reference to a class implementing the Mapbox API shim interface. (see class Mapbox 
+  // in the android and ios files.)
+
   protected mapbox: MapboxApi;
 
   abstract getNativeMapView(): any;
 
-  abstract getMap(): any;
+  // returns the class Mapbox reference above.
+
+  abstract getMapboxApi(): any;
 
   addMarkers(markers: MapboxMarker[]): Promise<any> {
     return this.mapbox.addMarkers(markers, this.getNativeMapView());
@@ -707,6 +729,14 @@ disableTiltProperty.register(MapboxViewCommonBase);
 
 export const delayProperty = new Property<MapboxViewCommonBase, number>({name: "delay"});
 delayProperty.register(MapboxViewCommonBase);
+
+// -------------------------------------------------------------------------------------
+
+/**
+* base class for views created in XML
+*
+* @see MapboxView
+*/
 
 export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
