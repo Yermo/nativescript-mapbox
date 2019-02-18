@@ -107,11 +107,11 @@ const _getTrackingMode = (input: UserTrackingMode): MGLUserTrackingMode => {
 /*************** XML definition START ****************/
 export class MapboxView extends MapboxViewBase {
 
-  private mapView: MGLMapView;
+  private nativeMapView: MGLMapView;
   private delegate: MGLMapViewDelegate;
 
   getNativeMapView(): any {
-    return this.mapView;
+    return this.nativeMapView;
   }
 
   public createNativeView(): Object {
@@ -135,30 +135,30 @@ export class MapboxView extends MapboxViewBase {
   }
 
   initMap(): void {
-    if (!this.mapView && this.config.accessToken) {
+    if (!this.nativeMapView && this.config.accessToken) {
       this.mapbox = new Mapbox();
       let settings = Mapbox.merge(this.config, Mapbox.defaults);
       let drawMap = () => {
         MGLAccountManager.accessToken = settings.accessToken;
-        this.mapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), _getMapStyle(settings.style));
-        this.mapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback(() => {
+        this.nativeMapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), _getMapStyle(settings.style));
+        this.nativeMapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback(() => {
           this.notify({
             eventName: MapboxViewBase.mapReadyEvent,
             object: this,
             map: this,
-            ios: this.mapView
+            ios: this.nativeMapView
           });
           // no permission required, but to align with Android we fire the event anyway
           this.notify({
             eventName: MapboxViewBase.locationPermissionGrantedEvent,
             object: this,
             map: this,
-            ios: this.mapView
+            ios: this.nativeMapView
           });
         });
-        _setMapboxMapOptions(this.mapView, settings);
+        _setMapboxMapOptions(this.nativeMapView, settings);
         _markers = [];
-        this.nativeView.addSubview(this.mapView);
+        this.nativeView.addSubview(this.nativeMapView);
       };
       setTimeout(drawMap, settings.delay ? settings.delay : 0);
     }
@@ -166,8 +166,8 @@ export class MapboxView extends MapboxViewBase {
 
   public onLayout(left: number, top: number, right: number, bottom: number): void {
     super.onLayout(left, top, right, bottom);
-    if (this.mapView) {
-      this.mapView.layer.frame = this.ios.layer.bounds;
+    if (this.nativeMapView) {
+      this.nativeMapView.layer.frame = this.ios.layer.bounds;
     }
   }
 }
@@ -176,7 +176,7 @@ export class MapboxView extends MapboxViewBase {
 
 export class Mapbox extends MapboxCommon implements MapboxApi {
 
-  initEventHandlerShim() {};
+  initEventHandlerShim( mapboxView : any ) {};
 
   show(options: ShowOptions): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -454,6 +454,18 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // --------------------------------------------------------------
+
+  /**
+  * add a GeoJSON layer.
+  */
+
+  addLayer( style, nativeMapView? ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // --------------------------------------------------------------
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
     return new Promise((resolve, reject) => {

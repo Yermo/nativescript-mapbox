@@ -329,7 +329,7 @@ export interface MapboxCommonApi {
 
 export interface MapboxApi {
 
-  initEventHandlerShim( nativeMap: any ) : void;
+  initEventHandlerShim( mapboxView : any ) : void;
 
   show(options: ShowOptions): Promise<ShowResult>;
 
@@ -360,6 +360,8 @@ export interface MapboxApi {
   getUserLocation(nativeMap?: any): Promise<UserLocation>;
 
   trackUser(options: TrackUserOptions, nativeMap?: any): Promise<void>;
+
+  addLayer( style, nativeMapView? : any ): Promise<any>;
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<Array<Feature>>;
 
@@ -507,6 +509,8 @@ export interface MapboxViewApi {
 
   trackUser(options: TrackUserOptions): Promise<any>;
 
+  addLayer( style ): Promise<any>;
+
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
 
   addPolygon(options: AddPolygonOptions): Promise<any>;
@@ -625,6 +629,10 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   trackUser(options: TrackUserOptions): Promise<any> {
     return this.mapbox.trackUser(options, this.getNativeMapView());
+  }
+
+  addLayer( style ): Promise<any> {
+    return this.mapbox.addLayer( style, this.getNativeMapView());
   }
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>> {

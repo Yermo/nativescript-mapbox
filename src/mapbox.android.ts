@@ -72,12 +72,12 @@ const ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE = 111;
 
 export class MapboxView extends MapboxViewBase {
 
-  private mapView: any; // com.mapbox.mapboxsdk.maps.MapView
+  private nativeMapView: any; // com.mapbox.mapboxsdk.maps.MapView
 
   // ------------------------------------------------------
 
   getNativeMapView(): any {
-    return this.mapView;
+    return this.nativeMapView;
   }
 
   // ------------------------------------------------------
@@ -87,7 +87,7 @@ export class MapboxView extends MapboxViewBase {
   */
 
   public getNativeMap() : any {
-    return this.mapView.mapboxMap;
+    return this.nativeMapView.mapboxMap;   // com.mapbox.mapboxsdk.maps.MapboxMap
   }
 
   // ------------------------------------------------------
@@ -138,17 +138,19 @@ export class MapboxView extends MapboxViewBase {
 
     console.log( "MapboxView:initMap(): top" );
 
-    if ( !this.mapView && this.config.accessToken) {
+    if ( !this.nativeMapView && this.config.accessToken) {
 
       this.mapbox = new Mapbox();
 
       console.log( "MapboxView:initMap(): after new Mapbox" );
 
-      let settings = Mapbox.merge(this.config, Mapbox.defaults);
+      let settings = Mapbox.merge( this.config, Mapbox.defaults );
 
       console.log( "MapboxView:initMap(): after settings merge" );
 
-      com.mapbox.mapboxsdk.Mapbox.getInstance(this._context, settings.accessToken);
+      // MapboxView extends MapboxViewCommonBase which extends ContentView which provides _context
+
+      com.mapbox.mapboxsdk.Mapbox.getInstance( this._context, settings.accessToken );
 
       console.log( "MapboxView:initMap(): mapbox is:", this.mapbox );
 
@@ -156,19 +158,19 @@ export class MapboxView extends MapboxViewBase {
 
       let drawMap = () => {
 
-        this.mapView = new com.mapbox.mapboxsdk.maps.MapView(
+        this.nativeMapView = new com.mapbox.mapboxsdk.maps.MapView(
             this._context,
             _getMapboxMapOptions(settings));
 
-        this.mapView.onCreate(null);
+        this.nativeMapView.onCreate(null);
 
-        this.mapView.getMapAsync(
+        this.nativeMapView.getMapAsync(
             new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
               onMapReady: mbMap => {
 
                 // this is a reference to the Mapbox Android SDK java instance.
 
-                this.mapView.mapboxMap = mbMap;
+                this.nativeMapView.mapboxMap = mbMap;
 
                 // note that this is not multi-map friendly, but I don't think that's used in real apps anyway
                 _polygons = [];
@@ -187,13 +189,13 @@ export class MapboxView extends MapboxViewBase {
                         console.log( "MapboxView:initMap(): OnMapReadyCallback(): after requestFineLocationPermission mbMap is:", mbMap );
 
                         setTimeout(() => {
-                          _showLocation(this.mapView, mbMap);
+                          _showLocation(this.nativeMapView, mbMap);
                         }, 1000);
                         this.notify({
                           eventName: MapboxViewBase.locationPermissionGrantedEvent,
                           object: this,
                           map: this,
-                          android: this.mapView
+                          android: this.nativeMapView
                         });
                       })
                       .catch(err => {
@@ -204,7 +206,7 @@ export class MapboxView extends MapboxViewBase {
                           eventName: MapboxViewBase.locationPermissionDeniedEvent,
                           object: this,
                           map: this,
-                          android: this.mapView
+                          android: this.nativeMapView
                         });
                       });
                 }
@@ -215,13 +217,13 @@ export class MapboxView extends MapboxViewBase {
                   eventName: MapboxViewBase.mapReadyEvent,
                   object: this,
                   map: this,
-                  android: this.mapView
+                  android: this.nativeMapView
                 });
               }
             })
         );
 
-        this.nativeView.addView(this.mapView);
+        this.nativeView.addView( this.nativeMapView );
 
       };
 
@@ -287,9 +289,18 @@ const _getUserLocationCameraMode = (input: UserTrackingMode): any => {
   }
 };
 
+// -------------------------------------------------------------------------------
+
+/**
+* Mapbox Map Options
+*
+* @link https://github.com/mapbox/mapbox-gl-native/wiki/Android-6.x-to-7.x-migration-guide
+* @link https://github.com/mapbox/mapbox-gl-native/blob/master/platform/android/MapboxGLAndroidSDK/src/main/java/com/mapbox/mapboxsdk/maps/MapboxMapOptions.java
+* @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/MapboxMapOptions.html
+*/
+
 const _getMapboxMapOptions = (settings) => {
   const mapboxMapOptions = new com.mapbox.mapboxsdk.maps.MapboxMapOptions()
-      .styleUrl(_getMapStyle(settings.style))
       .compassEnabled(!settings.hideCompass)
       .rotateGesturesEnabled(!settings.disableRotation)
       .scrollGesturesEnabled(!settings.disableScroll)
@@ -589,7 +600,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * @param { MapboxView } mapboxView
   */
 
-  initEventHandlerShim( mapboxView : MapboxView ) {
+  initEventHandlerShim( mapboxView : any ) {
 
     console.log( "Mapbox:initEventHandlerShim(): top" );
 
@@ -925,19 +936,72 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  setMapStyle(style: string | MapStyle, nativeMap?: any): Promise<any> {
+  // -------------------------------------------------------------------------
+
+  /**
+  * set the map style
+  *
+  * The 7.X version of the SDK uses a builder class for forming 
+  * URLs.
+  *
+  * @param {string | MapStyle } style - a style following the Mapbox style specification.
+  * @param {any} nativeMapViewInstance - native map view (com.mapbox.mapboxsdk.maps.MapView)
+  *
+  * @see MapboxViewCommonBase:setMapStyle()
+  *
+  * @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/Style.Builder.html
+  * @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/MapboxMap.html#setStyle-java.lang.String-com.mapbox.mapboxsdk.maps.Style.OnStyleLoaded-
+  */
+
+  setMapStyle( style: string | MapStyle, nativeMapViewInstance?: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const theMap = nativeMap || _mapbox;
+
+        const nativeMapView = nativeMapViewInstance || _mapbox;
+
         const mapStyle = _getMapStyle(style);
-        theMap.mapboxMap.setStyleUrl(mapStyle);
-        resolve();
+
+        // callback for when the style is successfully loaded.
+
+        nativeMapView.addOnDidFinishLoadingStyleListener(
+          new com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener({
+            onDidFinishLoadingStyle : style => {
+
+              console.log( "Mapbox:setMapStyle(): style loaded" );
+              resolve( style );
+
+            }
+          })
+        );
+
+/*
+        // callback if loading the style fails.
+
+        nativeMapView.addOnDidFailLoadingStyleListener(
+          com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingStyleListener({
+            onDidFailLoadingStyle : error => {
+
+              console.log( "Mapbox:setMapStyle(): style failed" );
+              reject( error );
+
+            }
+          })
+        );
+*/
+        let builder = new com.mapbox.mapboxsdk.maps.Style.Builder();
+
+        nativeMapView.mapboxMap.setStyle( 
+          builder.fromUrl( mapStyle )
+        );
+
       } catch (ex) {
         console.log("Error in mapbox.setMapStyle: " + ex);
         reject(ex);
       }
     });
   }
+
+  // ------------------------------------------------------------------------------
 
   addMarkers(markers: MapboxMarker[], nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1758,20 +1822,21 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * providing a JSON document following the Mapbox Style specification. 
   *
   * @param {object} style - a style following the Mapbox style specification.
+  * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
   */
 
-  addLayer( style, nativeMap? ) {
+  addLayer( style, nativeMapView? ) {
 
     let retval;
 
     switch( style.type ) {
 
       case 'line':
-        retval = this.addLineLayer( style, nativeMap );
+        retval = this.addLineLayer( style, nativeMapView );
       break;
 
       case 'circle':
-        retval = this.addCircleLayer( style, nativeMap );
+        retval = this.addCircleLayer( style, nativeMapView );
       break;
 
       default:
@@ -1817,14 +1882,22 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *   'line-dash-array': [ 1, 1, 1, ..]
   * }
   *
+  * Do not call this method directly. Use addLayer().
+  *
+  * @param {object} style - a style following the Mapbox style specification.
+  * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
+  *
+  * @return {Promise<any>}
+  *
+  * @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/Style.html#addSource-com.mapbox.mapboxsdk.style.sources.Source-
   */
 
-  addLineLayer( style, nativeMap? ) : Promise<any> {
+  private addLineLayer( style, nativeMapViewInstance? ) : Promise<any> {
 
     return new Promise((resolve, reject) => {
       try {
 
-        const theMap = nativeMap || _mapbox;
+        const nativeMapView = nativeMapViewInstance || _mapbox;
 
         if ( style.type != 'line' ) {
           reject( "Non line style passed to addPolylineLayer()" );
@@ -1842,7 +1915,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
 
-        theMap.getNativeMapView().mapboxMap.addSource(
+        // com.mapbox.mapboxsdk.maps.Style
+
+        nativeMapView.mapboxMap.getStyle().addSource(
             new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
               style.id,
               feature
@@ -1970,7 +2045,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         line.setProperties( lineProperties );
 
-        let layer = theMap.getNativeMapView().mapboxMap.addLayer( line );
+        let layer = nativeMapView.mapboxMap.getStyle().addLayer( line );
 
         console.log( "Mapbox:addLineLayer(): added line layer" );
 
@@ -2032,12 +2107,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * @param {object} nativeMap view.
   */
 
-  addCircleLayer( style, nativeMap? ): Promise<any> {
+  addCircleLayer( style, nativeMapViewInstance? ): Promise<any> {
 
     return new Promise((resolve, reject) => {
       try {
 
-        const theMap = nativeMap || _mapbox;
+        const nativeMapView = nativeMapViewInstance || _mapbox;
 
         if ( style.type != 'circle' ) {
           reject( "Non circle style passed to addCircle()" );
@@ -2055,7 +2130,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
 
-        theMap.getNativeMapView().mapboxMap.addSource(
+        nativeMapView.mapboxMap.getStyle().addSource(
             new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
               style.id,
               feature
@@ -2189,7 +2264,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         circle.setProperties( circleProperties );
 
-        let layer = theMap.getNativeMapView().mapboxMap.addLayer( circle );
+        let layer = nativeMapView.mapboxMap.getStyle().addLayer( circle );
 
         console.log( "Mapbox:addCircleLayer(): added circle layer" );
 
@@ -2205,7 +2280,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         resolve();
       } catch (ex) {
-        console.log("Error in mapbox.addCircle: " + ex);
+        console.log("Error in mapbox.addCircleLayer: " + ex);
         reject(ex);
       }
     });
