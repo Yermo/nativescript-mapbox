@@ -354,14 +354,10 @@ export class HelloWorldModel extends Observable {
               source: "terrain-source",
               sourceLayer: "contour",
               type: "line",
-              layout: {
-                "line-join": "round",
-                "line-cap": "round"
-              },
-              paint: {
-                "line-color": "#ff69b4",
-                "line-width": 1,
-              }
+              lineJoin: "round",
+              lineCap: "round",
+              lineColor: "#ff69b4",
+              lineWidth: 1,
             }
           ).then(
             () => {

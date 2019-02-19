@@ -581,7 +581,7 @@ Remove a source by `id`.
 ```
 
 ### addLayer
-Add a layer from a source to the map. `paint` and `layout` property names follows the `map-gl-js` style-spec. Note only `circle`, `fill` and `line` types are currently supported.
+Add a layer from a source to the map. Note only `circle`, `fill` and `line` types are currently supported.
 
 ```js
   mapbox.addLayer(
@@ -589,14 +589,10 @@ Add a layer from a source to the map. `paint` and `layout` property names follow
     source: "terrain-source",  // id of source
     sourceLayer: "contour",  // id of layer from source
     type: "line", // supported types: circle, fill, line
-    layout: {
-      "line-join": "round",
-      "line-cap": "round"
-    },
-    paint: {
-      "line-color": "#ff69b4",
-      "line-width": 1,
-    }
+    lineJoin: "round",
+    lineCap: "round",
+    lineColor: "#ff69b4",
+    lineWidth: 1,
   );
 ```
 

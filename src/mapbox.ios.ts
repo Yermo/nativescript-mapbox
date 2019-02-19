@@ -1088,7 +1088,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   addLayer(options: AddLayerOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const { id, source, sourceLayer, type, layout, paint } = options;
+        const { id, source, sourceLayer, type } = options;
         let theMap: MGLMapView = nativeMap || _mapbox.mapView;
         let layer;
 
@@ -1104,11 +1104,11 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         switch (type) {
           case "circle":
-            const circleColor = !paint['circle-color'] ? UIColor.blackColor : (paint['circle-color'] instanceof Color ? paint['circle-color'].ios : new Color(paint['circle-color']).ios);
-            const circleOpacity = paint['circle-opacity'] === undefined ? 1 : paint['circle-opacity'];
-            const circleRadius = paint['circle-radius'] || 5;
-            const circleStrokeColor = !paint['circle-stroke-color'] ? UIColor.blackColor : (paint['circle-stroke-color'] instanceof Color ? paint['circle-stroke-color'].ios : new Color(paint['circle-stroke-color']).ios);
-            const circleStrokeWidth = paint['circle-stroke-width'] === undefined ? 2 : paint['circle-stroke-width'];
+            const circleColor = !options.circleColor ? UIColor.blackColor : (options.circleColor instanceof Color ? options.circleColor.ios : new Color(options.circleColor).ios);
+            const circleOpacity = options.circleOpacity === undefined ? 1 : options.circleOpacity;
+            const circleRadius = options.circleRadius || 5;
+            const circleStrokeColor = !options.circleStrokeColor ? UIColor.blackColor : (options.circleStrokeColor instanceof Color ? options.circleStrokeColor.ios : new Color(options.circleStrokeColor).ios);
+            const circleStrokeWidth = options.circleStrokeWidth === undefined ? 2 : options.circleStrokeWidth;
 
             layer = MGLCircleStyleLayer.alloc().initWithIdentifierSource(id, theMap.style.sourceWithIdentifier(source));
             layer.sourceLayerIdentifier = sourceLayer;
@@ -1120,8 +1120,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             layer.circleStrokeWidth = NSExpression.expressionForConstantValue(circleStrokeWidth);
             break;
           case "fill":
-            const fillColor = !paint['fill-color'] ? UIColor.blackColor : (paint['fill-color'] instanceof Color ? paint['fill-color'].ios : new Color(paint['fill-color']).ios);
-            const fillOpacity = paint['fill-opacity'] === undefined ? 1 : paint['fill-opacity'];
+            const fillColor = !options.fillColor ? UIColor.blackColor : (options.fillColor instanceof Color ? options.fillColor.ios : new Color(options.fillColor).ios);
+            const fillOpacity = options.fillOpacity === undefined ? 1 : options.fillOpacity;
 
             layer = MGLFillStyleLayer.alloc().initWithIdentifierSource(id, theMap.style.sourceWithIdentifier(source));
             layer.sourceLayerIdentifier = sourceLayer;
@@ -1130,12 +1130,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             layer.fillOpacity = NSExpression.expressionForConstantValue(fillOpacity);
             break;
           case "line":
-            const lineCap = layout["line-cap"] === undefined ? 'round' : layout['line-cap'];
-            const lineJoin = layout["line-join"] === undefined ? 'round' : layout['line-join'];
+            const lineCap = options.lineCap === undefined ? 'round' : options.lineCap;
+            const lineJoin = options.lineJoin === undefined ? 'round' : options.lineJoin;
 
-            const lineColor = paint["line-color"] === undefined ? UIColor.blackColor : (paint['line-color'] instanceof Color ? paint['line-color'].ios : new Color(paint['line-color']).ios);
-            const lineOpacity = paint["line-opacity"] === undefined ? 1 : paint['line-opacity'];
-            const lineWidth = paint["line-width"] === undefined ? 2 : paint["line-width"];
+            const lineColor = options.lineColor === undefined ? UIColor.blackColor : (options.lineColor instanceof Color ? options.lineColor.ios : new Color(options.lineColor).ios);
+            const lineOpacity = options.lineOpacity === undefined ? 1 : options.lineOpacity;
+            const lineWidth = options.lineWidth === undefined ? 2 : options.lineWidth;
 
             layer = MGLLineStyleLayer.alloc().initWithIdentifierSource(id, theMap.style.sourceWithIdentifier(source));
             layer.sourceLayerIdentifier = sourceLayer;

@@ -202,12 +202,37 @@ export interface AddSourceOptions {
 
 export interface AddLayerOptions {
   id: string;
-
   source: string;
   sourceLayer: string;
   type: string;
-  paint?: any;
-  layout?: any;
+
+  /**
+   * 'circle' paint properites
+   */
+  circleColor?: string | Color;
+  circleOpacity?: number;
+  circleRadius?: number;
+  circleStrokeColor?: string | Color;
+  circleStrokeWidth?: number;
+
+  /**
+   * 'fill' paint properites
+   */
+  fillColor?: string | Color;
+  fillOpacity?: number;
+
+  /**
+   * 'line' layout properties
+   */
+  lineCap?: string;
+  lineJoin?: string;
+
+  /**
+   * 'line' paint properties
+   */
+  lineColor?: string | Color;
+  lineOpacity?: number;
+  lineWidth?: number;
 }
 
 export type UserTrackingMode = "NONE" | "FOLLOW" | "FOLLOW_WITH_HEADING" | "FOLLOW_WITH_COURSE";
