@@ -568,6 +568,12 @@ const _getOfflineManager = () => {
 
 export class Mapbox extends MapboxCommon implements MapboxApi {
 
+  // annotation managers.
+
+  private circleManager : any;
+  private lineManager : any;
+  private symbolManager : any;
+
   // list of circle layers
 
   private circles: any = [];
@@ -606,36 +612,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
     let mapboxNativeView = mapboxView.getNativeMapView();
 
-    // FIXME: 
-
-    console.log( "initEventHandlerShim(): calling setOnPolylineClickListener()" );
-
-    mapboxNativeView.mapboxMap.setOnPolylineClickListener(
-      new com.mapbox.mapboxsdk.maps.MapboxMap.OnPolylineClickListener({
-        onPolylineClick: polyline => {
-
-          console.log( "Mapbox:Polyline: polyline is:", polyline );
-
-          // call callback here.
-
-        }
-      })
-    );
-
     this.setOnMapClickListener( ( point: LatLng ) => {
-      console.log( "Mapbox:initEventHandlerShim(): Map clicked at latitude: " + point.lat + ", longitude: " + point.lng );
-
-    this.queryRenderedFeatures( { point: {
-      lng: point.lng, 
-      lat: point.lat 
-    }}, mapboxNativeView ).then( ( results ) => {
-
-      console.log( "Mapbox:handleClickEvent(): rendered features are:", results );
-
-    });
-
-      this.handleClickEvent( point );
-
+      return this.checkForCircleClickEvent( point );
     }, mapboxNativeView );
 
   }
@@ -658,16 +636,42 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * @link https://github.com/mapbox/mapbox-android-demo/issues/540
   */
 
-  on( eventName, id, callback ) {
+  async on( eventName, id, callback, nativeMapView? ) {
 
     if ( typeof this.eventCallbacks[ eventName ] == 'undefined' ) {
       this.eventCallbacks[ eventName ] = [];
     }
 
-    this.eventCallbacks[ eventName ].push({
-      id: id,
-      callback: callback
-    });
+    // is this event being added to a line? 
+
+    let lineEntry = this.lines.find( ( entry ) => { return entry.id == id; });
+
+    if ( lineEntry ) {
+
+      console.log( "Mapbox:on(): we have a line entry:", lineEntry );
+
+      // we have a line layer. As mentioned, Mapbox line layers do not support
+      // click handlers but Annotation plugin lines do (but they sadly do not
+      // support the nice styling that Layer lines do ... )
+
+      let clickOverlay = await this.addClickableLineOverlay( lineEntry.id, nativeMapView );
+
+      lineEntry.clickOverlay = clickOverlay;
+
+      console.log( "Mapbox:on(): pushing id '" + id + "' with clickOverlay:", clickOverlay );
+
+      this.eventCallbacks[ eventName ].push({
+        id: id,
+        callback: callback
+      });
+
+    } else {
+
+      this.eventCallbacks[ eventName ].push({
+        id: id,
+        callback: callback
+      });
+    }
 
   }
 
@@ -695,26 +699,73 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // ------------------------------------------------------------------------
 
   /**
-  * handles a click event 
+  * handles a line click event
   *
-  * For the moment we have to handle map click events long hand ourselves. 
+  * Given a click on a line overlay, find the id of the underlying line layer
+  * an invoke any registered callbacks.
+  */
+
+  private handleLineClickEvent( clickOverlay ) {
+
+    let lineEntry = this.lines.find( ( entry ) => { 
+
+      console.log( "Mapbox:handleLineClickEvent(): checking lineEntry clickOverlay id '" + entry.clickOverlay + "' against clickOverlay '" + clickOverlay + "'" );
+
+      return entry.clickOverlay == clickOverlay; 
+
+    });
+
+    if ( ! lineEntry ) {
+      console.error( "Mapbox:handleLineClick(): click on overlay without an underlying line layer" );
+      return false;
+    }
+
+    for ( let x = 0; x < this.eventCallbacks[ 'click' ].length; x++ ) {
+      let entry = this.eventCallbacks[ 'click' ][ x ];
+
+      console.log( "Mapbox:handleLineClickEvent(): checking entry id '" + entry.id + "' against lineEnty id '" + lineEntry.id + "'" );
+
+      if ( entry.id == lineEntry.id ) {
+
+        console.log( "Mapbox:handleLineClickEvent(): calling callback for '" + entry.id + "'" );
+
+        return entry.callback( lineEntry );
+
+      }
+
+    } // end of for loop over events.
+
+    return false;
+
+  }
+
+  // ------------------------------------------------------------------------
+
+  /**
+  * checks for a click event on a circle.
+  *
+  * For the moment we have to handle map click events long hand ourselves for circles.
   *
   * When we catch an event we'll check the eventHandlers map to see if the 
   * given layer is listed. If it is we invoke it's callback.
   *
+  * If there are multiple overlapping circles only the first one in the list will be called.
+  *
   * We also check the location of the click to see if it's inside any 
   * circles and raise the event accordingly.
+  *
+  * @todo detect the top circle in the overlapping circles case.
   */
 
-  handleClickEvent( point : LatLng ) {
+  checkForCircleClickEvent( point : LatLng ) {
 
-    console.log( "Mapbox:handleClickEvent(): got click event with point:", point );
+    console.log( "Mapbox:checkForCircleClickEvent(): got click event with point:", point );
 
     // is this point within a circle?
 
     for ( let i = 0; i < this.circles.length; i++ ) {
 
-      console.log( "Mapbox:handleClickEvent(): checking circle with radius:", this.circles[i].radius );
+      console.log( "Mapbox:checkForCircleClickEvent(): checking circle with radius:", this.circles[i].radius );
 
       if ( GeoUtils.isLocationInCircle( 
         point.lng,
@@ -723,16 +774,17 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         this.circles[i].center[1],
         this.circles[i].radius )) {
 
-        console.log( "Point is in circle with id '" + this.circles[i].id + "' invoking callbacks, if any. Callback list is:", this.eventCallbacks );
+        console.log( "Mapbox:checkForCircleClickEvent() Point is in circle with id '" + this.circles[i].id + "' invoking callbacks, if any. Callback list is:", this.eventCallbacks );
 
         for ( let x = 0; x < this.eventCallbacks[ 'click' ].length; x++ ) {
           let entry = this.eventCallbacks[ 'click' ][ x ];
 
           if ( entry.id == this.circles[i].id ) {
 
-            console.log( "Mapbox:handleClickEvent(): calling callback for '" + entry.id + "'" );
+            console.log( "Mapbox:checkForCircleClickEvent(): calling callback for '" + entry.id + "'" );
 
-            entry.callback( point );
+            return entry.callback( point );
+
           }
 
         } // end of for loop over events.
@@ -741,7 +793,96 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
     } // end of loop over circles.
 
-  } // end of handleEvent()
+    return false;
+
+  } // end of checkForCircleClickEvent()
+
+  // ------------------------------------------------------------------------
+
+  /**
+  * add Clickable Line Overlay
+  *
+  * As of this writing, Mapbox Layer lines do not support click handlers however
+  * they do offer a nice array of styling options.
+  *
+  * Annotation plugin lines do support click handlers but have limited styling
+  * options. 
+  *
+  * To wedge click handler support onto Mapbox layer lines we overlay the line
+  * with an invisible Annotation line and catch click events from that. 
+  *
+  * @param {string} lineId id of lineLayer we are to draw the clickable annotation over.. 
+  * @param {object} nativeMapView
+  *
+  * @return {Promise<any>} clickLine layer 
+  *
+  * @link https://stackoverflow.com/questions/54795079/how-to-get-a-geometry-from-a-mapbox-gl-native-geojsonsource
+  *
+  * @todo we assume a geojson source for lines. 
+  * @todo ideally I'd like to pull the geometry out of the line instead of keeping a separate copy of the coordinates around.
+  */
+
+  addClickableLineOverlay( lineId, nativeMapView? ) {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        // we need to get the line layer from the lines array.
+
+        let lineEntry = this.lines.find( ( entry ) => { return entry.id == lineId; });
+
+        if ( ! lineEntry ) {
+          reject( "No such line with id '" + lineId + "'" );
+          return;
+        }
+
+        // we want to draw an invisible line of the same width.
+
+        let width = lineEntry.layer.getLineWidth().getValue();
+
+        console.log( "Mapbox:addClickableLineOverlay(): we have a source line of width '" + width + "'" );
+
+        // FIXME: for the moment we are carrying around the feature used to create the original line layer. 
+        //
+        // Line Layer features do not have any properties as the properties are separately set in the layer.
+
+        let feature = lineEntry.feature;
+
+        console.log( "Mapbox:addClickableLineOverlay(): after removing properties" );
+
+        feature.addNumberProperty( 'line-opacity', new java.lang.Float( 0 ) );
+        feature.addNumberProperty( 'line-width', width );
+
+        console.log( "Mapbox:addClickableLineOverlay(): after updating feature" );
+
+        // the create() method of the line manager requires a feature collection.
+
+        let featureCollection = new com.mapbox.geojson.FeatureCollection.fromFeature( feature );
+      
+        let clickOverlay = this.lineManager.create( featureCollection ).get(0);
+
+        console.log( "Mapbox:addClickableLineOverlay(): after creating overlay:", clickOverlay );
+
+        // console.log( "Mapbox:addClickableLineOverlay(): got width '" + width + "' and sourceId '" + sourceId + "'" );
+        //
+        // let source = nativeMapView.mapboxMap.getStyle().getSource( sourceId );
+        //
+        // console.log( "Mapbox:addClickableLineOverlay(): got source:", source );
+        // 
+        // let features = source.querySourceFeatures( null );
+        //
+        // console.log( "Mapbox:addClickableLineOverlay(): features are:", features.get(0).getGeometry() );
+
+        resolve( clickOverlay );
+
+      } catch( ex ) {
+        console.log("MapboxaddClickableLineOverlay error: " + ex);
+          reject(ex);
+      }
+
+    });
+
+  } // end of addClickableLineOverylay()
 
   // ------------------------------------------------------------------------
 
@@ -755,6 +896,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   requestFineLocationPermission(): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -884,6 +1027,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   hide(): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -901,6 +1046,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   unhide(): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -916,6 +1063,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   destroy(nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -944,7 +1093,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * The 7.X version of the SDK uses a builder class for forming 
   * URLs.
   *
-  * @param {string | MapStyle } style - a style following the Mapbox style specification.
+  * NOTE: The style must be explicitly set using this method in the onMapReady() handler.
+  *
+  * @param {string | MapStyle } style - a style following the Mapbox style specification or a URL to a style.
   * @param {any} nativeMapViewInstance - native map view (com.mapbox.mapboxsdk.maps.MapView)
   *
   * @see MapboxViewCommonBase:setMapStyle()
@@ -967,19 +1118,39 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           new com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener({
             onDidFinishLoadingStyle : style => {
 
-              console.log( "Mapbox:setMapStyle(): style loaded" );
+              console.log( "Mapbox:setMapStyle(): style loaded nativeMapview is:", nativeMapView );
+              console.log( "Mapbox:setMapStyle(): style loaded nativeMapview.mapboxMap is:", nativeMapView.mapboxMap );
+              console.log( "Mapbox:setMapStyle(): style loaded style is:", nativeMapView.mapboxMap.getStyle()   );
+
+              // FIXME: now that the map is initialized and the style is loaded we can
+              // create the annotation managers that allow us to (hopefully) reliably
+              // receive events on lines 
+
+              this.lineManager = new com.mapbox.mapboxsdk.plugins.annotation.LineManager( nativeMapView, nativeMapView.mapboxMap, nativeMapView.mapboxMap.getStyle() );
+
+              this.lineManager.addClickListener( 
+                new com.mapbox.mapboxsdk.plugins.annotation.OnAnnotationClickListener({
+                  onAnnotationClick: line => {
+                    console.log( "Mapbox:setMapStyle(): click on line:", line );
+
+                    this.handleLineClickEvent( line );
+
+                    return true;
+                  }
+                })
+              );
+
               resolve( style );
 
             }
           })
         );
 
-/*
         // callback if loading the style fails.
 
-        nativeMapView.addOnDidFailLoadingStyleListener(
-          com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingStyleListener({
-            onDidFailLoadingStyle : error => {
+        nativeMapView.addOnDidFailLoadingMapListener(
+          new com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener({
+            onDidFailLoadingMap : error => {
 
               console.log( "Mapbox:setMapStyle(): style failed" );
               reject( error );
@@ -987,7 +1158,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             }
           })
         );
-*/
+
         let builder = new com.mapbox.mapboxsdk.maps.Style.Builder();
 
         nativeMapView.mapboxMap.setStyle( 
@@ -1015,6 +1186,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   removeMarkers(ids?: any, nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1026,6 +1199,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   setCenter(options: SetCenterOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1052,6 +1227,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   getCenter(nativeMap?): Promise<LatLng> {
     return new Promise((resolve, reject) => {
       try {
@@ -1068,6 +1245,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   setZoomLevel(options: SetZoomLevelOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1094,6 +1273,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   getZoomLevel(nativeMap?): Promise<number> {
     return new Promise((resolve, reject) => {
       try {
@@ -1106,6 +1287,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   setTilt(options: SetTiltOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1131,6 +1314,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   getTilt(nativeMap?): Promise<number> {
     return new Promise((resolve, reject) => {
       try {
@@ -1143,6 +1328,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   getUserLocation(): Promise<UserLocation> {
     return new Promise((resolve, reject) => {
@@ -1165,6 +1352,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
     return new Promise((resolve, reject) => {
@@ -1199,6 +1388,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   addPolygon(options: AddPolygonOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1235,6 +1426,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   addPolyline(options: AddPolylineOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1265,6 +1458,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   removePolygons(ids?: Array<any>, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1283,6 +1478,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   removePolylines(ids?: Array<any>, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1300,6 +1497,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   animateCamera(options: AnimateCameraOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1343,7 +1542,18 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  setOnMapClickListener(listener: (data: LatLng) => void, nativeMap? : MapboxView ): Promise<any> {
+  // ----------------------------------------------------------------------------------
+
+  /**
+  * set an on map click listener. 
+  *
+  * The new Mapbox Native SDK allows for multiple listeners on an event and follows the standard
+  * pattern of returning 'true' when a handler has handled the event and others shouldn't.
+  *
+  * Not returning a boolean from the listener function will cause a crash.
+  */
+
+  setOnMapClickListener( listener: (data: LatLng) => void, nativeMap? : MapboxView ): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
         const theMap = nativeMap || _mapbox;
@@ -1356,10 +1566,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         theMap.mapboxMap.addOnMapClickListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener({
               onMapClick: point => {
-                listener({
+
+                console.log( "Mapbox:setOnMapClickListener(): click event at point:", point );
+
+                return listener({
                   lat: point.getLatitude(),
                   lng: point.getLongitude()
                 });
+
               }
             })
         );
@@ -1371,6 +1585,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   setOnMapLongClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1400,6 +1616,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -1436,6 +1654,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   setOnFlingListener(listener: () => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1461,6 +1681,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   setOnCameraMoveListener(listener: () => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1488,6 +1710,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   setOnCameraMoveCancelListener(listener: () => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1514,6 +1738,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------
+
   setOnCameraIdleListener(listener: () => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1539,6 +1765,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------
 
   getViewport(nativeMap?): Promise<Viewport> {
     return new Promise((resolve, reject) => {
@@ -1567,6 +1795,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ---------------------------------------------------------------------------------
 
   setViewport(options: SetViewportOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1600,6 +1830,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ----------------------------------------------------------------------------------------------
 
   downloadOfflineRegion(options: DownloadOfflineRegionOptions): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1688,6 +1920,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------------------------------------------------------
+
   listOfflineRegions(options?: ListOfflineRegionsOptions): Promise<OfflineRegion[]> {
     return new Promise((resolve, reject) => {
       try {
@@ -1738,6 +1972,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ---------------------------------------------------------------------------------
+
   deleteOfflineRegion(options: DeleteOfflineRegionOptions): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1785,6 +2021,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ------------------------------------------------------------------------------------------------
+
   addExtrusion(options: AddExtrusionOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1816,16 +2054,25 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // -------------------------------------------------------------------------------------
 
   /**
-  * a rough analog to the4 mapbox-gl-js addLayer method
+  * a rough analogue to the mapbox-gl-js addLayer() method
   *
-  * This method implements an easier way to add lines and circles to a map by just
-  * providing a JSON document following the Mapbox Style specification. 
+  * It would be nice if this {N} API matched the mapbox-gl-js API which
+  * would make it much easier to share mapping applications between the web 
+  * and {N} apps.
+  *
+  * This method accepts a Mapbox-GL-JS style specification JSON object with some 
+  * limitations:
+  *
+  * - the source: must be a GeoJSON object. 
+  * - only a subset of paint properties are available. 
   *
   * @param {object} style - a style following the Mapbox style specification.
   * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
+  *
+  * @link https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers
   */
 
-  addLayer( style, nativeMapView? ) {
+  public addLayer( style, nativeMapView? ) {
 
     let retval;
 
@@ -1841,7 +2088,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       default:
 
-        retval = Promise.reject( "Unsupported geometry type '" + style.type + "'" );
+        retval = Promise.reject( "Mapbox:addLayer() Unsupported geometry type '" + style.type + "'" );
 
       break;
 
@@ -1854,10 +2101,20 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // -------------------------------------------------------------------------------------
 
   /**
-  * add a polyline layer
+  * add a line layer
   *
-  * Draws a polyline based on a Mapbox Style
+  * Draws a line layer based on a mapbox-gl-js Mapbox Style. 
   *
+  * What sucks about this is that there is apparently no facility to add an event listener to a layer. 
+  *
+  * The idea for this method is to make sharing code between mapbox-gl-js Typescript web applications
+  * and {N} native applications easier. 
+  *
+  * For the moment this method only supports a source type of 'geojson'.
+  *
+  * Example style for a line:
+  *
+  * {
   * 'id': someid,
   * 'type': 'line',
   * 'source': {
@@ -1884,12 +2141,24 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *
   * Do not call this method directly. Use addLayer().
   *
+  * To enable catching of click events on a line, when a click handler is added
+  * to a line (using the on() method above), the Annotations plugin is used to 
+  * draw an invisible clickable line over the line layer. Sadly, the Annotations
+  * plugin does not support all the nice styling options of the line Layer so we're 
+  * pushed into this compromise of drawing two lines, one for it's styling and the
+  * other for it's click handling. 
+  *
   * @param {object} style - a style following the Mapbox style specification.
   * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
   *
   * @return {Promise<any>}
   *
+  * @see addLineAnnotation()
+  * @see on()
+  *
+  * @link https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers
   * @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/Style.html#addSource-com.mapbox.mapboxsdk.style.sources.Source-
+  * @link https://docs.nativescript.org/core-concepts/android-runtime/marshalling/java-to-js#array-of-primitive-types
   */
 
   private addLineLayer( style, nativeMapViewInstance? ) : Promise<any> {
@@ -1900,7 +2169,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const nativeMapView = nativeMapViewInstance || _mapbox;
 
         if ( style.type != 'line' ) {
-          reject( "Non line style passed to addPolylineLayer()" );
+          reject( "Non line style passed to addLineLayer()" );
         }
 
         // we need a source of type geojson.
@@ -1919,12 +2188,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         nativeMapView.mapboxMap.getStyle().addSource(
             new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
-              style.id,
+              style.id + '_source',
               feature
             )
         );
 
-        const line = new com.mapbox.mapboxsdk.style.layers.LineLayer( style.id, style.id );
+        const line = new com.mapbox.mapboxsdk.style.layers.LineLayer( style.id, style.id + '_source' );
 
         console.log( "Mapbox:addLineLayer(): after LineLayer" );
 
@@ -1941,7 +2210,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           lineProperties = [
             com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor( 'red' ),
             com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth( new java.lang.Float( 7 ) ),
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineOpacity( new java.lang.Float( .7 ) )
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineOpacity( new java.lang.Float( 1 ) )
           ];
 
         } else {
@@ -1969,16 +2238,23 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           // line dash array
  
           if ( style.paint[ 'line-dash-array' ] ) {
-            lineProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineDashArray( new java.lang.Float( style.paint[ 'line-dash-array' ] ) ) ); 
+
+            // the line-dash-array requires some handstands to marhall it into a java Float[] type. 
+
+            let dashArray = Array.create( "java.lang.Float", style.paint[ 'line-dash-array' ].length );
+
+            for ( let i = 0; i < style.paint[ 'line-dash-array' ].length; i++ ) {
+              dashArray[i] = new java.lang.Float( style.paint[ 'line-dash-array' ][i] );
+            }
+
+            lineProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineDasharray( dashArray ) ); 
           }
 
-        }
+        } // end of paint section.
 
         // now the layout section
 
         if ( typeof style.layout == 'undefined' ) {
-
-          console.log( "Mapbox:addLineLayer(): lout is undefined" );
 
           lineProperties = [
             com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineCap( com.mapbox.mapboxsdk.style.layers.PropertyFactory.LINE_CAP_ROUND ),
@@ -2045,26 +2321,328 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         line.setProperties( lineProperties );
 
-        let layer = nativeMapView.mapboxMap.getStyle().addLayer( line );
+        nativeMapView.mapboxMap.getStyle().addLayer( line );
 
-        console.log( "Mapbox:addLineLayer(): added line layer" );
+        // FIXME: for the moment, because I have not been able to figure out how to pull the geometry
+        // from the line, we keep a reference to the feature so we can draw the clickable line when
+        // a click handler is added.
 
         this.lines.push({
           type: 'line',
           id: style.id,
-          layer: line
+          layer: line,
+          feature: feature
         });
 
         console.log( "Mapbox:addLineLayer(): after addLayer" );
 
         resolve();
       } catch (ex) {
+        console.log( "Mapbox:addLineLayer() Error : " + ex);
+        reject(ex);
+      }
+
+    }); // end of Promise()
+
+  } // end of addLineLayer
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * add a line annotation
+  *
+  * Draws a line using the new Annotations plugin. 
+  *
+  * NOTE: This is here just for reference.
+  *
+  * The Annotations plugin allows for listening to events on a line which the standard Layer
+  * classes do not.
+  *
+  * However, what sucks is that:
+  *
+  * - Annotations do not provide the range of styling options that a line layer does
+  * - Annotations use a GeoJSON format, where styling is done via a properties child, instead of the Mapbox Style format. 
+  *
+  * {
+  *   "type": "FeatureCollection",
+  *   "features": [{
+  *     "type": "Feature",
+  *     "geometry": {
+  *       "type": "LineString",
+  *       "coordinates": [
+  *         [ -76.947041, 39.007846 ],
+  *         [ 12.5, 41.9 ]
+  *       ]
+  *     },
+  *     "properties": {
+  *       "line-color": "white",
+  *       "line-width": "8",
+  *       "is-draggable": false
+  *     }
+  *   }]
+  * } 
+  *
+  * @param {object} geojson - a GeoJSON feature collection.
+  * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
+  *
+  * @return {Promise<any>}
+  *
+  * @link https://docs.mapbox.com/android/api/plugins/annotation/0.5.0/com/mapbox/mapboxsdk/plugins/annotation/package-summary.html
+  * @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/Style.html#addSource-com.mapbox.mapboxsdk.style.sources.Source-
+  */
+
+  private addLineAnnotation( geojson, nativeMapViewInstance? ) : Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        const nativeMapView = nativeMapViewInstance || _mapbox;
+
+        console.log( "Mapbox:addLineAnnotation(): before addSource with geojson:", geojson );
+
+        let geojsonString = JSON.stringify( geojson );
+
+        console.log( "Mapbox:addLineAnnotation(): before create" );
+
+        let line = this.lineManager.create( geojsonString );
+
+        console.log( "Mapbox:addLineAnnotation(): added line annotation:", line );
+
+        resolve( line );
+
+      } catch (ex) {
         console.log("Error in mapbox.addPolyline: " + ex);
         reject(ex);
       }
     });
 
-  } // end of addLineLayer
+  } // end of addLineAnnotation
+
+  // -------------------------------------------------------------------------------------
+
+  private testLineAnnotation( nativeMapView) {
+
+    let geojson = {
+      "type": "FeatureCollection",
+      "features": [{
+        "type": "Feature",
+       "geometry": {
+         "type": "LineString",
+         "coordinates": this.getTestCoords()
+       },
+       "properties": {
+         "line-color": "white",
+         "line-width": "8",
+       }
+     }]
+   }; 
+
+   this.addLineAnnotation( geojson, nativeMapView.getNativeMapView() );
+
+  }
+
+  // -----------------------------------------------------------------------------------------
+  getTestCoords() {
+
+ return [
+[-76.926164,39.019062],
+[-76.926100,39.019168],
+[-76.926013,39.019257],
+[-76.925905,39.019328],
+[-76.925777,39.019380],
+[-76.925632,39.019408],
+[-76.925481,39.019405],
+[-76.925337,39.019372],
+[-76.925209,39.019313],
+[-76.925104,39.019234],
+[-76.925026,39.019136],
+[-76.925010,39.018851],
+[-76.925054,39.018724],
+[-76.925139,39.018616],
+[-76.925252,39.018528],
+[-76.925387,39.018465],
+[-76.925539,39.018433],
+[-76.925694,39.018422],
+[-76.925857,39.018426],
+[-76.926027,39.018437],
+[-76.927847,39.018652],
+[-76.930178,39.019155],
+[-76.932151,39.019811],
+[-76.934475,39.020730],
+[-76.938543,39.022225],
+[-76.941642,39.022854],
+[-76.944704,39.023275],
+[-76.946380,39.024124],
+[-76.948033,39.025760],
+[-76.948497,39.027019],
+[-76.948306,39.028576],
+[-76.947345,39.030150],
+[-76.945672,39.031692],
+[-76.943317,39.033067],
+[-76.941067,39.034591],
+[-76.938712,39.036849],
+[-76.937134,39.039019],
+[-76.934067,39.043621],
+[-76.931722,39.047206],
+[-76.929912,39.050756],
+[-76.928589,39.053624],
+[-76.927063,39.056683],
+[-76.925731,39.058167],
+[-76.924575,39.059077],
+[-76.922749,39.060070],
+[-76.920061,39.061071],
+[-76.918383,39.061644],
+[-76.915324,39.062765],
+[-76.913071,39.063800],
+[-76.910303,39.065627],
+[-76.908491,39.067117],
+[-76.907337,39.068725],
+[-76.906080,39.071488],
+[-76.905077,39.073318],
+[-76.904587,39.074003],
+[-76.904400,39.074114],
+[-76.904184,39.074189],
+[-76.903946,39.074212],
+[-76.903712,39.074192],
+[-76.903464,39.074145],
+[-76.903301,39.074030],
+[-76.903158,39.073875],
+[-76.903071,39.073696],
+[-76.903039,39.073516],
+[-76.903065,39.073338],
+[-76.903149,39.073168],
+[-76.903282,39.073021],
+[-76.903465,39.072896],
+[-76.903679,39.072819],
+[-76.903903,39.072786],
+[-76.904124,39.072797],
+[-76.904329,39.072851],
+[-76.904518,39.072940],
+[-76.904706,39.073029],
+[-76.904855,39.073158],
+[-76.906221,39.074084],
+[-76.908129,39.074828],
+[-76.910401,39.075078],
+[-76.913482,39.074758],
+[-76.924829,39.073772],
+[-76.930687,39.073591],
+[-76.936115,39.073664],
+[-76.945228,39.074826],
+[-76.948338,39.075918],
+[-76.954834,39.079209],
+[-76.958566,39.081175],
+[-76.962182,39.082907],
+[-76.964617,39.083332],
+[-76.967407,39.083191],
+[-76.969484,39.083412],
+[-76.971742,39.084170],
+[-76.976687,39.086114],
+[-76.983025,39.088788],
+[-76.985704,39.089512],
+[-76.988488,39.089779],
+[-76.991281,39.089590],
+[-76.997539,39.088687],
+[-77.001787,39.088312],
+[-77.008541,39.087897],
+[-77.013845,39.087128],
+[-77.020459,39.085992],
+[-77.023236,39.085835],
+[-77.025211,39.086389],
+[-77.026750,39.087508],
+[-77.027710,39.089008],
+[-77.028146,39.090903],
+[-77.029034,39.093259],
+[-77.030437,39.094859],
+[-77.032618,39.096362],
+[-77.035143,39.097464],
+[-77.038513,39.098369],
+[-77.042130,39.099532],
+[-77.044851,39.100887],
+[-77.047813,39.102913],
+[-77.050996,39.105187],
+[-77.055267,39.108274],
+[-77.058337,39.110646],
+[-77.061623,39.113689],
+[-77.064504,39.115979],
+[-77.066908,39.117065],
+[-77.069589,39.117678],
+[-77.081940,39.120455],
+[-77.087705,39.123085],
+[-77.091849,39.124533],
+[-77.096482,39.125620],
+[-77.101050,39.126210],
+[-77.106463,39.126419],
+[-77.113894,39.126642],
+[-77.118437,39.126990],
+[-77.120607,39.127777],
+[-77.122318,39.129042],
+[-77.124218,39.131225],
+[-77.126393,39.133643],
+[-77.128644,39.135491],
+[-77.131388,39.136958],
+[-77.138116,39.139101],
+[-77.140084,39.138936],
+[-77.141828,39.138163],
+[-77.143102,39.136928],
+[-77.144688,39.135612],
+[-77.146269,39.135118],
+[-77.147972,39.135110],
+[-77.149904,39.135622],
+[-77.155834,39.137330],
+[-77.158453,39.137591],
+[-77.161087,39.137398],
+[-77.163593,39.136765],
+[-77.166115,39.135549],
+[-77.167949,39.134050],
+[-77.171853,39.129988],
+[-77.175581,39.126120],
+[-77.179622,39.122026],
+[-77.180894,39.121131],
+[-77.181190,39.121005],
+[-77.181495,39.120898],
+[-77.181806,39.120804],
+[-77.182127,39.120726],
+[-77.182461,39.120671],
+[-77.182803,39.120637],
+[-77.183148,39.120626],
+[-77.183494,39.120636],
+[-77.183839,39.120665],
+[-77.184182,39.120715],
+[-77.184520,39.120787],
+[-77.184852,39.120878],
+[-77.185494,39.121106],
+[-77.189478,39.122770],
+[-77.191456,39.123177],
+[-77.194133,39.123137],
+[-77.197993,39.123036],
+[-77.198559,39.123151],
+[-77.198828,39.123246],
+[-77.199081,39.123364],
+[-77.199314,39.123501],
+[-77.199519,39.123656],
+[-77.199701,39.123827],
+[-77.199863,39.124012],
+[-77.200012,39.124209],
+[-77.201714,39.126527],
+[-77.203814,39.128927],
+[-77.206368,39.131478],
+[-77.208734,39.134112],
+[-77.210918,39.137302],
+[-77.212660,39.140680],
+[-77.214526,39.145223],
+[-77.215510,39.146948],
+[-77.217811,39.149987],
+[-77.220639,39.152707],
+[-77.224698,39.155944],
+[-77.228768,39.158858],
+[-77.233073,39.161274],
+[-77.237891,39.163827],
+[-77.240401,39.165853],
+[-77.242376,39.168174]
+];
+
+  }
+
 
   // -------------------------------------------------------------------------------------
 
@@ -2073,6 +2651,16 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *
   * Draw a circle based on a Mapbox style.
   *
+  * Mapbox Native Android layers do not support click handlers. Unfortunately, we cannot use
+  * the same Annotations approach that we do for lines to get a click handler because 
+  * circles drawn by the Annotations plugin do not support stops so there's no making them
+  * smaller as we zoom out. Instead, we have our own click handler (see handleClickEvent() above)
+  * to determine when a click has occured inside a circle. 
+  *
+  * In order to support the click handler an additional circle-radius property, in meters, must
+  * be included.
+  *
+  * {
   *  "id": someid,
   *  "type": 'circle',
   *  "radius-meters": 500,   // FIXME: radius in meters used for in-circle click detection. 
@@ -2099,9 +2687,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *    'circle-stroke-width': 2,
   *    'circle-stroke-color': '#ed6498'
   *  } 
-  *
-  * It seems very odd to me that there doesn't seem to be any method to do
-  * this directly like you can with Mapbox-GL-JS.
   *
   * @param {object} style a Mapbox style describing the circle draw. 
   * @param {object} nativeMap view.
@@ -2264,7 +2849,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         circle.setProperties( circleProperties );
 
-        let layer = nativeMapView.mapboxMap.getStyle().addLayer( circle );
+        nativeMapView.mapboxMap.getStyle().addLayer( circle );
 
         console.log( "Mapbox:addCircleLayer(): added circle layer" );
 
@@ -2286,6 +2871,49 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
 
   } // end of addCircle()
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * add a circle Annotation
+  *
+  * Draw a circle Annotation based on a GeoJSON feature..
+  *
+  * This method is not used but is left here for reference. At the present moment
+  * these circles cannot be scaled according to zoom level (or other property). 
+  *
+  * @param {object} geojson . 
+  * @param {object} nativeMap view.
+  */
+
+  addCircleAnnotation( geojson, nativeMapViewInstance? ): Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        console.log( "Mapbox:addCircleAnnotation(): top with geojson:", geojson );
+
+        const nativeMapView = nativeMapViewInstance || _mapbox;
+
+        // we need a source of type geojson.
+
+        console.log( "Mapbox:addCircleAnnotation(): before addSource with geojson:", geojson );
+
+        let geojsonString = JSON.stringify( geojson );
+
+        let layer = this.circleManager.create( geojsonString );
+
+        console.log( "Mapbox:addCircleAnnotation(): added circle annotation:", layer );
+
+        resolve( layer );
+
+      } catch (ex) {
+        console.log("Error in mapbox.addCircleAnnotation: " + ex);
+        reject(ex);
+      }
+    });
+
+  } // end of addCircleAnnotation()
 
   // ----------------------------------------
 
