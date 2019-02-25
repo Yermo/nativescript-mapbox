@@ -367,6 +367,8 @@ export interface MapboxApi {
 
   addLayer( style, nativeMapView? : any ): Promise<any>;
 
+  removeLayer( id : string, nativeMapView? : any ): Promise<any>;
+
   addLinePoint( id : string, point, nativeMapView? : any ): Promise<any>;
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<Array<Feature>>;
@@ -470,7 +472,9 @@ export abstract class MapboxCommon implements MapboxCommonApi {
 
 /*************** XML definition START ****************/
 export interface MapboxViewApi {
+
   // these functions can be called after the mapReady event fired
+
   addMarkers(markers: MapboxMarker[]): Promise<any>;
 
   getMapboxApi(): any;
@@ -520,6 +524,8 @@ export interface MapboxViewApi {
   trackUser(options: TrackUserOptions): Promise<any>;
 
   addLayer( style ): Promise<any>;
+
+  removeLayer( id : string ): Promise<any>;
 
   addLinePoint( id : string, point ): Promise<any>;
 
@@ -662,6 +668,10 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   addLayer( style ): Promise<any> {
     return this.mapbox.addLayer( style, this.getNativeMapView());
+  }
+
+  removeLayer( id : string ): Promise<any> {
+    return this.mapbox.removeLayer( id, this.getNativeMapView());
   }
 
   addLinePoint( id : string, point ): Promise<any> {

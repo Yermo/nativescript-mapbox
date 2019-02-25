@@ -31,7 +31,10 @@ import {
   UserTrackingMode,
   Viewport
 } from "./mapbox.common";
+
 import { Color } from "tns-core-modules/color";
+
+import { GeoUtils } from './geo.utils';
 
 // Export the enums for devs not using TS
 export { MapStyle };
@@ -105,6 +108,7 @@ const _getTrackingMode = (input: UserTrackingMode): MGLUserTrackingMode => {
 };
 
 /*************** XML definition START ****************/
+
 export class MapboxView extends MapboxViewBase {
 
   private nativeMapView: MGLMapView;
@@ -133,6 +137,12 @@ export class MapboxView extends MapboxViewBase {
   getMapboxApi() : any {
     return this.mapbox;
   }
+
+  // ----------------------------------------------------
+
+  /**
+  * initialize the map
+  */
 
   initMap(): void {
     if (!this.nativeMapView && this.config.accessToken) {
@@ -176,7 +186,39 @@ export class MapboxView extends MapboxViewBase {
 
 export class Mapbox extends MapboxCommon implements MapboxApi {
 
-  initEventHandlerShim( mapboxNativeViewInstance : any ) {};
+  // list of circle layers
+
+  private circles: any = [];
+
+  // list of polylines
+ 
+  private lines: any = [];
+
+  // registered callbacks.
+
+  private eventCallbacks : any[] = [];
+
+  // --------------------------------------------------------------------
+
+  /**
+  * event handler shim
+  *
+  * Initialize our event handler shim so that we can intercept events here.
+  *
+  * @param { MapboxView } mapboxView
+  */
+
+  initEventHandlerShim( mapboxNativeViewInstance : any ) {
+
+    console.log( "Mapbox:initEventHandlerShim(): top" );
+
+    this.setOnMapClickListener( ( point: LatLng ) => {
+      return this.checkForCircleClickEvent( point );
+    }, mapboxNativeViewInstance );
+
+  }
+
+  // --------------------------------------------------------------------------------
 
   /**
   * register a map event handler
@@ -188,9 +230,71 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   }
 
+  // -------------------------------------------------------------------------------
+
   offMapEvent( eventName, id, nativeMapView? ) : void {
 
   }
+
+  // ------------------------------------------------------------------------
+
+  /**
+  * checks for a click event on a circle.
+  *
+  * For the moment we have to handle map click events long hand ourselves for circles.
+  *
+  * When we catch an event we'll check the eventHandlers map to see if the 
+  * given layer is listed. If it is we invoke it's callback.
+  *
+  * If there are multiple overlapping circles only the first one in the list will be called.
+  *
+  * We also check the location of the click to see if it's inside any 
+  * circles and raise the event accordingly.
+  *
+  * @todo detect the top circle in the overlapping circles case.
+  */
+
+  private checkForCircleClickEvent( point : LatLng ) {
+
+    console.log( "Mapbox:checkForCircleClickEvent(): got click event with point:", point );
+
+    // is this point within a circle?
+
+    for ( let i = 0; i < this.circles.length; i++ ) {
+
+      console.log( "Mapbox:checkForCircleClickEvent(): checking circle with radius:", this.circles[i].radius );
+
+      if ( GeoUtils.isLocationInCircle( 
+        point.lng,
+        point.lat,
+        this.circles[i].center[0],
+        this.circles[i].center[1],
+        this.circles[i].radius )) {
+
+        console.log( "Mapbox:checkForCircleClickEvent() Point is in circle with id '" + this.circles[i].id + "' invoking callbacks, if any. Callback list is:", this.eventCallbacks );
+
+        for ( let x = 0; x < this.eventCallbacks[ 'click' ].length; x++ ) {
+          let entry = this.eventCallbacks[ 'click' ][ x ];
+
+          if ( entry.id == this.circles[i].id ) {
+
+            console.log( "Mapbox:checkForCircleClickEvent(): calling callback for '" + entry.id + "'" );
+
+            return entry.callback( point );
+
+          }
+
+        } // end of for loop over events.
+
+      }
+
+    } // end of loop over circles.
+
+    return false;
+
+  } // end of checkForCircleClickEvent()
+
+  // -------------------------------------------------------------------------------
 
   show(options: ShowOptions): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -472,16 +576,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // --------------------------------------------------------------
 
   /**
-  * add a GeoJSON layer.
-  */
-
-  addLayer( style, nativeMapView? ): Promise<any> {
-    return Promise.resolve();
-  }
-
-  // --------------------------------------------------------------
-
-  /**
   * add a point to a linelayer.
   */
 
@@ -600,6 +694,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // --------------------------------------------------------------------
+
   addPolyline(options: AddPolylineOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       const theMap: MGLMapView = nativeMap || _mapbox.mapView;
@@ -639,6 +735,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       resolve();
     });
   }
+
+  // --------------------------------------------------------------------
 
   private removePolyById(theMap, id: string): void {
     let layer = theMap.style.layerWithIdentifier(id);
@@ -715,6 +813,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // ------------------------------------------------------------------------------
+
+  /**
+  * sets a map level click listener
+  *
+  */
 
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1062,6 +1167,660 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * a rough analogue to the mapbox-gl-js addLayer() method
+  *
+  * It would be nice if this {N} API matched the mapbox-gl-js API which
+  * would make it much easier to share mapping applications between the web 
+  * and {N} apps.
+  *
+  * This method accepts a Mapbox-GL-JS style specification JSON object with some 
+  * limitations:
+  *
+  * - the source: must be a GeoJSON object. 
+  * - only a subset of paint properties are available. 
+  *
+  * @param {object} style - a style following the Mapbox style specification.
+  * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
+  *
+  * @link https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers
+  */
+
+  public addLayer( style, nativeMapView? ) : Promise<any> {
+
+    let retval;
+
+    switch( style.type ) {
+
+      case 'line':
+        retval = this.addLineLayer( style, nativeMapView );
+      break;
+
+      case 'circle':
+        retval = this.addCircleLayer( style, nativeMapView );
+      break;
+
+      default:
+
+        retval = Promise.reject( "Mapbox:addLayer() Unsupported geometry type '" + style.type + "'" );
+
+      break;
+
+    }
+
+    return retval;
+
+  }
+
+  // --------------------------------------------------------------
+
+  /**
+  * remove layer by ID
+  *
+  * Removes a layer given a layer id
+  *
+  * @param {string} id
+  */
+
+  public removeLayer( id : string, nativeMapViewInstance ) {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        const nativeMapView = nativeMapViewInstance || _mapbox;
+
+//        nativeMapView.mapboxMap.getStyle().removeLayer( id ) ;
+
+        console.log( "Mapbox:removeLayer(): after removing layer" );
+
+        resolve();
+
+      } catch (ex) {
+        console.log( "Mapbox:removeLayer() Error : " + ex );
+        reject(ex);
+      }
+
+    }); // end of Promise()
+
+  } // end of removeLayer()
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * add a line layer
+  *
+  * Draws a line layer based on a mapbox-gl-js Mapbox Style. 
+  *
+  * What sucks about this is that there is apparently no facility to add an event listener to a layer. 
+  *
+  * The idea for this method is to make sharing code between mapbox-gl-js Typescript web applications
+  * and {N} native applications easier. 
+  *
+  * For the moment this method only supports a source type of 'geojson'.
+  *
+  * Example style for a line:
+  *
+  * {
+  * 'id': someid,
+  * 'type': 'line',
+  * 'source': {
+  *   'type': 'geojson',
+  *   'data': {
+  *     "type": "Feature",
+  *       "geometry": {
+  *       "type": "LineString",
+  *         "coordinates": [ [ lng, lat ], [ lng, lat ], ..... ]
+  *       }
+  *     }
+  *   }
+  * },
+  * 'layout': {
+  *   'line-cap': 'round',
+  *   'line-join': 'round'
+  * },    
+  * 'paint': {
+  *   'line-color': '#ed6498',
+  *   'line-width': 5,
+  *   'line-opacity': .8,
+  *   'line-dash-array': [ 1, 1, 1, ..]
+  * }
+  *
+  * Do not call this method directly. Use addLayer().
+  *
+  * To enable catching of click events on a line, when a click handler is added
+  * to a line (using the onMapEvent() method above), the Annotations plugin is used to 
+  * draw an invisible clickable line over the line layer. Sadly, the Annotations
+  * plugin does not support all the nice styling options of the line Layer so we're 
+  * pushed into this compromise of drawing two lines, one for it's styling and the
+  * other for it's click handling. 
+  *
+  * @param {object} style - a style following the Mapbox style specification.
+  * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
+  *
+  * @return {Promise<any>}
+  *
+  * @see addLineAnnotation()
+  * @see onMapEvent()
+  *
+  * @link https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers
+  * @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/Style.html#addSource-com.mapbox.mapboxsdk.style.sources.Source-
+  * @link https://docs.nativescript.org/core-concepts/android-runtime/marshalling/java-to-js#array-of-primitive-types
+  */
+
+  private addLineLayer( style, nativeMapViewInstance? ) : Promise<any> {
+
+    return new Promise((resolve, reject) => {
+
+      try {
+
+        const theMap: MGLMapView = nativeMapViewInstance || _mapbox.mapView;
+
+        if ( style.type != 'line' ) {
+          reject( "Non line style passed to addLineLayer()" );
+        }
+
+        // we need a source of type geojson.
+
+        if (( typeof style.source == 'undefined' ) || ( style.source.type != 'geojson' )) {
+          reject( "Only GeoJSON sources are currently supported." );
+        }
+
+        console.log( "Mapbox:addLineLayer(): before addSource with geojson:", style.source.data );
+
+        const geoJSON = `{"type": "FeatureCollection", "features": [{ ${JSON.stringify(style.source.data)}}]}`;
+
+        // this would otherwise crash the app
+
+        if (theMap.style.sourceWithIdentifier( style.id )) {
+          reject( "Remove the layer with this id first with 'removeLayer': " + style.id );
+          return;
+        }
+
+        const geoDataStr = NSString.stringWithString( geoJSON );
+        const geoData = geoDataStr.dataUsingEncoding( NSUTF8StringEncoding );
+        const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
+
+        const geo = NSData.alloc().initWithBase64EncodedStringOptions( geoDataBase64Enc, null );
+        const shape = MGLShape.shapeWithDataEncodingError( geo, NSUTF8StringEncoding );
+
+        const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions( style.id, shape, null );
+        theMap.style.addSource(source);
+
+        const layer = MGLLineStyleLayer.alloc().initWithIdentifierSource( style.id, source);
+
+        // color
+
+        let color = 'black';
+
+        if ( style.paint && style.paint[ 'line-color' ] ) {
+          color = style.paint[ 'line-color' ];
+        }
+
+        layer.lineColor = NSExpression.expressionForConstantValue( new Color( color ).ios );
+
+        // line width
+
+        let width = 5;
+
+        if ( style.paint && style.paint[ 'line-width' ] ) {
+          width = style.paint[ 'line-width' ]; 
+        }
+
+        layer.lineWidth = NSExpression.expressionForConstantValue( width );
+
+        let opacity = 1;
+
+        if ( style.paint && style.paint[ 'line-opacity' ] ) {
+          opacity = style.paint[ 'line-opacity' ];
+        }
+
+        layer.lineOpacity = NSExpression.expressionForConstantValue( opacity );
+
+        // line dash array
+ 
+        if ( style.paint && style.paint[ 'line-dash-array' ] ) {
+
+          let dashArray = [];
+
+          for ( let i = 0; i < style.paint[ 'line-dash-array' ].length; i++ ) {
+            dashArray[i] = NSExpression.expressionForConstantValue( style.paint[ 'line-dash-array' ][i] );
+          }
+
+          layer.lineDashPattern = NSExpression.expressionForConstantValue( dashArray );
+        }
+
+        theMap.style.addLayer(layer);
+        resolve();
+
+      } catch (ex) {
+        console.log( "Mapbox:addLineLayer() Error : " + ex);
+        reject(ex);
+      }
+
+    }); // end of Promise()
+
+/*
+    return new Promise((resolve, reject) => {
+      try {
+
+        const nativeMapView = nativeMapViewInstance || _mapbox;
+
+        if ( style.type != 'line' ) {
+          reject( "Non line style passed to addLineLayer()" );
+        }
+
+        // we need a source of type geojson.
+
+        if (( typeof style.source == 'undefined' ) || ( style.source.type != 'geojson' )) {
+          reject( "Only GeoJSON sources are currently supported." );
+        }
+
+        console.log( "Mapbox:addLineLayer(): before addSource with geojson:", style.source.data );
+
+        let geojsonString = JSON.stringify( style.source.data );
+
+        let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
+
+        // com.mapbox.mapboxsdk.maps.Style
+
+        nativeMapView.mapboxMap.getStyle().addSource(
+            new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
+              style.id + '_source',
+              feature
+            )
+        );
+
+        const line = new com.mapbox.mapboxsdk.style.layers.LineLayer( style.id, style.id + '_source' );
+
+        console.log( "Mapbox:addLineLayer(): after LineLayer" );
+
+        let lineProperties = [];
+
+        // some defaults if there's no paint property to the style 
+        //
+        // NOTE polyline styles have separate paint and layout sections.
+
+        if ( typeof style.paint == 'undefined' ) {
+
+          console.log( "Mapbox:addLineLayer(): paint is undefined" );
+
+          lineProperties = [
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor( 'red' ),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth( new java.lang.Float( 7 ) ),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineOpacity( new java.lang.Float( 1 ) )
+          ];
+
+        } else {
+
+          // color
+
+          if ( style.paint[ 'line-color' ] ) {
+            lineProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineColor( style.paint[ 'line-color' ] ) ); 
+          }
+
+          // opacity
+
+          if ( style.paint[ 'line-opacity' ] ) {
+            lineProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineOpacity( new java.lang.Float( style.paint[ 'line-opacity' ] ) ) ); 
+          }
+
+          console.log( "Mapbox:addLineLayer(): after opacity" );
+
+          // line width
+ 
+          if ( style.paint[ 'line-width' ] ) {
+            lineProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineWidth( new java.lang.Float( style.paint[ 'line-width' ] ) ) ); 
+          }
+
+          // line dash array
+ 
+          if ( style.paint[ 'line-dash-array' ] ) {
+
+            // the line-dash-array requires some handstands to marhall it into a java Float[] type. 
+
+            let dashArray = Array.create( "java.lang.Float", style.paint[ 'line-dash-array' ].length );
+
+            for ( let i = 0; i < style.paint[ 'line-dash-array' ].length; i++ ) {
+              dashArray[i] = new java.lang.Float( style.paint[ 'line-dash-array' ][i] );
+            }
+
+            lineProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineDasharray( dashArray ) ); 
+          }
+
+        } // end of paint section.
+
+        // now the layout section
+
+        if ( typeof style.layout == 'undefined' ) {
+
+          lineProperties = [
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineCap( com.mapbox.mapboxsdk.style.layers.PropertyFactory.LINE_CAP_ROUND ),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineJoin( com.mapbox.mapboxsdk.style.layers.PropertyFactory.LINE_JOIN_ROUND )
+          ];
+
+        } else {
+
+          // line cap 
+          //
+          // FIXME: Add other styles.
+
+          if ( style.layout[ 'line-cap' ] ) {
+
+            let property : any;
+
+            switch( style.layout[ 'line-cap' ] ) {
+
+              case 'round':
+
+                property = com.mapbox.mapboxsdk.style.layers.PropertyFactory.LINE_CAP_ROUND;
+
+              break;
+
+              case 'square':
+
+                property = com.mapbox.mapboxsdk.style.layers.PropertyFactory.LINE_CAP_SQUARE;
+
+              break;
+
+            }
+
+            lineProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineCap( property )); 
+
+          }
+
+          // line join.
+
+          if ( style.layout[ 'line-join' ] ) {
+
+            let property : any;
+
+            switch( style.layout[ 'line-join' ] ) {
+
+              case 'round':
+
+                property = com.mapbox.mapboxsdk.style.layers.PropertyFactory.LINE_JOIN_ROUND;
+
+              break;
+
+              case 'square':
+
+                property = com.mapbox.mapboxsdk.style.layers.PropertyFactory.LINE_JOIN_SQUARE;
+
+              break;
+
+            }
+
+            lineProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.lineJoin( property )); 
+
+          }
+
+        } // end of else there was a layout section.
+
+        line.setProperties( lineProperties );
+
+        nativeMapView.mapboxMap.getStyle().addLayer( line );
+
+        // FIXME: for the moment, because I have not been able to figure out how to pull the geometry
+        // from the line, we keep a reference to the feature so we can draw the clickable line when
+        // a click handler is added.
+
+        this.lines.push({
+          type: 'line',
+          id: style.id,
+          layer: line,
+          feature: feature
+        });
+
+        console.log( "Mapbox:addLineLayer(): after addLayer" );
+
+        resolve();
+      } catch (ex) {
+        console.log( "Mapbox:addLineLayer() Error : " + ex);
+        reject(ex);
+      }
+
+    }); // end of Promise()
+
+*/
+
+  } // end of addLineLayer
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * add a circle Layer
+  *
+  * Draw a circle based on a Mapbox style.
+  *
+  * Mapbox Native Android layers do not support click handlers. Unfortunately, we cannot use
+  * the same Annotations approach that we do for lines to get a click handler because 
+  * circles drawn by the Annotations plugin do not support stops so there's no making them
+  * smaller as we zoom out. Instead, we have our own click handler (see handleClickEvent() above)
+  * to determine when a click has occured inside a circle. 
+  *
+  * In order to support the click handler an additional circle-radius property, in meters, must
+  * be included.
+  *
+  * {
+  *  "id": someid,
+  *  "type": 'circle',
+  *  "radius-meters": 500,   // FIXME: radius in meters used for in-circle click detection. 
+  *  "source": {
+  *    "type": 'geojson',
+  *    "data": {
+  *      "type": "Feature",
+  *      "geometry": {
+  *        "type": "Point",
+  *        "coordinates": [ lng, lat ]
+  *      }
+  *    }
+  *  }, 
+  *  "paint": {
+  *    "circle-radius": {
+  *      "stops": [
+  *        [0, 0],
+  *        [20, 8000 ]
+  *      ],
+  *      "base": 2
+  *    },
+  *    'circle-opacity': 0.05,
+  *    'circle-color': '#ed6498',
+  *    'circle-stroke-width': 2,
+  *    'circle-stroke-color': '#ed6498'
+  *  } 
+  *
+  * @param {object} style a Mapbox style describing the circle draw. 
+  * @param {object} nativeMap view.
+  */
+
+  private addCircleLayer( style, nativeMapViewInstance? ): Promise<any> {
+
+/*
+    return new Promise((resolve, reject) => {
+      try {
+
+        const nativeMapView = nativeMapViewInstance || _mapbox;
+
+        if ( style.type != 'circle' ) {
+          reject( "Non circle style passed to addCircle()" );
+        }
+
+        // we need a source of type geojson.
+
+        if (( typeof style.source == 'undefined' ) || ( style.source.type != 'geojson' )) {
+          reject( "Only GeoJSON sources are currently supported." );
+        }
+
+        console.log( "Mapbox:addCircleLayer(): before addSource with geojson:", style.source.data );
+
+        let geojsonString = JSON.stringify( style.source.data );
+
+        let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
+
+        nativeMapView.mapboxMap.getStyle().addSource(
+            new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
+              style.id,
+              feature
+            )
+        );
+
+        const circle = new com.mapbox.mapboxsdk.style.layers.CircleLayer( style.id, style.id );
+
+        console.log( "Mapbox:addCircleLayer(): after CircleLayer" );
+
+        // This took ages to figure out.
+        //
+        // Interpolate takes as arguments a function the calculates the interpolation, 
+        // a function that returns a set of values,
+        // and a variable number of stop arguments (or possibly others). 
+        //
+        // It was not clear how to specify the variable number of arguments. Listing them out in a comma
+        // separated fashion would result in:
+        //
+        //  Error in mapbox.addCircle: Error: java.lang.Exception: Failed resolving method interpolate on class com.mapbox.mapboxsdk.style.expressions.Expression
+        //
+        // It looks like you just pass the variable arguments as a simple array. It seems to work but I have not been able
+        // to find any documentation to support this. I figured this out over hours of trial and error.
+        //
+        // https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-interpolate
+
+        let circleProperties = [];
+
+        // some defaults if there's no paint property to the style 
+
+        if ( typeof style.paint == 'undefined' ) {
+
+          console.log( "Mapbox:addCircle(): paint is undefined" );
+
+          circleProperties = [
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor( 'red' ),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(
+              com.mapbox.mapboxsdk.style.expressions.Expression.interpolate(
+                com.mapbox.mapboxsdk.style.expressions.Expression.exponential( 
+                  new java.lang.Float( 2.0 ) ),
+                  com.mapbox.mapboxsdk.style.expressions.Expression.zoom(),
+                  [
+                    com.mapbox.mapboxsdk.style.expressions.Expression.stop( new java.lang.Float( 0 ), new java.lang.Float( 0 ) ),
+                    com.mapbox.mapboxsdk.style.expressions.Expression.stop( new java.lang.Float( 20 ), new java.lang.Float( 6000 ) )
+                  ]
+              )
+            ),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float( 0.2 ))
+          ];
+
+
+        } else {
+
+          // color
+
+          if ( style.paint[ 'circle-color' ] ) {
+            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor( style.paint[ 'circle-color' ] ) ); 
+          }
+
+          // opacity
+
+          if ( style.paint[ 'circle-opacity' ] ) {
+            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity( new java.lang.Float( style.paint[ 'circle-opacity' ] ) ) ); 
+          }
+
+          console.log( "Mapbox:addCircle(): after opactiy" );
+
+          // stroke width
+ 
+          if ( style.paint[ 'circle-stroke-width' ] ) {
+            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth( new java.lang.Float( style.paint[ 'circle-stroke-width' ] ) ) ); 
+          }
+
+          // stroke color
+
+          if ( style.paint[ 'circle-stroke-color' ] ) {
+            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeColor( style.paint[ 'circle-stroke-color' ] ) ); 
+          }
+
+          if ( ! style.paint[ 'circle-radius' ] ) {
+
+            // some default so something will show up on the map. 
+
+            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius( new java.lang.Float( 30 ) )); 
+
+          } else {
+
+            // we have two options for a radius. We might have a fixed float or an expression 
+
+            if ( typeof style.paint[ 'circle-radius' ] == 'number' ) {
+              circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius( new java.lang.Float( style.paint.radius ) )); 
+            } else {
+
+              if ( ! style.paint[ 'circle-radius' ].stops ) {
+                reject( "No radius or stops provided to addCircleLayer." );
+              }
+
+              // for the moment we assume we have a set of stops and a base. 
+
+              let stopArgs = [];
+
+              console.log( "Mapbox:addCircleLayer(): adding '" + style.paint[ 'circle-radius' ].stops.length + "' stops" );
+
+              for ( let i = 0; i < style.paint[ 'circle-radius' ].stops.length; i++ ) {
+                let stop = style.paint[ 'circle-radius' ].stops[ i ];
+                stopArgs.push( com.mapbox.mapboxsdk.style.expressions.Expression.stop( new java.lang.Float( stop[0] ), new java.lang.Float( stop[ 1 ] )));
+              }
+
+              let base = 2;
+
+              if ( style.paint[ 'circle-radius' ].stops.base ) {
+                base = style.paint[ 'circle-radius' ].stops.base;
+              }
+
+              console.log( "Mapbox:addCircleLayer(): pushing circleRadius with base:", base );
+
+              circleProperties.push( 
+                com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(
+                  com.mapbox.mapboxsdk.style.expressions.Expression.interpolate(
+                    com.mapbox.mapboxsdk.style.expressions.Expression.exponential( 
+                      new java.lang.Float( base )
+                    ),
+                    com.mapbox.mapboxsdk.style.expressions.Expression.zoom(),
+                    stopArgs
+                  )
+                )
+              );
+            } // end of else we do not have a numeric circle radius
+          } // end of else we have a circle-radius
+        }
+
+        circle.setProperties( circleProperties );
+
+        nativeMapView.mapboxMap.getStyle().addLayer( circle );
+
+        console.log( "Mapbox:addCircleLayer(): added circle layer" );
+
+        this.circles.push({
+          type: 'circle',
+          id: style.id,
+          center: style.source.data.geometry.coordinates,
+          radius: style[ 'circle-radius' ],
+          layer: circle
+        });
+
+        console.log( "Mapbox:addCircleLayer(): after addLayer" );
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addCircleLayer: " + ex);
+        reject(ex);
+      }
+    });
+*/
+
+    return Promise.resolve();
+
+  } // end of addCircleLayer()
+
+  // ---------------------------------------------------------------------
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
     throw new Error('Method not implemented.');

@@ -2116,6 +2116,36 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   }
 
+  /**
+  * remove layer by ID
+  *
+  * Removes a layer given a layer id
+  *
+  * @param {string} id
+  */
+
+  public removeLayer( id : string, nativeMapViewInstance ) {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        const nativeMapView = nativeMapViewInstance || _mapbox;
+
+        nativeMapView.mapboxMap.getStyle().removeLayer( id ) ;
+
+        console.log( "Mapbox:removeLayer(): after removing layer" );
+
+        resolve();
+
+      } catch (ex) {
+        console.log( "Mapbox:removeLayer() Error : " + ex );
+        reject(ex);
+      }
+
+    }); // end of Promise()
+
+  } // end of removeLayer()
+
   // -------------------------------------------------------------------------------------
 
   /**
@@ -2210,15 +2240,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               feature
             )
         );
-
-   let lineSource = nativeMapView.mapboxMap.getStyle().getSource( style.id + '_source' );
-
-   console.log( "Mapbox:addLineLayer(): GeoJSON Source is:", lineSource );
-
-   let features = lineSource.querySourceFeatures( com.mapbox.mapboxsdk.style.expressions.Expression.literal( true ) ); 
-
-   console.log( "Mapbox:addLineLayer(): GeoJSON Features are:", features );
-
 
         const line = new com.mapbox.mapboxsdk.style.layers.LineLayer( style.id, style.id + '_source' );
 
@@ -2401,7 +2422,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 //    let features = lineSource.querySourceFeatures( com.mapbox.mapboxsdk.style.expressions.Expression.eq( com.mapbox.mapboxsdk.style.expressions.Expression.get( "type" ), com.mapbox.mapboxsdk.style.expressions.Expression.literal( "line" )));; 
 
 //    console.log( "Mapbox:addLinePoint(): got feature:", features.toJson() );
-    console.log( "Mapbox:addLinePoint(): feature type:", features.type() );
+//    console.log( "Mapbox:addLinePoint(): feature type:", features.type() );
 
     return Promise.resolve();
   }
@@ -2941,7 +2962,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
 
-  } // end of addCircle()
+  } // end of addCircleLayer()
 
   // -------------------------------------------------------------------------------------
 
