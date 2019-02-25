@@ -329,7 +329,11 @@ export interface MapboxCommonApi {
 
 export interface MapboxApi {
 
-  initEventHandlerShim( mapboxView : any ) : void;
+  initEventHandlerShim( mapboxNativeViewInstance : any ) : void;
+
+  onMapEvent( eventName, id, callback, nativeMapView? ) : void;
+
+  offMapEvent( eventName, id, nativeMapView? ) : void;
 
   show(options: ShowOptions): Promise<ShowResult>;
 
@@ -362,6 +366,8 @@ export interface MapboxApi {
   trackUser(options: TrackUserOptions, nativeMap?: any): Promise<void>;
 
   addLayer( style, nativeMapView? : any ): Promise<any>;
+
+  addLinePoint( id : string, point, nativeMapView? : any ): Promise<any>;
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<Array<Feature>>;
 
@@ -469,6 +475,10 @@ export interface MapboxViewApi {
 
   getMapboxApi(): any;
 
+  onMapEvent( eventName, id, callback ) : void;
+
+  offMapEvent( eventName, id ) : void;
+
   removeMarkers(options?: any): Promise<any>;
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
@@ -511,6 +521,8 @@ export interface MapboxViewApi {
 
   addLayer( style ): Promise<any>;
 
+  addLinePoint( id : string, point ): Promise<any>;
+
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
 
   addPolygon(options: AddPolygonOptions): Promise<any>;
@@ -550,6 +562,23 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
   // returns the class Mapbox reference above.
 
   abstract getMapboxApi(): any;
+
+  /**
+  * map event
+  *
+  * The base NativeScript ContentView class has on() and off() methods.
+  */
+
+  public onMapEvent( eventName, id, callback ) : void {
+
+    console.log( "MapboxViewCommonBase:on(): top" );
+
+    return this.mapbox.onMapEvent( eventName, id, callback, this.getNativeMapView() );
+  }
+
+  public offMapEvent( eventName, id ) : void {
+    return this.mapbox.offMapEvent( eventName, id, this.getNativeMapView() );
+  }
 
   addMarkers(markers: MapboxMarker[]): Promise<any> {
     return this.mapbox.addMarkers(markers, this.getNativeMapView());
@@ -633,6 +662,10 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   addLayer( style ): Promise<any> {
     return this.mapbox.addLayer( style, this.getNativeMapView());
+  }
+
+  addLinePoint( id : string, point ): Promise<any> {
+    return this.mapbox.addLinePoint( id, point, this.getNativeMapView());
   }
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>> {

@@ -176,7 +176,21 @@ export class MapboxView extends MapboxViewBase {
 
 export class Mapbox extends MapboxCommon implements MapboxApi {
 
-  initEventHandlerShim( mapboxView : any ) {};
+  initEventHandlerShim( mapboxNativeViewInstance : any ) {};
+
+  /**
+  * register a map event handler
+  *
+  * The NativeScript ContentView base class as on() and off() methods.
+  */
+
+  onMapEvent( eventName, id, callback, nativeMapView? ) : void {
+
+  }
+
+  offMapEvent( eventName, id, nativeMapView? ) : void {
+
+  }
 
   show(options: ShowOptions): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -462,6 +476,16 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   */
 
   addLayer( style, nativeMapView? ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // --------------------------------------------------------------
+
+  /**
+  * add a point to a linelayer.
+  */
+
+  addLinePoint( id : string, point, nativeMapView? ): Promise<any> {
     return Promise.resolve();
   }
 
