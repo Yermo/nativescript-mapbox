@@ -1330,24 +1330,46 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         console.log( "Mapbox:addLineLayer(): before addSource with geojson:", style.source.data );
 
-        const geoJSON = `{"type": "FeatureCollection", "features": [{ ${JSON.stringify(style.source.data)}}]}`;
+        const geoJSON = `{"type": "FeatureCollection", "features": [ ${JSON.stringify(style.source.data)}]}`;
+
+        console.log( "Mapbox:addLineLayer(): theMap.style is:", theMap.style );
 
         // this would otherwise crash the app
 
-        if (theMap.style.sourceWithIdentifier( style.id )) {
+        if ( theMap.style.sourceWithIdentifier( style.id ) ) {
           reject( "Remove the layer with this id first with 'removeLayer': " + style.id );
           return;
         }
 
+        console.log( "Mapbox:addLineLayer(): after checking for existing style" );
+
         const geoDataStr = NSString.stringWithString( geoJSON );
+
+        console.log( "Mapbox:addLineLayer(): after string" );
+
         const geoData = geoDataStr.dataUsingEncoding( NSUTF8StringEncoding );
+
+        console.log( "Mapbox:addLineLayer(): after encoding" );
+
         const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
 
+        console.log( "Mapbox:addLayer(): before alloc" );
+
         const geo = NSData.alloc().initWithBase64EncodedStringOptions( geoDataBase64Enc, null );
+
+        console.log( "Mapbox:addLayer(): before shape with style.id '" + style.id + "'" );
+
         const shape = MGLShape.shapeWithDataEncodingError( geo, NSUTF8StringEncoding );
 
+        console.log( "Mapbox:addLayer(): after shape before second alloc with style id '" + style.id + "' and shape '" + shape + "'");
+        
         const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions( style.id, shape, null );
-        theMap.style.addSource(source);
+
+        console.log( "Mapbox:addLineLayer(): before addSource" );
+
+        theMap.style.addSource( source );
+
+        console.log( "Mapbox:addLineLayer(): after adding source" );
 
         const layer = MGLLineStyleLayer.alloc().initWithIdentifierSource( style.id, source);
 
@@ -1361,6 +1383,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         layer.lineColor = NSExpression.expressionForConstantValue( new Color( color ).ios );
 
+        console.log( "Mapbox:addLineLayer(): after line color" );
+
         // line width
 
         let width = 5;
@@ -1371,6 +1395,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         layer.lineWidth = NSExpression.expressionForConstantValue( width );
 
+        console.log( "Mapbox:addLineLayer(): after line width" );
+
         let opacity = 1;
 
         if ( style.paint && style.paint[ 'line-opacity' ] ) {
@@ -1378,6 +1404,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
         layer.lineOpacity = NSExpression.expressionForConstantValue( opacity );
+
+        console.log( "Mapbox:addLineLayer(): after opacity" );
 
         // line dash array
  
@@ -1391,6 +1419,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
           layer.lineDashPattern = NSExpression.expressionForConstantValue( dashArray );
         }
+
+        console.log( "Mapbox:addLineLayer(): after dash array" );
 
         theMap.style.addLayer(layer);
         resolve();
