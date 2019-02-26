@@ -1553,7 +1553,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         layer.circleColor = NSExpression.expressionForConstantValue( new Color( color ).ios );
 
-        console.log( "Mapbox:addCircleLayer(): after line color" );
+        console.log( "Mapbox:addCircleLayer(): after circle color" );
 
         // stroke color
 
@@ -1563,7 +1563,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           strokeColor = style.paint[ 'circle-stroke-color' ];
         }
 
-        layer.circleStrokeColor = NSExpression.expressionForConstantValue( strokeColor );
+        layer.circleStrokeColor = NSExpression.expressionForConstantValue( new Color( strokeColor ).ios );
 
         // stroke width
 
@@ -1607,7 +1607,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           console.log( "Mapbox:addCircleLayer(): adding '" + style.paint[ 'circle-radius' ].stops.length + "' stops" );
 
           for ( let i = 0; i < style.paint[ 'circle-radius' ].stops.length; i++ ) {
-            stopArgs[i] = style.paint[ 'circle-radius' ].stops[ i ];
+            stopArgs[i] = NSExpression.expressionForConstantValue( style.paint[ 'circle-radius' ].stops[ i ] );
           }
 
           let base = 2;
@@ -1618,7 +1618,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
           console.log( "Mapbox:addCircleLayer(): pushing circleRadius with base:", base );
 
-          layer.circleRadius = NSExpression.expressionWithFormatArgumentArray( "mgl_interpolate:withCurveType:parameters:stops:($zoomLevel, 'exponential', base, %@)", new NSArray( { objects: stopArgs }));
+          layer.circleRadius = NSExpression.expressionWithFormatArgumentArray( "mgl_interpolate:withCurveType:parameters:stops:($zoomLevel, 'exponential'," + base + ", %@)", new NSArray( { objects: stopArgs }));
 
         }
 
