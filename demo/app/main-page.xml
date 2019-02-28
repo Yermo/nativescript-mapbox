@@ -114,15 +114,17 @@
             <Button row="7" col="2" text="+polygon" tap="{{ doAddPolygon }}" class="button" />
             <Button row="7" col="3" text="-polygon" tap="{{ doRemovePolygon }}" class="button" />
 
-            <Button row="8" colSpan="2" text="DL Amsterdam" tap="{{ doDownloadAmsterdam }}" class="button button-offline" />
-            <Button row="8" col="2" colSpan="2"  text="DL current view" tap="{{ doDownloadCurrentViewportAsOfflineRegion }}" class="button button-offline" />
+            <Button row="8" colSpan="2" text="Add Layer from Source" tap="{{ doAddLayerAndSource }}" class="button" />
+            <Button row="8" col="2" colSpan="2" text="Remove Layer &amp; Source" tap="{{ doRemoveLayerAndSource }}" class="button" />
 
-            <Button row="9" colSpan="2" text="Del Amsterdam" tap="{{ doDeleteOfflineRegion }}" class="button button-offline" />
-            <Button row="9" col="2" colSpan="2"  text="List downloaded" tap="{{ doListOfflineRegions }}" class="button button-offline" />
+            <Button row="9" colSpan="2" text="DL Amsterdam" tap="{{ doDownloadAmsterdam }}" class="button button-offline" />
+            <Button row="9" col="2" colSpan="2"  text="DL current view" tap="{{ doDownloadCurrentViewportAsOfflineRegion }}" class="button button-offline" />
 
-            <Button row="10" colSpan="2"  text="location perm?" tap="{{ doCheckHasFineLocationPermission }}" class="button button-permissions" />
-            <Button row="10" col="2" colSpan="2"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" class="button button-permissions" />
+            <Button row="10" colSpan="2" text="Del Amsterdam" tap="{{ doDeleteOfflineRegion }}" class="button button-offline" />
+            <Button row="10" col="2" colSpan="2"  text="List downloaded" tap="{{ doListOfflineRegions }}" class="button button-offline" />
 
+            <Button row="11" colSpan="2"  text="location perm?" tap="{{ doCheckHasFineLocationPermission }}" class="button button-permissions" />
+            <Button row="11" col="2" colSpan="2"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" class="button button-permissions" />
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>

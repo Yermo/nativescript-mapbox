@@ -339,6 +339,59 @@ export class HelloWorldModel extends Observable {
     );
   }
 
+  public doAddLayerAndSource(): void {
+    this.mapbox.addSource(
+        {
+          id: "terrain-source",
+          type: "vector",
+          url: "mapbox://mapbox.mapbox-terrain-v2"
+        }
+    ).then(
+      () => {
+          this.mapbox.addLayer(
+            {
+              id: "terrain-data",
+              source: "terrain-source",
+              sourceLayer: "contour",
+              type: "line",
+              lineJoin: "round",
+              lineCap: "round",
+              lineColor: "#ff69b4",
+              lineWidth: 1,
+            }
+          ).then(
+            () => {
+              console.log("Mapbox doAddLayerAndSource done");
+            },
+            (error: string) => {
+              console.log("mapbox doAddLayerAndSource error: " + error);
+            }
+          );
+        },
+        (error: string) => {
+          console.log("mapbox doAddLayerAndSource error: " + error);
+        }
+    );
+  }
+
+  public doRemoveLayerAndSource(): void {
+    this.mapbox.removeLayer("terrain-data").then(
+      () => {
+          this.mapbox.removeSource("terrain-source").then(
+            () => {
+              console.log("Mapbox doRemoveLayerAndSource done");
+            },
+            (error: string) => {
+              console.log("mapbox doAddSource error: " + error);
+            }
+          );
+        },
+        (error: string) => {
+          console.log("mapbox doAddSource error: " + error);
+        }
+    );
+  }
+
   public doListOfflineRegions(): void {
     this.mapbox.listOfflineRegions({
       accessToken: ACCESS_TOKEN

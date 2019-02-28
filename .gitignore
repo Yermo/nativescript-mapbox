@@ -1,4 +1,5 @@
 .idea
+.history
 .vscode
 .DS_Store
 *.js
