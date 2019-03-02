@@ -1418,6 +1418,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           }
 
           layer.lineDashPattern = NSExpression.expressionForConstantValue( dashArray );
+
         }
 
         console.log( "Mapbox:addLineLayer(): after dash array" );
@@ -1480,6 +1481,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *
   * @param {object} style a Mapbox style describing the circle draw. 
   * @param {object} nativeMap view.
+  * 
+  * @link https://github.com/NativeScript/NativeScript/issues/6971
+  * @link https://stackoverflow.com/questions/54890753/how-to-call-objective-c-nsexpression-format-from-nativescript/54913932#54913932
   */
 
   private addCircleLayer( style, nativeMapViewInstance? ): Promise<any> {
@@ -1500,7 +1504,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject( "Only GeoJSON sources are currently supported." );
         }
 
-        console.log( "Mapbox:addCircleLayer(): before addSource with geojson:", style.source.data );
+        console.log( "Mapbox:addCircleLayer(): before addSource with style:", style );
 
         const geoJSON = `{"type": "FeatureCollection", "features": [ ${JSON.stringify(style.source.data)}]}`;
 
@@ -1602,12 +1606,19 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
           // for the moment we assume we have a set of stops and a base. 
 
-          let stopArgs = [];
+          let stopKeys = [];
+          let stopValues = [];
 
           console.log( "Mapbox:addCircleLayer(): adding '" + style.paint[ 'circle-radius' ].stops.length + "' stops" );
 
+          // this took forever to figure out. There is some NativeScript bug and the type definition for
+          // NSExpression is not clear. We have to create an NSDictionary with two arrays. The first array is the 
+          // values and the second one is the keys. They have to be in ascending order. Once an NSDictionary is created
+          // we have to create an NSArray with that. 
+
           for ( let i = 0; i < style.paint[ 'circle-radius' ].stops.length; i++ ) {
-            stopArgs[i] = NSExpression.expressionForConstantValue( style.paint[ 'circle-radius' ].stops[ i ] );
+            stopKeys[i] = style.paint[ 'circle-radius' ].stops[ i ][0];
+            stopValues[i] = style.paint[ 'circle-radius'].stops[ i ][1];
           }
 
           let base = 2;
@@ -1618,198 +1629,36 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
           console.log( "Mapbox:addCircleLayer(): pushing circleRadius with base:", base );
 
-          layer.circleRadius = NSExpression.expressionWithFormatArgumentArray( "mgl_interpolate:withCurveType:parameters:stops:($zoomLevel, 'exponential'," + base + ", %@)", new NSArray( { objects: stopArgs }));
+          let nsDict = new (NSDictionary as any)( stopValues, stopKeys );
+
+          let nsArray = NSArray.arrayWithArray( [ nsDict ]);
+
+           layer.circleRadius = NSExpression.expressionWithFormatArgumentArray(
+             "mgl_interpolate:withCurveType:parameters:stops:( $zoomLevel, 'exponential', 2, %@)",
+             nsArray );
+
+           console.log( "Mapbox:addCircleLayer(): after setting circle radius expression" );
 
         }
 
         theMap.style.addLayer(layer);
-
-        resolve();
-
-      } catch (ex) {
-        console.log( "Mapbox:addLineLayer() Error : " + ex);
-        reject(ex);
-      }
-
-    }); // end of Promise()
-
-/*
-    return new Promise((resolve, reject) => {
-      try {
-
-        const nativeMapView = nativeMapViewInstance || _mapbox;
-
-        if ( style.type != 'circle' ) {
-          reject( "Non circle style passed to addCircle()" );
-        }
-
-        // we need a source of type geojson.
-
-        if (( typeof style.source == 'undefined' ) || ( style.source.type != 'geojson' )) {
-          reject( "Only GeoJSON sources are currently supported." );
-        }
-
-        console.log( "Mapbox:addCircleLayer(): before addSource with geojson:", style.source.data );
-
-        let geojsonString = JSON.stringify( style.source.data );
-
-        let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
-
-        nativeMapView.mapboxMap.getStyle().addSource(
-            new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
-              style.id,
-              feature
-            )
-        );
-
-        const circle = new com.mapbox.mapboxsdk.style.layers.CircleLayer( style.id, style.id );
-
-        console.log( "Mapbox:addCircleLayer(): after CircleLayer" );
-
-        // This took ages to figure out.
-        //
-        // Interpolate takes as arguments a function the calculates the interpolation, 
-        // a function that returns a set of values,
-        // and a variable number of stop arguments (or possibly others). 
-        //
-        // It was not clear how to specify the variable number of arguments. Listing them out in a comma
-        // separated fashion would result in:
-        //
-        //  Error in mapbox.addCircle: Error: java.lang.Exception: Failed resolving method interpolate on class com.mapbox.mapboxsdk.style.expressions.Expression
-        //
-        // It looks like you just pass the variable arguments as a simple array. It seems to work but I have not been able
-        // to find any documentation to support this. I figured this out over hours of trial and error.
-        //
-        // https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-interpolate
-
-        let circleProperties = [];
-
-        // some defaults if there's no paint property to the style 
-
-        if ( typeof style.paint == 'undefined' ) {
-
-          console.log( "Mapbox:addCircle(): paint is undefined" );
-
-          circleProperties = [
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor( 'red' ),
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(
-              com.mapbox.mapboxsdk.style.expressions.Expression.interpolate(
-                com.mapbox.mapboxsdk.style.expressions.Expression.exponential( 
-                  new java.lang.Float( 2.0 ) ),
-                  com.mapbox.mapboxsdk.style.expressions.Expression.zoom(),
-                  [
-                    com.mapbox.mapboxsdk.style.expressions.Expression.stop( new java.lang.Float( 0 ), new java.lang.Float( 0 ) ),
-                    com.mapbox.mapboxsdk.style.expressions.Expression.stop( new java.lang.Float( 20 ), new java.lang.Float( 6000 ) )
-                  ]
-              )
-            ),
-            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float( 0.2 ))
-          ];
-
-
-        } else {
-
-          // color
-
-          if ( style.paint[ 'circle-color' ] ) {
-            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor( style.paint[ 'circle-color' ] ) ); 
-          }
-
-          // opacity
-
-          if ( style.paint[ 'circle-opacity' ] ) {
-            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleOpacity( new java.lang.Float( style.paint[ 'circle-opacity' ] ) ) ); 
-          }
-
-          console.log( "Mapbox:addCircle(): after opactiy" );
-
-          // stroke width
- 
-          if ( style.paint[ 'circle-stroke-width' ] ) {
-            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeWidth( new java.lang.Float( style.paint[ 'circle-stroke-width' ] ) ) ); 
-          }
-
-          // stroke color
-
-          if ( style.paint[ 'circle-stroke-color' ] ) {
-            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleStrokeColor( style.paint[ 'circle-stroke-color' ] ) ); 
-          }
-
-          if ( ! style.paint[ 'circle-radius' ] ) {
-
-            // some default so something will show up on the map. 
-
-            circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius( new java.lang.Float( 30 ) )); 
-
-          } else {
-
-            // we have two options for a radius. We might have a fixed float or an expression 
-
-            if ( typeof style.paint[ 'circle-radius' ] == 'number' ) {
-              circleProperties.push( com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius( new java.lang.Float( style.paint.radius ) )); 
-            } else {
-
-              if ( ! style.paint[ 'circle-radius' ].stops ) {
-                reject( "No radius or stops provided to addCircleLayer." );
-              }
-
-              // for the moment we assume we have a set of stops and a base. 
-
-              let stopArgs = [];
-
-              console.log( "Mapbox:addCircleLayer(): adding '" + style.paint[ 'circle-radius' ].stops.length + "' stops" );
-
-              for ( let i = 0; i < style.paint[ 'circle-radius' ].stops.length; i++ ) {
-                let stop = style.paint[ 'circle-radius' ].stops[ i ];
-                stopArgs.push( com.mapbox.mapboxsdk.style.expressions.Expression.stop( new java.lang.Float( stop[0] ), new java.lang.Float( stop[ 1 ] )));
-              }
-
-              let base = 2;
-
-              if ( style.paint[ 'circle-radius' ].stops.base ) {
-                base = style.paint[ 'circle-radius' ].stops.base;
-              }
-
-              console.log( "Mapbox:addCircleLayer(): pushing circleRadius with base:", base );
-
-              circleProperties.push( 
-                com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(
-                  com.mapbox.mapboxsdk.style.expressions.Expression.interpolate(
-                    com.mapbox.mapboxsdk.style.expressions.Expression.exponential( 
-                      new java.lang.Float( base )
-                    ),
-                    com.mapbox.mapboxsdk.style.expressions.Expression.zoom(),
-                    stopArgs
-                  )
-                )
-              );
-            } // end of else we do not have a numeric circle radius
-          } // end of else we have a circle-radius
-        }
-
-        circle.setProperties( circleProperties );
-
-        nativeMapView.mapboxMap.getStyle().addLayer( circle );
-
-        console.log( "Mapbox:addCircleLayer(): added circle layer" );
 
         this.circles.push({
           type: 'circle',
           id: style.id,
           center: style.source.data.geometry.coordinates,
           radius: style[ 'circle-radius' ],
-          layer: circle
+          layer: layer
         });
 
-        console.log( "Mapbox:addCircleLayer(): after addLayer" );
-
         resolve();
+
       } catch (ex) {
-        console.log("Error in mapbox.addCircleLayer: " + ex);
+        console.log( "Mapbox:addCircleLayer() Error : " + ex);
         reject(ex);
       }
-    });
-*/
+
+    }); // end of Promise()
 
   } // end of addCircleLayer()
 
