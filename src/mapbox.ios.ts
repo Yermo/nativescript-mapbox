@@ -575,16 +575,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // --------------------------------------------------------------
 
-  /**
-  * add a point to a linelayer.
-  */
-
-  addLinePoint( id : string, point, nativeMapView? ): Promise<any> {
-    return Promise.resolve();
-  }
-
-  // --------------------------------------------------------------
-
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
     return new Promise((resolve, reject) => {
       try {
@@ -1424,6 +1414,19 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         console.log( "Mapbox:addLineLayer(): after dash array" );
 
         theMap.style.addLayer(layer);
+
+        // FIXME: for the moment, because I have not been able to figure out how to pull the geometry
+        // from the line, we keep a reference to the feature so we can draw the clickable line when
+        // a click handler is added.
+
+        this.lines.push({
+          type: 'line',
+          id: style.id,
+          layer: layer,
+          coordinates: style.source.data.coordinates,
+          source: source
+        });
+
         resolve();
 
       } catch (ex) {
@@ -1434,6 +1437,69 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     }); // end of Promise()
 
   } // end of addLineLayer
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * Add a point to a line
+  *
+  * This method appends a point to a line and is useful for drawing a users track.
+  *
+  * The process for adding a point to a line is different in the iOS sdk than in 
+  * the Android java sdk.
+  *
+  * @param {id} id - id of line to add a point to.
+  * @param {array} lnglat - [lng,lat] to append to the line.
+  *
+  * @link https://github.com/mapbox/mapbox-gl-native/issues/13983
+  * @link https://docs.mapbox.com/ios/maps/examples/runtime-animate-line/
+  *
+  * @todo this does not update the invisible clickable overlay.
+  */
+
+  public addLinePoint( id : string, lnglat, nativeMapView? ) : Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        // The original thought was to query the source to get the points that make up the line
+        // and then add a point to it. Unfortunately, it seems that the points in the source
+        // are modified and do not match the original set of points that make up the map. I kept
+        // adding a LineString and after querying it it would be returned as a MultiLineString
+        // with more points. 
+        //
+        // As a result of this, we keep the original feature in the lines list and use that
+        // as the data source for the line. As each point is added, we append it to the 
+        // feature and reset the json source for the displayed line. 
+
+        let lineEntry = this.lines.find( ( entry ) => { return entry.id == id; });
+
+        if ( ! lineEntry ) {
+
+          reject( "No such line layer '" + id + "'" );
+          return;
+        }
+
+        lineEntry.coordinates.push( lnglat );
+
+        console.log( "Mapbox:addLinePoint(): coordinates are:", lineEntry.coordinates );
+
+        let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( lineEntry.coordinates, lineEntry.coordinates.length );
+
+        // now update the source
+
+        lineEntry.source.shape = polyline;
+
+        console.log( "Mapbox:addLinePoint(): after updating lineEntry source");
+
+        resolve();
+      } catch (ex) {
+        console.log( "Mapbox:addLinePoint() Error : " + ex);
+        reject(ex);
+      }
+    });
+
+  } // end of addLinePoint()
 
   // -------------------------------------------------------------------------------------
 
