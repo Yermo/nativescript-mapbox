@@ -2232,6 +2232,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
 
+        console.log( "Mapbox:addLineLayer(): adding feature:", feature );
+
         // com.mapbox.mapboxsdk.maps.Style
 
         nativeMapView.mapboxMap.getStyle().addSource(
@@ -2402,30 +2404,76 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * This method appends a point to a line and is useful for drawing a users track.
   *
   * @param {id} id - id of line to add a point to.
-  * @param {object} point - lat/lng to append to the line.
+  * @param {array} lnglat - [lng,lat] to append to the line.
+  *
+  * @link https://github.com/mapbox/mapbox-gl-native/issues/13983
+  * @link https://docs.mapbox.com/android/api/mapbox-java/libjava-geojson/3.0.1/com/mapbox/geojson/Feature.html#Feature--
+  * @link https://docs.oracle.com/javase/8/docs/api/java/util/List.html
   *
   * @todo this does not update the invisible clickable overlay.
   */
 
-  public addLinePoint( id : string, point, nativeMapView? ) : Promise<any> {
+  public addLinePoint( id : string, lnglat, nativeMapView? ) : Promise<any> {
 
-    let lineSource = nativeMapView.mapboxMap.getStyle().getSource( id + '_source' );
+    return new Promise((resolve, reject) => {
+      try {
 
-    console.log( "Mapbox:addLinePoint(): got source:", lineSource );
+        // The original thought was to query the source to get the points that make up the line
+        // and then add a point to it. Unfortunately, it seems that the points in the source
+        // are modified and do not match the original set of points that make up the map. I kept
+        // adding a LineString and after querying it it would be returned as a MultiLineString
+        // with more points. 
+        //
+        // As a result of this, we keep the original feature in the lines list and use that
+        // as the data source for the line. As each point is added, we append it to the 
+        // feature and reset the json source for the displayed line. 
 
-    // There should be a single feature
+        let lineEntry = this.lines.find( ( entry ) => { return entry.id == id; });
 
-//    let features = lineSource.querySourceFeatures( com.mapbox.mapboxsdk.style.expressions.Expression.literal( true ) ); 
+        if ( ! lineEntry ) {
 
-      let features = lineSource.querySourceFeatures( com.mapbox.mapboxsdk.style.expressions.Expression.raw( '["literal", "true"]' ) ); 
+          reject( "No such line layer '" + id + "'" );
+          return;
+        }
 
-//    let features = lineSource.querySourceFeatures( com.mapbox.mapboxsdk.style.expressions.Expression.eq( com.mapbox.mapboxsdk.style.expressions.Expression.get( "type" ), com.mapbox.mapboxsdk.style.expressions.Expression.literal( "line" )));; 
+        let geometry = lineEntry.feature.geometry();
 
-//    console.log( "Mapbox:addLinePoint(): got feature:", features.toJson() );
-//    console.log( "Mapbox:addLinePoint(): feature type:", features.type() );
+        let coordinates = geometry.coordinates();
 
-    return Promise.resolve();
-  }
+        console.log( "Mapbox:addLinePoint(): coordinates are:", coordinates );
+        console.log( "Mapbox:addLinePoint(): adding point:", lnglat );
+
+        // see https://docs.oracle.com/javase/8/docs/api/java/util/List.html
+
+        let newPoint = com.mapbox.geojson.Point.fromLngLat( lnglat[ 0 ], lnglat[ 1 ] );
+
+        console.log( "Mapbox:addLinePoint(): newPoint is:", newPoint );
+
+        geometry.coordinates().add( newPoint );
+
+        console.log( "Mapbox:addLinePoint(): updated geometry is:", geometry.toJson() )
+
+        // sadly it appears we have to recreate the feature. The old feature should get 
+        // culled by garbage collection.
+
+        lineEntry.feature = com.mapbox.geojson.Feature.fromGeometry( geometry );
+
+        // now reset the source
+
+        let lineSource = nativeMapView.mapboxMap.getStyle().getSource( id + '_source' );
+
+        lineSource.setGeoJson( lineEntry.feature );
+
+        console.log( "Mapbox:addLinePoint(): after updating lineSource feature");
+
+        resolve();
+      } catch (ex) {
+        console.log( "Mapbox:addLinePoint() Error : " + ex);
+        reject(ex);
+      }
+    });
+
+  } // end of addLinePoint()
 
   // -------------------------------------------------------------------------------------
 
