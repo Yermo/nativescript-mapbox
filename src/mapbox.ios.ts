@@ -142,6 +142,8 @@ export class MapboxView extends MapboxViewBase {
 
   /**
   * initialize the map
+  *
+  * @see MGLMapViewDelegateImpl
   */
 
   initMap(): void {
@@ -151,7 +153,11 @@ export class MapboxView extends MapboxViewBase {
       let drawMap = () => {
         MGLAccountManager.accessToken = settings.accessToken;
         this.nativeMapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), _getMapStyle(settings.style));
-        this.nativeMapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback(() => {
+
+        this.nativeMapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback( () => {
+
+          console.log( "MapboxView:initMap(): MLMapViewDeleteImpl onMapReady callback" );
+
           this.notify({
             eventName: MapboxViewBase.mapReadyEvent,
             object: this,
@@ -1862,6 +1868,14 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
   });
 };
 
+// -------------------------------------------------------------------------------------------------
+
+/**
+* "Delegate" for catching mapview events
+*
+* @link https://docs.nativescript.org/core-concepts/ios-runtime/how-to/ObjC-Subclassing#typescript-delegate-example
+*/
+
 class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   public static ObjCProtocols = [MGLMapViewDelegate];
 
@@ -1871,10 +1885,24 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
 
   private mapLoadedCallback: (mapView: MGLMapView) => void;
 
-  public initWithCallback(mapLoadedCallback: (mapView: MGLMapView) => void): MGLMapViewDelegateImpl {
+  // -----------------------
+
+  /**
+  * initialize with the mapReady callback
+  */
+
+  public initWithCallback( mapLoadedCallback: (mapView: MGLMapView) => void): MGLMapViewDelegateImpl {
     this.mapLoadedCallback = mapLoadedCallback;
     return this;
   }
+
+  // -----------------------
+
+  /**
+  * map ready callback
+  *
+  * QUESTION: How/where is this invoked?
+  */
 
   mapViewDidFinishLoadingMap(mapView: MGLMapView): void {
     if (this.mapLoadedCallback !== undefined) {
@@ -1884,19 +1912,38 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     }
   }
 
+  // ------------------------
+
+  mapViewDidFinishLoadingStyle( mapView: MGLMapView ) : void {
+
+    console.log( "MapboxView:mapViewDidFinishLoadingStyle(): callback called." );
+
+  }
+
+  // ------------------------
+
   mapViewAnnotationCanShowCallout(mapView: MGLMapView, annotation: MGLAnnotation): boolean {
     return true;
   }
+
+  // -------------------------
 
   mapViewDidFailLoadingMapWithError(mapView: MGLMapView, error: NSError): void {
     // console.log("mapViewDidFailLoadingMapWithError: " + error);
   }
 
+  // ---------------------------------------
+
   mapViewDidChangeUserTrackingModeAnimated(mapView: MGLMapView, mode: MGLUserTrackingMode, animated: boolean): void {
     // console.log("mapViewDidChangeUserTrackingModeAnimated: " + mode);
   }
 
-  // fired when the marker icon is about to be rendered - return null for the default icon
+  // ----------------------------------------
+
+  /**
+  * fired when the marker icon is about to be rendered - return null for the default icon
+  */
+
   mapViewImageForAnnotation(mapView: MGLMapView, annotation: MGLAnnotation): MGLAnnotationImage {
     let cachedMarker = this.getTappedMarkerDetails(annotation);
     if (cachedMarker) {
@@ -1942,11 +1989,21 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     return null;
   }
 
-  // fired when one of the callout's accessoryviews is tapped (not currently used)
+  // ---------------------------------------------
+
+  /**
+  * fired when one of the callout's accessoryviews is tapped (not currently used)
+  */
+
   mapViewAnnotationCalloutAccessoryControlTapped(mapView: MGLMapView, annotation: MGLAnnotation, control: UIControl): void {
   }
 
-  // fired when a marker is tapped
+  // --------------------------------------------
+
+  /**
+  * fired when a marker is tapped
+  */
+
   mapViewDidSelectAnnotation(mapView: MGLMapView, annotation: MGLAnnotation): void {
     let cachedMarker = this.getTappedMarkerDetails(annotation);
     if (cachedMarker && cachedMarker.onTap) {
@@ -1954,13 +2011,20 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     }
   }
 
-  // fired when a callout is tapped
+  // ----------------------------------------------------------------------------------
+
+  /**
+  * fired when a callout is tapped
+  */
+
   mapViewTapOnCalloutForAnnotation(mapView: MGLMapView, annotation: MGLAnnotation): void {
     let cachedMarker = this.getTappedMarkerDetails(annotation);
     if (cachedMarker && cachedMarker.onCalloutTap) {
       cachedMarker.onCalloutTap(cachedMarker);
     }
   }
+
+  // -----------------------------------------------------------------------------------
 
   private getTappedMarkerDetails(tapped): any {
     for (let m in _markers) {
@@ -1979,6 +2043,8 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     }
   }
 }
+
+// --------------------------------------------------------------------------------------
 
 class MapTapHandlerImpl extends NSObject {
   private _owner: WeakRef<Mapbox>;
