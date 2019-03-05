@@ -1977,7 +1977,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   *
   * @see Mapbox:setMapStyle()
   *
-  * @link https://developer.apple.com/documentation/mapkit/mkmapviewdelegate/1452291-mapviewdidfinishloadingmap
+  * @link https://mapbox.github.io/mapbox-gl-native/macos/0.3.0/Protocols/MGLMapViewDelegate.html#/c:objc(pl)MGLMapViewDelegate(im)mapView:didFinishLoadingStyle:
   */
 
   mapViewDidFinishLoadingStyle( mapView: MGLMapView ) : void {
