@@ -165,6 +165,13 @@ export interface SetViewportOptions {
    * Default true.
    */
   animated?: boolean;
+
+  /**
+  * padding
+  */
+
+  padding?: number;
+
 }
 
 export interface DeleteOfflineRegionOptions {
