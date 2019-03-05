@@ -822,13 +822,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         };
 
         let animated = options.animated === undefined || options.animated;
-
-        let padding: UIEdgeInsets = {
+        
+        // support defined padding
+        let padding: UIEdgeInsets = Mapbox.merge(options.padding === undefined ? {} : options.padding, {
           top: 25,
           left: 25,
           bottom: 25,
           right: 25
-        };
+        });
 
         theMap.setVisibleCoordinateBoundsEdgePaddingAnimated(bounds, padding, animated);
         resolve();
