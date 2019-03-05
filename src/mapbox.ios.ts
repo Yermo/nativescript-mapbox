@@ -180,12 +180,15 @@ export class MapboxView extends MapboxViewBase {
     }
   }
 
+  // ----------------------------------
+
   public onLayout(left: number, top: number, right: number, bottom: number): void {
     super.onLayout(left, top, right, bottom);
     if (this.nativeMapView) {
       this.nativeMapView.layer.frame = this.ios.layer.bounds;
     }
   }
+
 }
 
 /*************** XML definition END ****************/
@@ -401,12 +404,31 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------
+
+  /**
+  * explicitly set a map style
+  */
+
   setMapStyle(style: string | MapStyle, nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
         const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        // the style takes some time to load so we have to set a callback
+        // to wait for the style to finish loading
+
+        let delegate : MGLMapViewDelegateImpl = <MGLMapViewDelegateImpl>theMap.delegate;
+
+        delegate.setStyleLoadedCallback( ( mapView ) => {
+
+          console.log( "Mapbox:setMapStyle(): style loaded callback returned." );
+
+          resolve();
+        });
+
         theMap.styleURL = _getMapStyle(style);
-        resolve();
+
       } catch (ex) {
         console.log("Error in mapbox.setMapStyle: " + ex);
         reject(ex);
@@ -1884,6 +1906,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   }
 
   private mapLoadedCallback: (mapView: MGLMapView) => void;
+  private styleLoadedCallback: (mapView: MGLMapView) => void;
 
   // -----------------------
 
@@ -1899,24 +1922,76 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   // -----------------------
 
   /**
-  * map ready callback
+  * set style loaded callback.
   *
-  * QUESTION: How/where is this invoked?
+  * set an optional callback to be invoked when a style set with
+  * setMapStyle() is finished loading
+  *
+  * Note, from testing, it seems this callback can be invoked multiple times 
+  * for a single style setting. It is up to the caller to handle this.
+  *
+  * @param {function} callback function with loaded style as parameter.
+  */
+
+  setStyleLoadedCallback( callback ) {
+
+    this.styleLoadedCallback = callback;
+
+  }
+
+  // -----------------------
+
+  /**
+  * map ready callback
   */
 
   mapViewDidFinishLoadingMap(mapView: MGLMapView): void {
+
+    console.log( "MGLMapViewDelegateImpl:mapViewDidFinishLoadingMap(): top" );
+
     if (this.mapLoadedCallback !== undefined) {
-      this.mapLoadedCallback(mapView);
+
+      this.mapLoadedCallback( mapView );
+
       // this should be fired only once, but it's also fired when the style changes, so just remove the callback
+
       this.mapLoadedCallback = undefined;
+
     }
   }
 
   // ------------------------
 
+  mapViewDidFinishRenderingMapFullyRendered( mapView: MGLMapView, fullyRendered: boolean ) : void {
+
+    console.log( "MGLMapViewDelegateImpl:mapViewDidFinishRenderingMapFullyRendered(): rendered is:", fullyRendered );
+
+  }
+
+  // ------------------------
+
+  /**
+  * Callback when the style has been loaded.
+  *
+  * Based on my testing, it looks like this callback is invoked multiple times. 
+  *
+  * @see Mapbox:setMapStyle()
+  *
+  * @link https://developer.apple.com/documentation/mapkit/mkmapviewdelegate/1452291-mapviewdidfinishloadingmap
+  */
+
   mapViewDidFinishLoadingStyle( mapView: MGLMapView ) : void {
 
-    console.log( "MapboxView:mapViewDidFinishLoadingStyle(): callback called." );
+    console.log( "MGLMapViewDelegateImpl:mapViewDidFinishLoadingStyle(): callback called." );
+
+    if (this.styleLoadedCallback !== undefined) {
+
+      this.styleLoadedCallback( mapView );
+
+      // to avoid multiple calls. This is only invoked from setMapStyle().
+
+      this.styleLoadedCallback = undefined;
+    }
 
   }
 
