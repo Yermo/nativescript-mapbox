@@ -1,6 +1,6 @@
-import { Property, booleanConverter } from "tns-core-modules/ui/core/view";
 import { Color } from "tns-core-modules/color/color";
 import { ContentView } from "tns-core-modules/ui/content-view";
+import { booleanConverter, Property } from "tns-core-modules/ui/core/view";
 
 export enum MapStyle {
   DARK = <any>"dark",
@@ -167,11 +167,9 @@ export interface SetViewportOptions {
   animated?: boolean;
 
   /**
-  * padding
-  */
-
+   * Optional padding.
+   */
   padding?: number;
-
 }
 
 export interface DeleteOfflineRegionOptions {
