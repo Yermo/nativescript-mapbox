@@ -2,6 +2,7 @@ import * as fs from "tns-core-modules/file-system";
 import * as imgSrc from "tns-core-modules/image-source";
 import * as utils from "tns-core-modules/utils/utils";
 import * as http from "tns-core-modules/http";
+import { Color } from "tns-core-modules/color";
 
 import {
   AddExtrusionOptions,
@@ -33,7 +34,6 @@ import {
   UserTrackingMode,
   Viewport
 } from "./mapbox.common";
-import { Color } from "tns-core-modules/color";
 
 // Export the enums for devs not using TS
 export { MapStyle };
@@ -275,18 +275,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       try {
         const theMap: MGLMapView = nativeMap || _mapbox.mapView;
 
-        // the style takes some time to load so we have to set a callback
-        // to wait for the style to finish loading
-        //
-        // FIXME/QUESTION: theMap.delegate is listed as type MGLMapViewDelegate but is
-        // actually a MGLMapViewDelegateImpl. Is this correct? 
-
-        let delegate : MGLMapViewDelegateImpl = <MGLMapViewDelegateImpl>theMap.delegate;
-
-        delegate.setStyleLoadedCallback( ( mapView ) => {
-
-          console.log( "Mapbox:setMapStyle(): style loaded callback returned." );
-
+        // the style may take some time to load, so we have to set a callback to wait for the style to finish loading
+        (<MGLMapViewDelegateImpl>theMap.delegate).setStyleLoadedCallback(() => {
           resolve();
         });
 
@@ -846,7 +836,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         };
 
         let animated = options.animated === undefined || options.animated;
-        
+
         // support defined padding
         let padding: UIEdgeInsets = Mapbox.merge(options.padding === undefined ? {} : options.padding, {
           top: 25,
@@ -1359,14 +1349,12 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   }
 
   private mapLoadedCallback: (mapView: MGLMapView) => void;
-  private styleLoadedCallback: (mapView: MGLMapView) => void;
+  private styleLoadedCallback: () => void;
 
   public initWithCallback(mapLoadedCallback: (mapView: MGLMapView) => void): MGLMapViewDelegateImpl {
     this.mapLoadedCallback = mapLoadedCallback;
     return this;
   }
-
-  // -----------------------
 
   /**
   * set style loaded callback.
@@ -1378,14 +1366,26 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   *
   * @see Mapbox:setMapStyle()
   */
-
-  setStyleLoadedCallback( callback ) {
-
+  setStyleLoadedCallback(callback) {
     this.styleLoadedCallback = callback;
-
   }
 
-  // -------------------------
+  /**
+  * Callback when the style has been loaded.
+  *
+  * Based on testing, it looks like this callback is invoked multiple times. This is only called from setMapStyle().
+  *
+  * @see Mapbox:setMapStyle()
+  *
+  * @link https://mapbox.github.io/mapbox-gl-native/macos/0.3.0/Protocols/MGLMapViewDelegate.html#/c:objc(pl)MGLMapViewDelegate(im)mapView:didFinishLoadingStyle:
+  */
+  mapViewDidFinishLoadingStyle(mapView: MGLMapView) : void {
+    if (this.styleLoadedCallback !== undefined) {
+      this.styleLoadedCallback();
+      // to avoid multiple calls. This is only invoked from setMapStyle().
+      this.styleLoadedCallback = undefined;
+    }
+  }
 
   mapViewDidFinishLoadingMap(mapView: MGLMapView): void {
     if (this.mapLoadedCallback !== undefined) {
@@ -1394,36 +1394,6 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
       this.mapLoadedCallback = undefined;
     }
   }
-
-  // ------------------------
-
-  /**
-  * Callback when the style has been loaded.
-  *
-  * Based on my testing, it looks like this callback is invoked multiple times. This is only called from 
-  * setMapStyle().
-  *
-  * @see Mapbox:setMapStyle()
-  *
-  * @link https://mapbox.github.io/mapbox-gl-native/macos/0.3.0/Protocols/MGLMapViewDelegate.html#/c:objc(pl)MGLMapViewDelegate(im)mapView:didFinishLoadingStyle:
-  */
-
-  mapViewDidFinishLoadingStyle( mapView: MGLMapView ) : void {
-
-    console.log( "MGLMapViewDelegateImpl:mapViewDidFinishLoadingStyle(): callback called." );
-
-    if (this.styleLoadedCallback !== undefined) {
-
-      this.styleLoadedCallback( mapView );
-
-      // to avoid multiple calls. This is only invoked from setMapStyle().
-
-      this.styleLoadedCallback = undefined;
-    }
-
-  }
-
-  // ------------------------------------------------
 
   mapViewAnnotationCanShowCallout(mapView: MGLMapView, annotation: MGLAnnotation): boolean {
     return true;
