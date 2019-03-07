@@ -264,18 +264,42 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ----------------------------------------
+
+  /**
+  * explicitly set a map style
+  */
+
   setMapStyle(style: string | MapStyle, nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
         const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        // the style takes some time to load so we have to set a callback
+        // to wait for the style to finish loading
+        //
+        // FIXME/QUESTION: theMap.delegate is listed as type MGLMapViewDelegate but is
+        // actually a MGLMapViewDelegateImpl. Is this correct? 
+
+        let delegate : MGLMapViewDelegateImpl = <MGLMapViewDelegateImpl>theMap.delegate;
+
+        delegate.setStyleLoadedCallback( ( mapView ) => {
+
+          console.log( "Mapbox:setMapStyle(): style loaded callback returned." );
+
+          resolve();
+        });
+
         theMap.styleURL = _getMapStyle(style);
-        resolve();
+
       } catch (ex) {
         console.log("Error in mapbox.setMapStyle: " + ex);
         reject(ex);
       }
     });
   }
+
+  // --------------------------------------------
 
   addMarkers(markers: MapboxMarker[], nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -1321,6 +1345,12 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
   });
 };
 
+/**
+* "Delegate" for catching mapview events
+*
+* @link https://docs.nativescript.org/core-concepts/ios-runtime/how-to/ObjC-Subclassing#typescript-delegate-example
+*/
+
 class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   public static ObjCProtocols = [MGLMapViewDelegate];
 
@@ -1329,11 +1359,33 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   }
 
   private mapLoadedCallback: (mapView: MGLMapView) => void;
+  private styleLoadedCallback: (mapView: MGLMapView) => void;
 
   public initWithCallback(mapLoadedCallback: (mapView: MGLMapView) => void): MGLMapViewDelegateImpl {
     this.mapLoadedCallback = mapLoadedCallback;
     return this;
   }
+
+  // -----------------------
+
+  /**
+  * set style loaded callback.
+  *
+  * set an optional callback to be invoked when a style set with
+  * setMapStyle() is finished loading
+  *
+  * @param {function} callback function with loaded style as parameter.
+  *
+  * @see Mapbox:setMapStyle()
+  */
+
+  setStyleLoadedCallback( callback ) {
+
+    this.styleLoadedCallback = callback;
+
+  }
+
+  // -------------------------
 
   mapViewDidFinishLoadingMap(mapView: MGLMapView): void {
     if (this.mapLoadedCallback !== undefined) {
@@ -1342,6 +1394,36 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
       this.mapLoadedCallback = undefined;
     }
   }
+
+  // ------------------------
+
+  /**
+  * Callback when the style has been loaded.
+  *
+  * Based on my testing, it looks like this callback is invoked multiple times. This is only called from 
+  * setMapStyle().
+  *
+  * @see Mapbox:setMapStyle()
+  *
+  * @link https://mapbox.github.io/mapbox-gl-native/macos/0.3.0/Protocols/MGLMapViewDelegate.html#/c:objc(pl)MGLMapViewDelegate(im)mapView:didFinishLoadingStyle:
+  */
+
+  mapViewDidFinishLoadingStyle( mapView: MGLMapView ) : void {
+
+    console.log( "MGLMapViewDelegateImpl:mapViewDidFinishLoadingStyle(): callback called." );
+
+    if (this.styleLoadedCallback !== undefined) {
+
+      this.styleLoadedCallback( mapView );
+
+      // to avoid multiple calls. This is only invoked from setMapStyle().
+
+      this.styleLoadedCallback = undefined;
+    }
+
+  }
+
+  // ------------------------------------------------
 
   mapViewAnnotationCanShowCallout(mapView: MGLMapView, annotation: MGLAnnotation): boolean {
     return true;
