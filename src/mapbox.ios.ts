@@ -1348,42 +1348,37 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         console.log( "Mapbox:addLineLayer(): before addSource with geojson:", style.source.data );
 
-        const geoJSON = `{"type": "FeatureCollection", "features": [ ${JSON.stringify(style.source.data)}]}`;
+        // after hours and hours of trial and error, I finally stumbled upon how to set things
+        // up so that MGLPolylineFeature.polylineWithCoordinatesCount works.
+        //
+        // Allocating an NSArray and passing it in would cause the app to crash.
+        // Creating a javascript array of CLLocationCoodinate2D entries would cause random
+        // lines to be drawn on the map.
+        //
+        // However, allocating a raw C buffer and accessing it through a reference cast to CLLocationCoordinate2D
+        // works (to my shock and horror).
 
-        console.log( "Mapbox:addLineLayer(): theMap.style is:", theMap.style );
+        let coordinates = style.source.data.geometry.coordinates;
 
-        // this would otherwise crash the app
+        let buffer = malloc( coordinates.length * 2 * interop.sizeof(interop.types.double) );
+        let clCoordsArray = new interop.Reference( CLLocationCoordinate2D, buffer );
 
-        if ( theMap.style.sourceWithIdentifier( style.id ) ) {
-          reject( "Remove the layer with this id first with 'removeLayer': " + style.id );
-          return;
+        // We need to convert our coordinate array into an array of CLLocationCoodinate2D elements
+        // which are in lat/lng order and not lng/lat
+
+        for ( let i = 0; i < coordinates.length; i++ ) {
+
+          let newCoord : CLLocationCoordinate2D = CLLocationCoordinate2DMake( coordinates[i][1], coordinates[i][0] );
+
+          clCoordsArray[ i ] = newCoord;
+
         }
 
-        console.log( "Mapbox:addLineLayer(): after checking for existing style" );
+        console.log( "Mapbox:addLineLayer(): after CLLocationCoordinate2D array before creating polyline source from:", clCoordsArray );
 
-        const geoDataStr = NSString.stringWithString( geoJSON );
+        let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( new interop.Reference( CLLocationCoordinate2D, clCoordsArray ), coordinates.length );
 
-        console.log( "Mapbox:addLineLayer(): after string" );
-
-        const geoData = geoDataStr.dataUsingEncoding( NSUTF8StringEncoding );
-
-        console.log( "Mapbox:addLineLayer(): after encoding" );
-
-        const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
-
-        console.log( "Mapbox:addLayer(): before alloc" );
-
-        const geo = NSData.alloc().initWithBase64EncodedStringOptions( geoDataBase64Enc, null );
-
-        console.log( "Mapbox:addLayer(): before shape with style.id '" + style.id + "'" );
-
-        const shape = MGLShape.shapeWithDataEncodingError( geo, NSUTF8StringEncoding );
-
-        console.log( "Mapbox:addLayer(): after shape before second alloc with style id '" + style.id + "' and shape '" + shape + "'");
-        
-        const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions( style.id, shape, null );
-
-        console.log( "Mapbox:addLineLayer(): before addSource" );
+        const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions( style.id, polyline, null );
 
         theMap.style.addSource( source );
 
@@ -1439,21 +1434,20 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         }
 
-        console.log( "Mapbox:addLineLayer(): after dash array" );
-
         theMap.style.addLayer(layer);
 
-        // FIXME: for the moment, because I have not been able to figure out how to pull the geometry
-        // from the line, we keep a reference to the feature so we can draw the clickable line when
-        // a click handler is added.
+        console.log( "Mapbox:addLineLayer(): after adding layer." );
 
         this.lines.push({
           type: 'line',
           id: style.id,
           layer: layer,
-          coordinates: style.source.data.coordinates,
+          clCoordsArray: clCoordsArray,
+          numCoords: coordinates.length,
           source: source
         });
+
+        console.log( "Mapbox:addLineLayer(): pushed line:", this.lines[ this.lines.length - 1 ] );
 
         resolve();
 
@@ -1508,11 +1502,37 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        lineEntry.coordinates.push( lnglat );
+        console.log( "Mapbox:addLinePoint(): got lineEntry:", lineEntry );
 
-        console.log( "Mapbox:addLinePoint(): coordinates are:", lineEntry.coordinates );
+        // we carry a pointer to the raw buffer of CLLocationCoordinate2D structures. 
+        // since we are managing the buffer ourselves we need to allocate space for
+        // the new location entry.
+        //  
+        // I originally tried realloc here but as soon as I try to add an entry an exception is thrown 
+        // indicating it's a read only property; hence the alloc, copy, and free here.
 
-        let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( lineEntry.coordinates, lineEntry.coordinates.length );
+        let bytes = lineEntry.numCoords * 2 * interop.sizeof(interop.types.double);
+
+        let buffer = malloc( bytes + ( 2 * interop.sizeof(interop.types.double) ) );
+        let newCoordsArray = new interop.Reference( CLLocationCoordinate2D, buffer );
+
+        for ( let i = 0; i < lineEntry.numCoords; i++ ) {
+          newCoordsArray[ i ] = lineEntry.clCoordsArray[ i ];
+        }
+
+        lineEntry.numCoords++;
+
+        newCoordsArray[ lineEntry.numCoords - 1 ] = CLLocationCoordinate2DMake( lnglat[1], lnglat[0] );
+
+        free( lineEntry.clCoordsArray );
+
+        console.log( "Mapbox:addLinePoint(): after free()" );
+
+        let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( new interop.Reference( CLLocationCoordinate2D, newCoordsArray ), lineEntry.numCoords );
+
+        lineEntry.clCoordsArray = newCoordsArray;
+
+        console.log( "Mapbox:addLinePoint(): created updated polyline:", polyline );
 
         // now update the source
 
@@ -1673,7 +1693,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         layer.circleStrokeWidth = NSExpression.expressionForConstantValue( width );
 
-        console.log( "Mapbox:addLineLayer(): after stroke width" );
+        console.log( "Mapbox:addCircleLayer(): after stroke width" );
 
         let opacity = 1;
 
