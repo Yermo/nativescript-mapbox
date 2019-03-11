@@ -344,8 +344,16 @@ const _fineLocationPermissionGranted = () => {
   return hasPermission;
 };
 
+// ------------------------------------------------------------
+
+/**
+* locationLayer
+*
+* @todo for reasons unclear to me, this suddenly started throwing an OnMapChangeListener exception. I'm not sure why it worked before.
+*/
+
 const _showLocation = (theMapView, mapboxMap) => {
-  _locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap);
+  // _locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap);
 };
 
 const _getClickedMarkerDetails = (clicked) => {
@@ -1083,7 +1091,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           viewGroup.removeView(theMap.mapView);
         }
         if (_locationLayerPlugin) {
-          _locationLayerPlugin.onStop();
+          // _locationLayerPlugin.onStop();
         }
         theMap.mapView = null;
         theMap.mapboxMap = null;
