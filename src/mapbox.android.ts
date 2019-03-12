@@ -2234,7 +2234,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject( "Only GeoJSON sources are currently supported." );
         }
 
-        console.log( "Mapbox:addLineLayer(): before addSource with geojson:", style.source.data );
+        console.log( "Mapbox:addLineLayer(): before addSource with geojson" );
 
         let geojsonString = JSON.stringify( style.source.data );
 

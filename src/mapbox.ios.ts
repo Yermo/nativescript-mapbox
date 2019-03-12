@@ -1346,7 +1346,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject( "Only GeoJSON sources are currently supported." );
         }
 
-        console.log( "Mapbox:addLineLayer(): before addSource with geojson:", style.source.data );
+        console.log( "Mapbox:addLineLayer(): before addSource with geojson" );
 
         // after hours and hours of trial and error, I finally stumbled upon how to set things
         // up so that MGLPolylineFeature.polylineWithCoordinatesCount works.
@@ -1374,7 +1374,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         }
 
-        console.log( "Mapbox:addLineLayer(): after CLLocationCoordinate2D array before creating polyline source from:", clCoordsArray );
+        console.log( "Mapbox:addLineLayer(): after CLLocationCoordinate2D array before creating polyline source from clCoordsArray" );
 
         let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( new interop.Reference( CLLocationCoordinate2D, clCoordsArray ), coordinates.length );
 
