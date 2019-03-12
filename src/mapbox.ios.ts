@@ -1346,6 +1346,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject( "Only GeoJSON sources are currently supported." );
         }
 
+        // has a source with this id already been defined? If so, then it is an error (because attempting
+        // to add another source with the same id will crash the app.
+
+        if ( theMap.style.sourceWithIdentifier( style.id )) {
+          reject( "Remove the layer with this id first with 'removeLayer': " + style.id );
+          return;
+        }
+
         console.log( "Mapbox:addLineLayer(): before addSource with geojson:", style.source.data );
 
         // after hours and hours of trial and error, I finally stumbled upon how to set things
