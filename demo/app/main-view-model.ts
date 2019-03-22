@@ -585,6 +585,7 @@ export class HelloWorldModel extends Observable {
     this.mapbox.addPolygon(
         {
           id: 1,
+          below: "com.mapbox.annotations.points",
           fillColor: new Color("red"),
           fillOpacity: 0.7,
 
@@ -623,6 +624,7 @@ export class HelloWorldModel extends Observable {
   public doAddPolyline(): void {
     this.mapbox.addPolyline({
       id: 1,
+      below: "com.mapbox.annotations.points",
       color: "#30BCFF",
       width: 5,
       opacity: 0.6,

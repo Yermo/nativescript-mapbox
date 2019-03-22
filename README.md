@@ -476,6 +476,9 @@ The first person to tweet a snowman drawn with this function gets a T-shirt.
   mapbox.addPolygon(
       {
         id: 1, // optional, can be used in 'removePolygons'
+        //above: "layerId"  // insert new layer above existing layer
+        //below: "layerId"  // insert new layer below existing layer
+
         fillColor: new Color("red"),
         fillOpacity: 0.7,
 
@@ -530,6 +533,9 @@ Draw a polyline. Connect the points given as parameters.
   // Draw a two segment line near Amsterdam Central Station
   mapbox.addPolyline({
       id: 1, // optional, can be used in 'removePolylines'
+      //above: "layerId"  // iOS only: insert new layer above existing layer
+      //below: "layerId"  // iOS only: insert new layer below existing layer
+
       color: '#336699', // Set the color of the line (default black)
       width: 7, // Set the width of the line (default 5)
       opacity: 0.6, //Transparency / alpha, ranging 0-1. Default fully opaque (1).

@@ -34,7 +34,19 @@ export interface AddPolygonOptions {
    * Set this in case you want to later pass it to 'removePolygons'. TODO doesn't exist yet ;)
    */
   id?: any;
+
+  /**
+   * existing layer id to place new layer above
+   */
+  above?: string;
+
+  /**
+   * existing layer id to place new layer below
+   */
+  below?: string;
+
   points: LatLng[];
+
   fillColor?: string | Color;
   /**
    * Transparency / alpha, ranging from 0 to 1.
@@ -70,6 +82,17 @@ export interface AddPolylineOptions {
    * Set this in case you want to later pass it to 'removePolylines'.
    */
   id?: any;
+
+  /**
+   * existing layer id to place new layer above
+   */
+  above?: string;
+
+  /**
+   * existing layer id to place new layer below
+   */
+  below?: string;
+
   /**
    * Width of the line, default 5.
    */

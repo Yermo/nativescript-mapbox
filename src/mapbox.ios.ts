@@ -544,8 +544,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         .initWithIdentifierSource(polygonID, source);
       layer.fillColor = NSExpression.expressionForConstantValue(!options.fillColor ? UIColor.blackColor : (options.fillColor instanceof Color ? options.fillColor.ios : new Color(options.fillColor).ios));
       layer.fillOpacity = NSExpression.expressionForConstantValue(options.fillOpacity === undefined ? 1 : options.fillOpacity);
-      theMap.style.addLayer(layer);
 
+      if (options.above && theMap.style.layerWithIdentifier(options.above)) {
+        theMap.style.insertLayerAboveLayer(layer, theMap.style.layerWithIdentifier(options.above));
+      } else if (options.below && theMap.style.layerWithIdentifier(options.below)) {
+        theMap.style.insertLayerBelowLayer(layer, theMap.style.layerWithIdentifier(options.below));
+      } else {
+        theMap.style.addLayer(layer);
+      }
 
       resolve();
     });
@@ -586,7 +592,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       layer.lineWidth = NSExpression.expressionForConstantValue(options.width || 5);
       layer.lineOpacity = NSExpression.expressionForConstantValue(options.opacity === undefined ? 1 : options.opacity);
 
-      theMap.style.addLayer(layer);
+      if (options.above && theMap.style.layerWithIdentifier(options.above)) {
+        theMap.style.insertLayerAboveLayer(layer, theMap.style.layerWithIdentifier(options.above));
+      } else if (options.below && theMap.style.layerWithIdentifier(options.below)) {
+        theMap.style.insertLayerBelowLayer(layer, theMap.style.layerWithIdentifier(options.below));
+      } else {
+        theMap.style.addLayer(layer);
+      }
       resolve();
     });
   }
