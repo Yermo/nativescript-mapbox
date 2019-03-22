@@ -1670,12 +1670,19 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
         if (!layer) {
-          const ex = "No layer to add"
+          const ex = "No layer to add";
           console.log("Error in mapbox.addLayer: " + ex);
           reject(ex);
         }
 
-        theMap.mapboxMap.addLayer(layer);
+        if (options.above) {
+          theMap.mapboxMap.addLayerAbove(layer, options.above);
+        } else if (options.below) {
+          theMap.mapboxMap.addLayerBelow(layer, options.below);
+        } else {
+          theMap.mapboxMap.addLayer(layer);
+        }
+
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.addLayer: " + ex);

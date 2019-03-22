@@ -207,6 +207,16 @@ export interface AddLayerOptions {
   type: string;
 
   /**
+   * existing layer id to place new layer above
+   */
+  above?: string;
+
+  /**
+   * existing layer id to place new layer below
+   */
+  below?: string;
+
+  /**
    * 'circle' paint properites
    */
   circleColor?: string | Color;

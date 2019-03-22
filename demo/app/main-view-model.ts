@@ -353,6 +353,7 @@ export class HelloWorldModel extends Observable {
               id: "terrain-data",
               source: "terrain-source",
               sourceLayer: "contour",
+              below: "com.mapbox.annotations.points",
               type: "line",
               lineJoin: "round",
               lineCap: "round",
