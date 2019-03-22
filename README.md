@@ -581,7 +581,7 @@ Remove a source by `id`.
 ```
 
 ### addLayer
-Add a layer from a source to the map. Note only `circle`, `fill` and `line` types are currently supported. To insert the new layer underneath map markers,  set the `below` to `"com.mapbox.annotations.points"`.
+Add a layer from a source to the map. Note only `circle`, `fill` and `line` types are currently supported. To insert the new layer underneath map markers,  set `below` to `"com.mapbox.annotations.points"`.
 
 ```js
   mapbox.addLayer(
