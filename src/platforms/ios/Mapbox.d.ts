@@ -1871,8 +1871,6 @@ declare class MGLPointFeature extends MGLPointAnnotation implements MGLFeature {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
-
   attributeForKey(key: string): any;
 
   class(): typeof NSObject;
@@ -1930,8 +1928,6 @@ declare class MGLPolygon extends MGLMultiPoint implements MGLOverlay {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
-
   class(): typeof NSObject;
 
   conformsToProtocol(aProtocol: any /* Protocol */): boolean;
@@ -1987,8 +1983,6 @@ declare class MGLPolygonFeature extends MGLPolygon implements MGLFeature {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
-
   attributeForKey(key: string): any;
 
   class(): typeof NSObject;
@@ -2042,8 +2036,6 @@ declare class MGLPolyline extends MGLMultiPoint implements MGLOverlay {
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
-
   class(): typeof NSObject;
 
   conformsToProtocol(aProtocol: any /* Protocol */): boolean;
@@ -2096,8 +2088,6 @@ declare class MGLPolylineFeature extends MGLPolyline implements MGLFeature {
   readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
   readonly title: string; // inherited from MGLAnnotation
-
-  readonly  // inherited from NSObjectProtocol
 
   attributeForKey(key: string): any;
 
@@ -2251,8 +2241,6 @@ declare class MGLShape extends NSObject implements MGLAnnotation, NSSecureCoding
 
   readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-  readonly  // inherited from NSObjectProtocol
-
   static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
   constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -2325,8 +2313,6 @@ declare class MGLShapeCollectionFeature extends MGLShapeCollection implements MG
 
   readonly title: string; // inherited from MGLAnnotation
 
-  readonly  // inherited from NSObjectProtocol
-
   attributeForKey(key: string): any;
 
   class(): typeof NSObject;
@@ -2377,8 +2363,6 @@ declare class MGLShapeOfflineRegion extends NSObject implements MGLOfflineRegion
   readonly styleURL: NSURL; // inherited from MGLOfflineRegion
 
   readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
-
-  readonly  // inherited from NSObjectProtocol
 
   static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -2822,8 +2806,6 @@ declare class MGLTilePyramidOfflineRegion extends NSObject implements MGLOffline
 
   readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-  readonly  // inherited from NSObjectProtocol
-
   static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
   constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -2924,8 +2906,6 @@ declare class MGLUserLocation extends NSObject implements MGLAnnotation, NSSecur
   readonly isProxy: boolean; // inherited from NSObjectProtocol
 
   readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
-
-  readonly  // inherited from NSObjectProtocol
 
   static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
