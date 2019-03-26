@@ -44,6 +44,6 @@
   },
   "scripts": {
     "build.plugin": "cd ../src && npm run build",
-    "ci.tslint": "npm i && tslint --config '../tslint.json' 'app/**/*.ts' --exclude '**/node_modules/**'"
+    "ci.tslint": "npm i && tslint --config ../tslint.json 'app/**/*.ts' --exclude '**/node_modules/**'"
   }
 }
