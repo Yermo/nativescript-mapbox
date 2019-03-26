@@ -992,7 +992,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         lat: point.getLatitude(),
         lng: point.getLongitude()
       });
-    }
+    };
   }
 
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
