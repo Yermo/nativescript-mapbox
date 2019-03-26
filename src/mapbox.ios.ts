@@ -374,7 +374,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           theMap.setZoomLevelAnimated(level, animated);
           resolve();
         } else {
-          reject("invalid zoomlevel, use any double value from 0 to 20 (like 8.3)");
+          reject("invalid ZoomLevel, use any double value from 0 to 20 (like 8.3)");
         }
       } catch (ex) {
         console.log("Error in mapbox.setZoomLevel: " + ex);
@@ -605,7 +605,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  private removePolyById(theMap, id: string): void {
+  private removePolyById(theMap: MGLMapView, id: string): void {
     let layer = theMap.style.layerWithIdentifier(id);
     if (layer !== null) {
       theMap.style.removeLayer(layer);
@@ -621,20 +621,20 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     }
   }
 
-  removePolygons(ids?: Array<any>, nativeMap?): Promise<any> {
-    return new Promise((resolve, reject) => {
+  private removePolys(polyType: string, ids?: Array<any>, nativeMap?: any): Promise<any> {
+    return new Promise((resolve) => {
       let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-      ids.map(id => this.removePolyById(theMap, "polygon_" + id));
+      ids.forEach(id => this.removePolyById(theMap, polyType + id));
       resolve();
     });
   }
 
-  removePolylines(ids?: Array<any>, nativeMap?): Promise<any> {
-    return new Promise((resolve, reject) => {
-      let theMap: MGLMapView = nativeMap || _mapbox.mapView;
-      ids.map(id => this.removePolyById(theMap, "polyline_" + id));
-      resolve();
-    });
+  removePolygons(ids?: Array<any>, nativeMap?: any): Promise<any> {
+    return this.removePolys("polygon_", ids, nativeMap);
+  }
+
+  removePolylines(ids?: Array<any>, nativeMap?: any): Promise<any> {
+    return this.removePolys("polyline_", ids, nativeMap);
   }
 
   animateCamera(options: AnimateCameraOptions, nativeMap?): Promise<any> {
@@ -691,7 +691,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        // adding the tap handler to the map oject so it's not GC'd
+        // adding the tap handler to the map object so it's not garbage collected.
         theMap['mapTapHandler'] = MapTapHandlerImpl.initWithOwnerAndListenerForMap(new WeakRef(this), listener, theMap);
         const tapGestureRecognizer = UITapGestureRecognizer.alloc().initWithTargetAction(theMap['mapTapHandler'], "tap");
 
@@ -1060,7 +1060,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
         if (!source) {
-          const ex = "No source to add"
+          const ex = "No source to add";
           console.log("Error in mapbox.addSource: " + ex);
           reject(ex);
           return;
@@ -1167,12 +1167,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
         if (!layer) {
-          const ex = "No layer to add"
+          const ex = "No layer to add";
           console.log("Error in mapbox.addLayer: " + ex);
           reject(ex);
         }
-        console.log('adding the layer!')
-        console.log(layer)
+        console.log('adding the layer!');
+        console.log(layer);
         theMap.style.addLayer(layer);
         resolve();
       } catch (ex) {
@@ -1336,7 +1336,7 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
 };
 
 /**
-* "Delegate" for catching mapview events
+* "Delegate" for catching MapView events
 *
 * @link https://docs.nativescript.org/core-concepts/ios-runtime/how-to/ObjC-Subclassing#typescript-delegate-example
 */
@@ -1379,7 +1379,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   *
   * @link https://mapbox.github.io/mapbox-gl-native/macos/0.3.0/Protocols/MGLMapViewDelegate.html#/c:objc(pl)MGLMapViewDelegate(im)mapView:didFinishLoadingStyle:
   */
-  mapViewDidFinishLoadingStyle(mapView: MGLMapView) : void {
+  mapViewDidFinishLoadingStyle(mapView: MGLMapView): void {
     if (this.styleLoadedCallback !== undefined) {
       this.styleLoadedCallback();
       // to avoid multiple calls. This is only invoked from setMapStyle().
@@ -1423,10 +1423,10 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
 
       if (cachedMarker.icon) {
         if (cachedMarker.icon.startsWith("res://")) {
-          let resourcename = cachedMarker.icon.substring("res://".length);
-          let imageSource = imgSrc.fromResource(resourcename);
+          let resourceName = cachedMarker.icon.substring("res://".length);
+          let imageSource = imgSrc.fromResource(resourceName);
           if (imageSource === null) {
-            console.log(`Unable to locate ${resourcename}`);
+            console.log(`Unable to locate ${resourceName}`);
           } else {
             cachedMarker.reuseIdentifier = cachedMarker.icon;
             return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(imageSource.ios, cachedMarker.reuseIdentifier);
@@ -1437,7 +1437,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
             return MGLAnnotationImage.annotationImageWithImageReuseIdentifier(cachedMarker.iconDownloaded, cachedMarker.reuseIdentifier);
           }
         } else {
-          console.log("Please use res://resourcename, http(s)://imageurl or iconPath to use a local path");
+          console.log("Please use res://resourceName, http(s)://imageUrl or iconPath to use a local path");
         }
       } else if (cachedMarker.iconPath) {
         let appPath = fs.knownFolders.currentApp().path;
@@ -1453,7 +1453,7 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
     return null;
   }
 
-  // fired when one of the callout's accessoryviews is tapped (not currently used)
+  // fired when one of the Callout's AccessoryViews is tapped (not currently used)
   mapViewAnnotationCalloutAccessoryControlTapped(mapView: MGLMapView, annotation: MGLAnnotation, control: UIControl): void {
   }
 
