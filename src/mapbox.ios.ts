@@ -1,3 +1,6 @@
+/// <reference path="./node_modules/tns-platform-declarations/ios.d.ts" />
+/// <reference path="./platforms/ios/Mapbox.d.ts" />
+
 import * as fs from "tns-core-modules/file-system";
 import * as imgSrc from "tns-core-modules/image-source";
 import * as utils from "tns-core-modules/utils/utils";

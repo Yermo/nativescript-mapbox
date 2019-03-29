@@ -1,3 +1,6 @@
+/// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
+/// <reference path="./platforms/ios/Mapbox.d.ts" />
+
 import * as utils from "tns-core-modules/utils/utils";
 import * as application from "tns-core-modules/application";
 import * as frame from "tns-core-modules/ui/frame";
