@@ -15,7 +15,9 @@ matrix:
       jdk: oraclejdk8
       before_install:
         - gem install cocoapods
+        - pod setup
         - pod repo update
+        - pip install six
       script: cd demo && npm run build.plugin && npm i && tns build ios --bundle --env.uglify
     - language: android
       os: linux
@@ -42,7 +44,9 @@ matrix:
       jdk: oraclejdk8
       before_install:
         - gem install cocoapods
+        - pod setup
         - pod repo update
+        - pip install six
       script:
         - cd src && npm run build && cd ../demo && tns build ios
     - os: linux
@@ -62,7 +66,12 @@ matrix:
       node_js: "8"
       jdk: oraclejdk8
       osx_image: xcode9.4
-      script: cd src && npm run test.ios
+      before_install:
+        - gem install cocoapods
+        - pod setup
+        - pod repo update
+        - pip install six
+      script: cd src && npm run build && npm run test.ios
 
 android:
   components:
@@ -74,6 +83,6 @@ android:
     - sys-img-armeabi-v7a-android-24
 
 install:
-    - echo no | npm install -g nativescript
-    - tns usage-reporting disable
-    - tns error-reporting disable
+  - echo no | npm install -g nativescript
+  - tns usage-reporting disable
+  - tns error-reporting disable
