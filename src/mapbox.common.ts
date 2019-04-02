@@ -73,6 +73,13 @@ export interface UserLocation {
   speed: number;
 }
 
+export interface LocationLayerOptions {
+  accuracyColor?: string;
+  bearingTintColor?: string;
+  foregroundStaleTintColor?: string;
+  foregroundTintColor?: string;
+}
+
 export interface SetCenterOptions extends LatLng {
   animated?: boolean;
 }
@@ -338,6 +345,7 @@ export interface ShowOptions {
    * default false (true requires adding `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription` to the .plist)
    */
   showUserLocation?: boolean;
+  locationLayerOptions?: LocationLayerOptions;
   /**
    * default false (required for the 'starter' plan)
    */
@@ -475,11 +483,11 @@ export interface MapboxApi {
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions): Promise<any>;
 
-  addSource(options: AddSourceOptions): Promise<any>;
+  addSource(options: AddSourceOptions, nativeMap?: any): Promise<any>;
 
   removeSource(id: String, nativeMap?: any): Promise<any>;
 
-  addLayer(options: AddLayerOptions): Promise<any>;
+  addLayer(options: AddLayerOptions, nativeMap?: any): Promise<any>;
 
   removeLayer(id: String, nativeMap?: any): Promise<any>;
 
@@ -498,6 +506,7 @@ export abstract class MapboxCommon implements MapboxCommonApi {
     },
     zoomLevel: 0, // 0 (a big part of the world) to 20 (streetlevel)
     showUserLocation: false, // true requires adding `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription` in the .plist
+    locationLayerOptions: {},
     hideLogo: false, // required for the 'starter' plan
     hideAttribution: true,
     hideCompass: false,
@@ -595,6 +604,14 @@ export interface MapboxViewApi {
   removePolylines(ids?: Array<any>): Promise<any>;
 
   animateCamera(options: AnimateCameraOptions): Promise<any>;
+
+  addSource(options: AddSourceOptions): Promise<any>;
+
+  removeSource(id: String): Promise<any>;
+
+  addLayer(options: AddLayerOptions): Promise<any>;
+
+  removeLayer(id: String): Promise<any>;
 
   destroy(): Promise<any>;
 }
@@ -708,6 +725,22 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
     return this.mapbox.animateCamera(options, this.getNativeMapView());
   }
 
+  addSource(options: AddSourceOptions): Promise<any> {
+    return this.mapbox.addSource(options, this.getNativeMapView());
+  }
+
+  removeSource(id: String): Promise<any> {
+    return this.mapbox.removeSource(id, this.getNativeMapView());
+  }
+
+  addLayer(options: AddLayerOptions): Promise<any> {
+    return this.mapbox.addLayer(options, this.getNativeMapView());
+  }
+
+  removeLayer(id: String): Promise<any> {
+    return this.mapbox.removeLayer(id, this.getNativeMapView());
+  }
+
   destroy(): Promise<any> {
     return this.mapbox.destroy(this.getNativeMapView());
   }
@@ -734,6 +767,12 @@ export const showUserLocationProperty = new Property<MapboxViewCommonBase, boole
   valueConverter: booleanConverter
 });
 showUserLocationProperty.register(MapboxViewCommonBase);
+
+export const locationLayerOptionsProperty = new Property<MapboxViewCommonBase, LocationLayerOptions>({
+  name: "locationLayerOptions",
+  defaultValue: MapboxCommon.defaults.locationLayerOptions,
+});
+locationLayerOptionsProperty.register(MapboxViewCommonBase);
 
 export const hideLogoProperty = new Property<MapboxViewCommonBase, boolean>({
   name: "hideLogo",
@@ -824,6 +863,10 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
   [showUserLocationProperty.setNative](value: boolean) {
     this.config.showUserLocation = value;
+  }
+
+  [locationLayerOptionsProperty.setNative](value: boolean) {
+    this.config.locationLayerOptions = value;
   }
 
   [hideLogoProperty.setNative](value: boolean) {
