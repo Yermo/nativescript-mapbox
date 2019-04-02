@@ -26,11 +26,19 @@ export class HelloWorldModel extends Observable {
         bottom: isIOS ? 50 : 8
       },
       center: {
-        lat: 52.3702160,
-        lng: 4.8951680
+        lat: 33.8688,
+        lng: 151.2093,
+        //lat: 52.3702160,
+        //lng: 4.8951680
       },
       zoomLevel: 9, // 0 (most of the world) to 20, default 0
       showUserLocation: true, // default false
+      locationLayerOptions: {
+        accuracyColor: '#F75246',
+        bearingTintColor: '#F75246',
+        foregroundStaleTintColor: '#F75246',
+        foregroundTintColor: '#F75246',
+      },
       hideAttribution: true, // default false
       hideLogo: true, // default false
       hideCompass: false, // default false
