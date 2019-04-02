@@ -73,13 +73,6 @@ export interface UserLocation {
   speed: number;
 }
 
-export interface LocationLayerOptions {
-  accuracyColor?: string;
-  bearingTintColor?: string;
-  foregroundStaleTintColor?: string;
-  foregroundTintColor?: string;
-}
-
 export interface SetCenterOptions extends LatLng {
   animated?: boolean;
 }
@@ -345,7 +338,6 @@ export interface ShowOptions {
    * default false (true requires adding `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription` to the .plist)
    */
   showUserLocation?: boolean;
-  locationLayerOptions?: LocationLayerOptions;
   /**
    * default false (required for the 'starter' plan)
    */
@@ -506,7 +498,6 @@ export abstract class MapboxCommon implements MapboxCommonApi {
     },
     zoomLevel: 0, // 0 (a big part of the world) to 20 (streetlevel)
     showUserLocation: false, // true requires adding `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription` in the .plist
-    locationLayerOptions: {},
     hideLogo: false, // required for the 'starter' plan
     hideAttribution: true,
     hideCompass: false,
@@ -768,12 +759,6 @@ export const showUserLocationProperty = new Property<MapboxViewCommonBase, boole
 });
 showUserLocationProperty.register(MapboxViewCommonBase);
 
-export const locationLayerOptionsProperty = new Property<MapboxViewCommonBase, LocationLayerOptions>({
-  name: "locationLayerOptions",
-  defaultValue: MapboxCommon.defaults.locationLayerOptions,
-});
-locationLayerOptionsProperty.register(MapboxViewCommonBase);
-
 export const hideLogoProperty = new Property<MapboxViewCommonBase, boolean>({
   name: "hideLogo",
   defaultValue: MapboxCommon.defaults.hideLogo,
@@ -863,10 +848,6 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
   [showUserLocationProperty.setNative](value: boolean) {
     this.config.showUserLocation = value;
-  }
-
-  [locationLayerOptionsProperty.setNative](value: boolean) {
-    this.config.locationLayerOptions = value;
   }
 
   [hideLogoProperty.setNative](value: boolean) {
