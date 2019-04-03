@@ -102,7 +102,7 @@ export class MapboxView extends MapboxViewBase {
                   this.mapbox.requestFineLocationPermission()
                       .then(() => {
                         setTimeout(() => {
-                          _showLocation(this.mapView, mbMap, settings.locationLayerOptions);
+                          _showLocation(this.mapView, mbMap);
                         }, 1000);
                         this.notify({
                           eventName: MapboxViewBase.locationPermissionGrantedEvent,
