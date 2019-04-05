@@ -405,6 +405,72 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   }
 
   // ----------------------------------------
+  // Life Cycle Hooks - Required on Android
+  // ----------------------------------------
+
+  /**
+  * on Start
+  */
+
+  onStart( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Resume
+  */
+
+  onResume( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Pause
+  */
+
+  onPause( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Stop
+  */
+
+  onStop( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Low Memory
+  */
+
+  onLowMemory( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Destroy
+  */
+
+  onDestroy( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ---------------------------------------------
+
+  // onSaveInstanceState( Bundle outState)  
+
+  // ----------------------------------------
 
   /**
   * explicitly set a map style

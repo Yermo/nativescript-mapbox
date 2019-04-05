@@ -1,0 +1,47 @@
+{
+  "nativescript": {
+    "id": "org.nativescript.mapbox.ngdemo",
+    "tns-android": {
+      "version": "5.2.1"
+    },
+    "tns-ios": {
+      "version": "5.2.0"
+    }
+  },
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "scripts": {
+    "build": "cd ../src && npm run build.dist && cd ../ngdemo",
+    "demo.ios": "npm run build && && tns run ios",
+    "demo.android": "npm run build && tns run android"
+  },
+  "dependencies": {
+    "@angular/animations": "~7.2.0",
+    "@angular/common": "~7.2.0",
+    "@angular/compiler": "~7.2.0",
+    "@angular/core": "~7.2.0",
+    "@angular/forms": "~7.2.0",
+    "@angular/http": "~7.2.0",
+    "@angular/platform-browser": "~7.2.0",
+    "@angular/platform-browser-dynamic": "~7.2.0",
+    "@angular/router": "~7.2.0",
+    "nativescript-angular": "~7.2.1",
+    "nativescript-theme-core": "~1.0.4",
+    "reflect-metadata": "~0.1.12",
+    "rxjs": "~6.3.0",
+    "tns-core-modules": "~5.2.0",
+    "zone.js": "~0.8.26",
+    "nativescript-mapbox": "../publish/dist/package"
+  },
+  "devDependencies": {
+    "@angular/compiler-cli": "~7.2.0",
+    "@nativescript/schematics": "~0.5.0",
+    "@ngtools/webpack": "~7.2.0",
+    "nativescript-dev-typescript": "~0.8.0",
+    "nativescript-dev-webpack": "~0.20.0",
+    "tns-platform-declarations": "^5.2.2"
+  },
+  "gitHead": "f548ec926e75201ab1b7c4a3a7ceefe7a4db15af",
+  "readme": "NativeScript Application"
+}
