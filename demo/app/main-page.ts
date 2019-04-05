@@ -4,32 +4,62 @@ import { Color } from "tns-core-modules/color";
 import { HelloWorldModel } from "./main-view-model";
 import { MapboxViewApi, LatLng } from "nativescript-mapbox";
 
-// Event handler for Page 'loaded' event attached in main-page.xml
+// ----------------------------------------------------------------
+
+/**
+* Event handler for Page 'loaded' event attached in main-page.xml
+*/
+
 export function pageLoaded(args: observable.EventData) {
+
   let page = <pages.Page>args.object;
-  page.bindingContext = new HelloWorldModel();
+
+  console.log( "pageLoaded(): callback" );
+
+  // avoid creating duplicates of the model onPause/onResume.
+
+  if ( ! page.bindingContext ) {
+    page.bindingContext = new HelloWorldModel();
+  }
 }
 
 function onLocationPermissionGranted(args) {
+
+  console.log( "locationPermissionGranted(): callback" );
+
   let map: MapboxViewApi = args.map;
   console.log("onLocationPermissionGranted, map: " + map);
 }
 
 function onLocationPermissionDenied(args) {
+
+  console.log( "locationPermissionDenied(): callback" );
+
   let map: MapboxViewApi = args.map;
   console.log("onLocationPermissionDenied, map: " + map);
 }
 
 function onMapReady(args) {
+
+  console.log( "mapReady(): callback" );
+
   let map: MapboxViewApi = args.map;
 
   // you can tap into the native MapView objects (MGLMapView for iOS and com.mapbox.mapboxsdk.maps.MapView for Android)
+
   const nativeMapView = args.ios ? args.ios : args.android;
-  console.log(`Mapbox onMapReady for ${args.ios ? "iOS" : "Android"}, native object received: ${nativeMapView}`);
 
-  map.setOnMapClickListener((point: LatLng) => console.log(`Map tapped: ${JSON.stringify(point)}`));
+  console.log( `Mapbox onMapReady for ${args.ios ? "iOS" : "Android"}, native object received: ${nativeMapView}` );
 
-  map.setOnMapLongClickListener((point: LatLng) => console.log(`Map longpressed: ${JSON.stringify(point)}`));
+  map.setOnMapClickListener( (point: LatLng) => {
+    console.log(`Map tapped: ${JSON.stringify(point)}`);
+    return true;
+  });
+
+  map.setOnMapLongClickListener( (point: LatLng) => {
+    console.log(`Map longpressed: ${JSON.stringify(point)}`);
+    return true;
+  });
 
   // this works perfectly fine, but generates a lot of noise
   // map.setOnScrollListener((point?: LatLng) => console.log(`Map scrolled: ${JSON.stringify(point)}`));

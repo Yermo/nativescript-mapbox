@@ -295,6 +295,43 @@ export interface ShowOptions {
    * Immediately add markers to the map
    */
   markers?: MapboxMarker[];
+
+  /**
+  * callback on location permission granted
+  *
+  * Android Only
+  */
+
+  onLocationPermissionGranted? : any;
+
+  /**
+  * callback on location permission denied
+  *
+  * Android Only
+  */
+
+  onLocationPermissionDenied? : any;
+
+  /**
+  * callback on Map Ready
+  *
+  * Android only
+  */
+  
+  onMapReady? : any;
+
+  /**
+  * Android context
+  */
+
+  context? : any;
+
+  /**
+  * Android parent View
+  */
+
+  parentView? : any;
+
 }
 
 export interface ShowResult {
@@ -342,6 +379,22 @@ export interface MapboxApi {
   unhide(): Promise<any>;
 
   destroy(nativeMap?: any): Promise<any>;
+
+  // life cycle hooks, required on Android to avoid crashes.
+
+  onStart( nativeMap?: any): Promise<any>;
+
+  onResume( nativeMap?: any ): Promise<any>;
+
+  onPause( nativeMap?: any ): Promise<any>;
+
+  onStop( nativeMap?: any ): Promise<any>;
+
+  onLowMemory( nativeMap?: any ): Promise<any>;
+
+  onDestroy( nativeMap?: any ): Promise<any>;
+
+  // onSaveInstanceState( Bundle outState)
 
   setMapStyle(style: string | MapStyle, nativeMap?: any): Promise<any>;
 
@@ -477,8 +530,6 @@ export interface MapboxViewApi {
 
   addMarkers(markers: MapboxMarker[]): Promise<any>;
 
-  getMapboxApi(): any;
-
   onMapEvent( eventName, id, callback ) : void;
 
   offMapEvent( eventName, id ) : void;
@@ -542,6 +593,22 @@ export interface MapboxViewApi {
   animateCamera(options: AnimateCameraOptions): Promise<any>;
 
   destroy(): Promise<any>;
+
+  onStart(): Promise<any>;
+
+  onResume(): Promise<any>;
+
+  onPause(): Promise<any>;
+
+  onStop(): Promise<any>;
+
+  onLowMemory(): Promise<any>;
+
+  onDestroy(): Promise<any>;
+
+  // onSaveInstanceState( Bundle outState)
+
+
 }
 
 // ----------------------------------------------------------------------------------------
@@ -564,10 +631,6 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
   protected mapbox: MapboxApi;
 
   abstract getNativeMapView(): any;
-
-  // returns the class Mapbox reference above.
-
-  abstract getMapboxApi(): any;
 
   /**
   * map event
@@ -705,6 +768,43 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
   destroy(): Promise<any> {
     return this.mapbox.destroy(this.getNativeMapView());
   }
+
+  onStart(): Promise<any> {
+    return this.mapbox.onStart( this.getNativeMapView() );
+  }
+
+  onResume( nativeMap?: any ): Promise<any> {
+
+    console.log( "MapboxViewCommonBase:onResume(): with nativeView:", this.getNativeMapView() );
+
+    return this.mapbox.onResume( this.getNativeMapView() );
+  }
+
+  onPause( nativeMap?: any ): Promise<any> {
+
+    console.log( "MapboxViewCommonBase:onPause(): with nativeView:", this.getNativeMapView() );
+
+    return this.mapbox.onPause( this.getNativeMapView() );
+  }
+
+  onStop( nativeMap?: any ): Promise<any> {
+    return this.mapbox.onStop( this.getNativeMapView() );
+  }
+
+  onLowMemory( nativeMap?: any ): Promise<any> {
+    return this.mapbox.onLowMemory( this.getNativeMapView() );
+  }
+
+  onDestroy( nativeMap?: any ): Promise<any> {
+    return this.mapbox.onDestroy( this.getNativeMapView() );
+  }
+
+  // onSaveInstanceState( Bundle outState)
+
+
+
+
+
 }
 
 export const zoomLevelProperty = new Property<MapboxViewCommonBase, number>({name: "zoomLevel"});

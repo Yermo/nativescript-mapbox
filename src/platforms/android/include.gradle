@@ -5,14 +5,14 @@ repositories {
 // see https://www.mapbox.com/android-sdk/
 dependencies {
 
-    compile "com.mapbox.mapboxsdk:mapbox-android-telemetry:4.2.0"
+    compile "com.mapbox.mapboxsdk:mapbox-android-telemetry:4.3.0"
 
     implementation "com.android.support:appcompat-v7:28.0.0"
     implementation 'com.android.support:design:27.1.0'
 
     implementation "com.mapbox.mapboxsdk:mapbox-sdk-geojson:4.5.0"
 
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:7.2.0-alpha.2'){
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:7.3.0'){
         transitive=false
     }
 

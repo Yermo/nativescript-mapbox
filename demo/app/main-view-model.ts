@@ -5,20 +5,29 @@ import * as platform from "tns-core-modules/platform";
 import { Mapbox, MapStyle, OfflineRegion, LatLng, Viewport, DownloadProgress, MapboxMarker } from "nativescript-mapbox";
 
 const isIOS = platform.device.os === platform.platformNames.ios;
-const ACCESS_TOKEN = "sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw";
+const ACCESS_TOKEN = "<ACCESS_TOKEN_HERE>";
 
 export class HelloWorldModel extends Observable {
+
   private mapbox: Mapbox;
 
   constructor() {
     super();
+
+    console.log( "HelloWorldModel::constructor(): before new Mapbox()" );
+
     this.mapbox = new Mapbox();
   }
 
+  // --------------------------------------------------------------------
+
   public doShow(): void {
+
+    console.log( "HelloWorldModel::doShow(): before mapbox.show()" );
+
     this.mapbox.show({
       accessToken: ACCESS_TOKEN,
-      style: MapStyle.TRAFFIC_DAY,
+      style: MapStyle.LIGHT,
       margins: {
         left: 18,
         right: 18,
@@ -52,11 +61,18 @@ export class HelloWorldModel extends Observable {
       ]
     }).then(
         showResult => {
-          console.log(`Mapbox show done for ${showResult.ios ? "iOS" : "Android"}, native object received: ${showResult.ios ? showResult.ios : showResult.android}`);
 
-          this.mapbox.setOnMapClickListener(point => console.log(`>> Map clicked: ${JSON.stringify(point)}`));
+          console.log( `HelloWorldModel::doShow(): Mapbox show done for ${showResult.ios ? "iOS" : "Android"}, native object received: ${showResult.ios ? showResult.ios : showResult.android}`);
 
-          this.mapbox.setOnMapLongClickListener(point => console.log(`>> Map longpressed: ${JSON.stringify(point)}`));
+          this.mapbox.setOnMapClickListener( point => {
+            console.log(`>> Map clicked: ${JSON.stringify(point)}`);
+            return true;
+          });
+
+          this.mapbox.setOnMapLongClickListener( point => {
+            console.log(`>> Map longpressed: ${JSON.stringify(point)}`);
+            return true;
+          });
 
           this.mapbox.setOnScrollListener((point: LatLng) => {
             // console.log(`>> Map scrolled: ${JSON.stringify(point)}`);
@@ -73,7 +89,7 @@ export class HelloWorldModel extends Observable {
   public doHide(): void {
     this.mapbox.hide().then(
         () => {
-          console.log("Mapbox hide done");
+          console.log("HelloWorldModel::doHide(): Mapbox hide done");
         },
         (error: string) => {
           console.log("mapbox hide error: " + error);
@@ -84,7 +100,7 @@ export class HelloWorldModel extends Observable {
   public doDestroy(): void {
     this.mapbox.destroy().then(
         () => {
-          console.log("Mapbox destroyed");
+          console.log( "HelloWorldModel::doDestroy(): Mapbox destroyed" );
         },
         (error: string) => {
           console.log("mapbox destroy error: " + error);
@@ -95,7 +111,7 @@ export class HelloWorldModel extends Observable {
   public doUnhide(): void {
     this.mapbox.unhide().then(
         () => {
-          console.log("Mapbox doUnhide done");
+          console.log("HelloWorldModel::doUnHide(): Mapbox doUnhide done");
         },
         (error: string) => {
           console.log("mapbox doUnhide error: " + error);

@@ -405,6 +405,72 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   }
 
   // ----------------------------------------
+  // Life Cycle Hooks - Required on Android
+  // ----------------------------------------
+
+  /**
+  * on Start
+  */
+
+  onStart( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Resume
+  */
+
+  onResume( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Pause
+  */
+
+  onPause( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Stop
+  */
+
+  onStop( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Low Memory
+  */
+
+  onLowMemory( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ----------------------------------------------
+
+  /**
+  * on Destroy
+  */
+
+  onDestroy( nativeMap?: any ): Promise<any> {
+    return Promise.resolve();
+  }
+
+  // ---------------------------------------------
+
+  // onSaveInstanceState( Bundle outState)  
+
+  // ----------------------------------------
 
   /**
   * explicitly set a map style
@@ -1354,8 +1420,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        console.log( "Mapbox:addLineLayer(): before addSource with geojson:", style.source.data );
-
         // after hours and hours of trial and error, I finally stumbled upon how to set things
         // up so that MGLPolylineFeature.polylineWithCoordinatesCount works.
         //
@@ -1382,7 +1446,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         }
 
-        console.log( "Mapbox:addLineLayer(): after CLLocationCoordinate2D array before creating polyline source from:", clCoordsArray );
+        console.log( "Mapbox:addLineLayer(): after CLLocationCoordinate2D array before creating polyline source from clCoordsArray" );
 
         let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( new interop.Reference( CLLocationCoordinate2D, clCoordsArray ), coordinates.length );
 
