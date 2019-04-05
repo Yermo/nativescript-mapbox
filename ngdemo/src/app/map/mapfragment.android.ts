@@ -1,6 +1,6 @@
 import { AndroidFragmentCallbacks, setFragmentClass } from "tns-core-modules/ui/frame";
 
-const ACCESS_TOKEN : any = 'sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw';
+const ACCESS_TOKEN : any = 'ACCESS_TOKEN_HERE';
 
 const mapStyle = com.mapbox.mapboxsdk.maps.Style.LIGHT;
 

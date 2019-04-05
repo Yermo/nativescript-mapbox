@@ -5,7 +5,7 @@ import * as platform from "tns-core-modules/platform";
 import { Mapbox, MapStyle, OfflineRegion, LatLng, Viewport, DownloadProgress, MapboxMarker } from "nativescript-mapbox";
 
 const isIOS = platform.device.os === platform.platformNames.ios;
-const ACCESS_TOKEN = "sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw";
+const ACCESS_TOKEN = "<ACCESS_TOKEN_HERE>";
 
 export class HelloWorldModel extends Observable {
 

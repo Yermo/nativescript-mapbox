@@ -13,7 +13,7 @@
                   mapStyle="~/OSM-map-style.json"
                   hideAttribution="true"
                   hideCompass="false"
-                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+                  accessToken="ACCESS_TOKEN_HERE">
               </map:MapboxView>
             </ContentView>
             <ContentView row="0" col="1" style="margin-left: 3; border-color: #fff">
@@ -26,7 +26,7 @@
                   hideAttribution="true"
                   hideLogo="true"
                   hideCompass="true"
-                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+                  accessToken="ACCESS_TOKEN_HERE">
               </map:MapboxView>
             </ContentView>
             <ContentView row="1" colSpan="2" style="margin-top: 6; margin-bottom: 6; border-color: #fff">
@@ -43,7 +43,7 @@
                   hideLogo="true"
                   hideCompass="false"
                   hideAttribution="true"
-                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+                  accessToken="ACCESS_TOKEN_HERE">
               </map:MapboxView>
             </ContentView>
             <ContentView row="2" style="margin-right: 3; border-color: #fff">
@@ -54,7 +54,7 @@
                   zoomLevel="14"
                   mapStyle="streets"
                   hideAttribution="true"
-                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+                  accessToken="ACCESS_TOKEN_HERE">
               </map:MapboxView>
             </ContentView>
             <ContentView row="2" col="1" style="margin-left: 3; border-color: #fff">
@@ -70,7 +70,7 @@
                   showUserLocation="false"
                   hideAttribution="true"
                   mapStyle="traffic_day"
-                  accessToken="sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw">
+                  accessToken="ACCESS_TOKEN_HERE">
               </map:MapboxView>
             </ContentView>
           </GridLayout>

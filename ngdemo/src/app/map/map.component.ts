@@ -21,7 +21,7 @@ import { MapFragment } from './mapfragment';
 
 // registerElement("Placeholder", () => require("tns-core-modules/ui/placeholder").Placeholder);
 
-const ACCESS_TOKEN = "sk.eyJ1IjoiZWRkeXZlcmJydWdnZW4iLCJhIjoia1JpRW82NCJ9.OgnvpsKzB3GJhzyofQNUBw";
+const ACCESS_TOKEN = "ACCESS_TOKEN_HERE";
 
 declare const android, com, java, org;
 
