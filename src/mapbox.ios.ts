@@ -1568,8 +1568,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        console.log( "Mapbox:addLinePoint(): got lineEntry:", lineEntry );
-
         // we carry a pointer to the raw buffer of CLLocationCoordinate2D structures. 
         // since we are managing the buffer ourselves we need to allocate space for
         // the new location entry.
@@ -1592,24 +1590,20 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         free( lineEntry.clCoordsArray );
 
-        console.log( "Mapbox:addLinePoint(): after free()" );
-
         let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( new interop.Reference( CLLocationCoordinate2D, newCoordsArray ), lineEntry.numCoords );
 
         lineEntry.clCoordsArray = newCoordsArray;
-
-        console.log( "Mapbox:addLinePoint(): created updated polyline:", polyline );
 
         // now update the source
 
         lineEntry.source.shape = polyline;
 
-        console.log( "Mapbox:addLinePoint(): after updating lineEntry source");
-
         resolve();
       } catch (ex) {
+
         console.log( "Mapbox:addLinePoint() Error : " + ex);
         reject(ex);
+
       }
     });
 
