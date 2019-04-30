@@ -143,7 +143,7 @@ export class HelloWorldModel extends Observable {
         selected: true,
         onTap: (marker: MapboxMarker) => console.log(`UPDATED Marker tapped with title: ${marker.title}`),
         onCalloutTap: (marker: MapboxMarker) => alert(`UPDATED Marker callout tapped with title: ${marker.title}`)
-      })
+      });
     }, 8000);
 
     this.mapbox.addMarkers([
