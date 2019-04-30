@@ -1,3 +1,6 @@
+/// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
+/// <reference path="./platforms/ios/Mapbox.d.ts" />
+
 import * as utils from "tns-core-modules/utils/utils";
 import * as application from "tns-core-modules/application";
 import * as frame from "tns-core-modules/ui/frame";
@@ -206,7 +209,7 @@ const _getMapboxMapOptions = (settings) => {
       .attributionEnabled(!settings.hideAttribution)
       .logoEnabled(!settings.hideLogo);
 
-  // zoomlevel is not applied unless center is set
+  // zoom level is not applied unless center is set
   if (settings.zoomLevel && !settings.center) {
     // Eiffel tower, Paris
     settings.center = {
@@ -347,9 +350,9 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
       if (marker.icon) {
         // for markers from url see UrlMarker in https://github.com/mapbox/mapbox-gl-native/issues/5370
         if (marker.icon.startsWith("res://")) {
-          let resourcename = marker.icon.substring(6);
+          let resourceName = marker.icon.substring(6);
           let res = utils.ad.getApplicationContext().getResources();
-          let identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
+          let identifier = res.getIdentifier(resourceName, "drawable", utils.ad.getApplication().getPackageName());
           if (identifier === 0) {
             console.log(`No icon found for this device density for icon ' ${marker.icon}'. Falling back to the default icon.`);
           } else {
@@ -360,7 +363,7 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
             markerOptions.setIcon(iconFactory.fromBitmap(marker.iconDownloaded));
           }
         } else {
-          console.log("Please use res://resourcename, http(s)://imageurl or iconPath to use a local path");
+          console.log("Please use res://resourceName, http(s)://imageUrl or iconPath to use a local path");
         }
 
       } else if (marker.iconPath) {
@@ -407,7 +410,7 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
             }
           }
         }
-      }
+      };
     }
   });
 };
@@ -728,7 +731,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           }
           resolve();
         } else {
-          reject("invalid zoomlevel, use any double value from 0 to 20 (like 8.3)");
+          reject("invalid ZoomLevel, use any double value from 0 to 20 (like 8.3)");
         }
       } catch (ex) {
         console.log("Error in mapbox.setZoomLevel: " + ex);
@@ -822,7 +825,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const screenLocation = theMap.mapboxMap.getProjection().toScreenLocation(mapboxPoint);
         if (theMap.mapboxMap.queryRenderedFeatures) {
           const features /* List<Feature> */ = theMap.mapboxMap.queryRenderedFeatures(screenLocation, null, options.layerIds);
-          const result:Array<Feature> = [];
+          const result: Array<Feature> = [];
           for (let i = 0; i < features.size(); i++) {
             // see https://www.mapbox.com/android-docs/api/mapbox-java/libjava-geojson/3.4.1/com/mapbox/geojson/Feature.html
             const feature = features.get(i);
@@ -986,6 +989,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  private createPointFunc(listener: (data: LatLng) => void) {
+    return (point: { getLatitude: () => number; getLongitude: () => number; }) => {
+      listener({
+        lat: point.getLatitude(),
+        lng: point.getLongitude()
+      });
+    };
+  }
+
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -998,12 +1010,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         theMap.mapboxMap.addOnMapClickListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener({
-              onMapClick: point => {
-                listener({
-                  lat: point.getLatitude(),
-                  lng: point.getLongitude()
-                });
-              }
+              onMapClick: this.createPointFunc(listener),
             })
         );
 
@@ -1027,12 +1034,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         theMap.mapboxMap.addOnMapLongClickListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapLongClickListener({
-              onMapLongClick: point => {
-                listener({
-                  lat: point.getLatitude(),
-                  lng: point.getLongitude()
-                });
-              }
+              onMapLongClick: this.createPointFunc(listener),
             })
         );
 
@@ -1311,6 +1313,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                 if (status.isComplete()) {
                   resolve();
                 } else if (status.isRequiredResourceCountPrecise()) {
+                  // TODO should something happen here?
                 }
               },
 
@@ -1489,9 +1492,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(16.0)),
           com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
         ]);
-        console.log(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"));
+        console.log(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster")); // TODO remove leftover debug log?
         unclustered.setFilter(com.mapbox.mapboxsdk.style.expressions.Expression.neq(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"), true));
-        theMap.mapboxMap.addLayer(unclustered); // , "building");
+        theMap.mapboxMap.addLayer(unclustered);
 
         for (let i = 0; i < layers.length; i++) {
           // Add some nice circles
@@ -1563,7 +1566,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
         if (!source) {
-          const ex = "No source to add"
+          const ex = "No source to add";
           console.log("Error in mapbox.addSource: " + ex);
           reject(ex);
           return;
@@ -1670,7 +1673,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
         if (!layer) {
-          const ex = "No layer to add"
+          const ex = "No layer to add";
           console.log("Error in mapbox.addLayer: " + ex);
           reject(ex);
         }
