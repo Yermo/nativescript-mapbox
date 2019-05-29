@@ -725,7 +725,7 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
     return this.mapbox.addSource(options, this.getNativeMapView());
   }
 
-  removeSource(id: String): Promise<any> {
+  removeSource(id: string): Promise<any> {
     return this.mapbox.removeSource(id, this.getNativeMapView());
   }
 
@@ -733,7 +733,7 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
     return this.mapbox.addLayer(options, this.getNativeMapView());
   }
 
-  removeLayer(id: String): Promise<any> {
+  removeLayer(id: string): Promise<any> {
     return this.mapbox.removeLayer(id, this.getNativeMapView());
   }
 
