@@ -1192,7 +1192,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         } else {
           theMap.style.addLayer(layer);
         }
-        
+
         theMap.style.addLayer(layer);
         resolve();
       } catch (ex) {
