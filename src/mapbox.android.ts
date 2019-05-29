@@ -33,7 +33,6 @@ import {
   TrackUserOptions,
   UserLocation,
   UserTrackingMode,
-  LocationLayerOptions,
   Viewport
 } from "./mapbox.common";
 
@@ -103,7 +102,7 @@ export class MapboxView extends MapboxViewBase {
                   this.mapbox.requestFineLocationPermission()
                       .then(() => {
                         setTimeout(() => {
-                          _showLocation(this.mapView, mbMap, settings.locationLayerOptions);
+                          _showLocation(this.mapView, mbMap);
                         }, 1000);
                         this.notify({
                           eventName: MapboxViewBase.locationPermissionGrantedEvent,
@@ -235,20 +234,8 @@ const _fineLocationPermissionGranted = () => {
   return hasPermission;
 };
 
-const _showLocation = (theMapView, mapboxMap, layerOptions) => {
-  const options = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerOptions.builder(application.android.context);
-
-  if (layerOptions) {
-    for (const key in layerOptions) {
-      if (layerOptions.hasOwnProperty(key) && key.indexOf("color") > -1) {
-        // const value = layerOptions[key]
-        const value = new java.lang.Integer(new Color(layerOptions[key]).android);
-        options[key](value);
-      }
-    }
-  }
-
-  _locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap, options.build());
+const _showLocation = (theMapView, mapboxMap) => {
+  _locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap);
 };
 
 const _getClickedMarkerDetails = (clicked) => {
@@ -548,7 +535,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
                   if (settings.showUserLocation) {
                     this.requestFineLocationPermission().then(() => {
-                      _showLocation(_mapbox.mapView, mbMap, settings.locationLayerOptions);
+                      _showLocation(_mapbox.mapView, mbMap);
                     });
                   }
                   resolve({
