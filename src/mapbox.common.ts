@@ -603,11 +603,11 @@ export interface MapboxViewApi {
 
   addSource(options: AddSourceOptions): Promise<any>;
 
-  removeSource(id: String): Promise<any>;
+  removeSource(id: string): Promise<any>;
 
   addLayer(options: AddLayerOptions): Promise<any>;
 
-  removeLayer(id: String): Promise<any>;
+  removeLayer(id: string): Promise<any>;
 
   destroy(): Promise<any>;
 }
