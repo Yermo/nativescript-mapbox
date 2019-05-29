@@ -34,7 +34,19 @@ export interface AddPolygonOptions {
    * Set this in case you want to later pass it to 'removePolygons'. TODO doesn't exist yet ;)
    */
   id?: any;
+
+  /**
+   * existing layer id to place new layer above
+   */
+  above?: string;
+
+  /**
+   * existing layer id to place new layer below
+   */
+  below?: string;
+
   points: LatLng[];
+
   fillColor?: string | Color;
   /**
    * Transparency / alpha, ranging from 0 to 1.
@@ -70,6 +82,17 @@ export interface AddPolylineOptions {
    * Set this in case you want to later pass it to 'removePolylines'.
    */
   id?: any;
+
+  /**
+   * existing layer id to place new layer above
+   */
+  above?: string;
+
+  /**
+   * existing layer id to place new layer below
+   */
+  below?: string;
+
   /**
    * Width of the line, default 5.
    */
@@ -212,7 +235,17 @@ export interface AddLayerOptions {
   type: string;
 
   /**
-   * 'circle' paint properties
+   * existing layer id to place new layer above
+   */
+  above?: string;
+
+  /**
+   * existing layer id to place new layer below
+   */
+  below?: string;
+
+  /**
+   * 'circle' paint properites
    */
   circleColor?: string | Color;
   circleOpacity?: number;
@@ -447,11 +480,11 @@ export interface MapboxApi {
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions): Promise<any>;
 
-  addSource(options: AddSourceOptions): Promise<any>;
+  addSource(options: AddSourceOptions, nativeMap?: any): Promise<any>;
 
   removeSource(id: string, nativeMap?: any): Promise<any>;
 
-  addLayer(options: AddLayerOptions): Promise<any>;
+  addLayer(options: AddLayerOptions, nativeMap?: any): Promise<any>;
 
   removeLayer(id: string, nativeMap?: any): Promise<any>;
 
@@ -568,6 +601,14 @@ export interface MapboxViewApi {
 
   animateCamera(options: AnimateCameraOptions): Promise<any>;
 
+  addSource(options: AddSourceOptions): Promise<any>;
+
+  removeSource(id: string): Promise<any>;
+
+  addLayer(options: AddLayerOptions): Promise<any>;
+
+  removeLayer(id: string): Promise<any>;
+
   destroy(): Promise<any>;
 }
 
@@ -678,6 +719,22 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   animateCamera(options: AnimateCameraOptions): Promise<any> {
     return this.mapbox.animateCamera(options, this.getNativeMapView());
+  }
+
+  addSource(options: AddSourceOptions): Promise<any> {
+    return this.mapbox.addSource(options, this.getNativeMapView());
+  }
+
+  removeSource(id: string): Promise<any> {
+    return this.mapbox.removeSource(id, this.getNativeMapView());
+  }
+
+  addLayer(options: AddLayerOptions): Promise<any> {
+    return this.mapbox.addLayer(options, this.getNativeMapView());
+  }
+
+  removeLayer(id: string): Promise<any> {
+    return this.mapbox.removeLayer(id, this.getNativeMapView());
   }
 
   destroy(): Promise<any> {

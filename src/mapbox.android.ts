@@ -1,6 +1,3 @@
-/// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
-/// <reference path="./platforms/ios/Mapbox.d.ts" />
-
 import * as utils from "tns-core-modules/utils/utils";
 import * as application from "tns-core-modules/application";
 import * as frame from "tns-core-modules/ui/frame";
@@ -209,7 +206,7 @@ const _getMapboxMapOptions = (settings) => {
       .attributionEnabled(!settings.hideAttribution)
       .logoEnabled(!settings.hideLogo);
 
-  // zoom level is not applied unless center is set
+  // zoomlevel is not applied unless center is set
   if (settings.zoomLevel && !settings.center) {
     // Eiffel tower, Paris
     settings.center = {
@@ -350,9 +347,9 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
       if (marker.icon) {
         // for markers from url see UrlMarker in https://github.com/mapbox/mapbox-gl-native/issues/5370
         if (marker.icon.startsWith("res://")) {
-          let resourceName = marker.icon.substring(6);
+          let resourcename = marker.icon.substring(6);
           let res = utils.ad.getApplicationContext().getResources();
-          let identifier = res.getIdentifier(resourceName, "drawable", utils.ad.getApplication().getPackageName());
+          let identifier = res.getIdentifier(resourcename, "drawable", utils.ad.getApplication().getPackageName());
           if (identifier === 0) {
             console.log(`No icon found for this device density for icon ' ${marker.icon}'. Falling back to the default icon.`);
           } else {
@@ -363,7 +360,7 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
             markerOptions.setIcon(iconFactory.fromBitmap(marker.iconDownloaded));
           }
         } else {
-          console.log("Please use res://resourceName, http(s)://imageUrl or iconPath to use a local path");
+          console.log("Please use res://resourcename, http(s)://imageurl or iconPath to use a local path");
         }
 
       } else if (marker.iconPath) {
@@ -731,7 +728,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           }
           resolve();
         } else {
-          reject("invalid ZoomLevel, use any double value from 0 to 20 (like 8.3)");
+          reject("invalid zoomlevel, use any double value from 0 to 20 (like 8.3)");
         }
       } catch (ex) {
         console.log("Error in mapbox.setZoomLevel: " + ex);
@@ -989,15 +986,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  private createPointFunc(listener: (data: LatLng) => void) {
-    return (point: { getLatitude: () => number; getLongitude: () => number; }) => {
-      listener({
-        lat: point.getLatitude(),
-        lng: point.getLongitude()
-      });
-    };
-  }
-
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
@@ -1010,7 +998,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         theMap.mapboxMap.addOnMapClickListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener({
-              onMapClick: this.createPointFunc(listener),
+              onMapClick: point => {
+                listener({
+                  lat: point.getLatitude(),
+                  lng: point.getLongitude()
+                });
+              }
             })
         );
 
@@ -1034,7 +1027,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         theMap.mapboxMap.addOnMapLongClickListener(
             new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapLongClickListener({
-              onMapLongClick: this.createPointFunc(listener),
+              onMapLongClick: point => {
+                listener({
+                  lat: point.getLatitude(),
+                  lng: point.getLongitude()
+                });
+              }
             })
         );
 
@@ -1313,7 +1311,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                 if (status.isComplete()) {
                   resolve();
                 } else if (status.isRequiredResourceCountPrecise()) {
-                  // TODO should something happen here?
                 }
               },
 
@@ -1492,9 +1489,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(16.0)),
           com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
         ]);
-        console.log(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster")); // TODO remove leftover debug log?
+        console.log(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"));
         unclustered.setFilter(com.mapbox.mapboxsdk.style.expressions.Expression.neq(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"), true));
-        theMap.mapboxMap.addLayer(unclustered);
+        theMap.mapboxMap.addLayer(unclustered); // , "building");
 
         for (let i = 0; i < layers.length; i++) {
           // Add some nice circles
@@ -1678,7 +1675,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject(ex);
         }
 
-        theMap.mapboxMap.addLayer(layer);
+        if (options.above) {
+          theMap.mapboxMap.addLayerAbove(layer, options.above);
+        } else if (options.below) {
+          theMap.mapboxMap.addLayerBelow(layer, options.below);
+        } else {
+          theMap.mapboxMap.addLayer(layer);
+        }
+
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.addLayer: " + ex);

@@ -561,8 +561,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         .initWithIdentifierSource(polygonID, source);
       layer.fillColor = NSExpression.expressionForConstantValue(!options.fillColor ? UIColor.blackColor : (options.fillColor instanceof Color ? options.fillColor.ios : new Color(options.fillColor).ios));
       layer.fillOpacity = NSExpression.expressionForConstantValue(options.fillOpacity === undefined ? 1 : options.fillOpacity);
-      theMap.style.addLayer(layer);
 
+      if (options.above && theMap.style.layerWithIdentifier(options.above)) {
+        theMap.style.insertLayerAboveLayer(layer, theMap.style.layerWithIdentifier(options.above));
+      } else if (options.below && theMap.style.layerWithIdentifier(options.below)) {
+        theMap.style.insertLayerBelowLayer(layer, theMap.style.layerWithIdentifier(options.below));
+      } else {
+        theMap.style.addLayer(layer);
+      }
 
       resolve();
     });
@@ -603,7 +609,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       layer.lineWidth = NSExpression.expressionForConstantValue(options.width || 5);
       layer.lineOpacity = NSExpression.expressionForConstantValue(options.opacity === undefined ? 1 : options.opacity);
 
-      theMap.style.addLayer(layer);
+      if (options.above && theMap.style.layerWithIdentifier(options.above)) {
+        theMap.style.insertLayerAboveLayer(layer, theMap.style.layerWithIdentifier(options.above));
+      } else if (options.below && theMap.style.layerWithIdentifier(options.below)) {
+        theMap.style.insertLayerBelowLayer(layer, theMap.style.layerWithIdentifier(options.below));
+      } else {
+        theMap.style.addLayer(layer);
+      }
       resolve();
     });
   }
@@ -1170,12 +1182,17 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
         if (!layer) {
-          const ex = "No layer to add";
-          console.log("Error in mapbox.addLayer: " + ex);
-          reject(ex);
+          reject("Error in mapbox.addLayer: No layer to add");
         }
-        console.log('adding the layer!');
-        console.log(layer);
+
+        if (options.above && theMap.style.layerWithIdentifier(options.above)) {
+          theMap.style.insertLayerAboveLayer(layer, theMap.style.layerWithIdentifier(options.above));
+        } else if (options.below && theMap.style.layerWithIdentifier(options.below)) {
+          theMap.style.insertLayerBelowLayer(layer, theMap.style.layerWithIdentifier(options.below));
+        } else {
+          theMap.style.addLayer(layer);
+        }
+
         theMap.style.addLayer(layer);
         resolve();
       } catch (ex) {
@@ -1197,7 +1214,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         const layer = theMap.style.layerWithIdentifier(id);
         if (!layer) {
-          reject("Layer does not exist");
+          reject("Error in mapbox.removeLayer: Layer does not exist");
           return;
         }
 
