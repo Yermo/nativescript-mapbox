@@ -12,7 +12,7 @@ import * as application from "tns-core-modules/application";
 // Mapbox GL Native API
 
 import { Mapbox, MapStyle, LatLng } from "nativescript-mapbox";
-import {NavigatedData, Page} from "tns-core-modules/ui/page";
+import { NavigatedData, Page } from "tns-core-modules/ui/page";
 
 import { registerElement } from "nativescript-angular/element-registry";
 registerElement( "Mapbox", () => require("nativescript-mapbox").MapboxView);
