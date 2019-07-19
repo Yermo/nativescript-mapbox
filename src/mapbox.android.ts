@@ -34,7 +34,7 @@ import {
   ShowOptions,
   TrackUserOptions,
   UserLocation,
-  UserTrackingMode,
+  UserLocationCameraMode,
   Viewport
 } from "./mapbox.common";
 
@@ -121,12 +121,6 @@ export class MapboxView extends MapboxViewBase {
 
   disposeNativeView(): void {
 
-/*
-    if (_locationLayerPlugin) {
-      _locationLayerPlugin.onStop();
-    }
-*/
-
   }
 
   // -------------------------------------------------------------------------------------------
@@ -138,6 +132,8 @@ export class MapboxView extends MapboxViewBase {
   * and also a new mapbox API class instance. 
   *
   * @see show()
+  *
+  * @link notify
   */
 
   initMap(): void {
@@ -147,6 +143,9 @@ export class MapboxView extends MapboxViewBase {
     if ( ! this.nativeMapView && this.config.accessToken ) {
 
       this.mapbox = new Mapbox();
+
+      // the notify method come from the NativeScript contentview class and is the glue 
+      // that joins this code with whatever callback is set in the XML describing the map.
 
       let options = {
         context: this._context,
@@ -173,9 +172,37 @@ export class MapboxView extends MapboxViewBase {
         },
         onMapReady: ( map ) => {
 
+          console.log( "MapboxView::init(): onMapReady event" );
+
           this.notify({
             eventName: MapboxViewBase.mapReadyEvent,
             object: this,
+            map: this,
+            android: this.nativeMapView
+          });
+
+        },
+        onScrollEvent: ( event ) => {
+
+          console.log( "MapboxView::init(): onScrollEvent event" );
+
+          this.notify({
+            eventName: MapboxViewBase.scrollEvent,
+            object: this,
+            event: event,
+            map: this,
+            android: this.nativeMapView
+          });
+
+        },
+        onMoveBeginEvent: ( event ) => {
+
+          console.log( "MapboxView::init(): onMoveBeginEvent event" );
+
+          this.notify({
+            eventName: MapboxViewBase.moveBeginEvent,
+            object: this,
+            event: event,
             map: this,
             android: this.nativeMapView
           });
@@ -186,6 +213,8 @@ export class MapboxView extends MapboxViewBase {
 
       let settings = Mapbox.merge( this.config, Mapbox.defaults );
       settings = Mapbox.merge( settings, options );
+
+      console.log( "MapboxView::init(): settings are:", settings.touch );
 
       this.mapbox.show( settings );
 
@@ -215,6 +244,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   private _mapboxMapInstance: any;
   private _mapboxViewInstance: any;
 
+  // the user location component
+
+  private _locationComponent : any = false;
+
   // access token
 
   private _accessToken : string = '';
@@ -226,8 +259,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   private symbolManager : any;
 
   private _offlineManager : any;
-
-  private _locationLayerPlugin;
 
   private _markers = [];
   private _polylines = [];
@@ -451,13 +482,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
                   // initialize the event handlers now that we have a constructed view.
 
-                  this.initEventHandlerShim( this._mapboxViewInstance );
+                  this.initEventHandlerShim( settings, this._mapboxViewInstance );
 
                   this._addMarkers( settings.markers, this._mapboxViewInstance );
 
                   if (settings.showUserLocation) {
                     this.requestFineLocationPermission().then( () => {
-                      this._showLocation( this._mapboxViewInstance, mbMap );
+                      this.showUserLocationMarker( {} );
 
                       // if we have a callback defined, call it.
 
@@ -599,9 +630,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const viewGroup = this._mapboxViewInstance.getParent();
         if (viewGroup !== null) {
           viewGroup.removeView( this._mapboxViewInstance );
-        }
-        if ( this._locationLayerPlugin ) {
-          // this._locationLayerPlugin.onStop();
         }
 
         this._mapboxViewInstance = null;
@@ -747,15 +775,26 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *
   * Initialize our event handler shim so that we can intercept events here.
   *
+  * @param { any } settings
   * @param { MapboxView } mapboxView
   */
 
-  initEventHandlerShim( mapboxNativeViewInstance : any ) {
+  initEventHandlerShim( settings, mapboxNativeViewInstance : any ) {
 
     console.log( "Mapbox:initEventHandlerShim(): top" );
 
     this.setOnMapClickListener( ( point: LatLng ) => {
       return this.checkForCircleClickEvent( point );
+    }, mapboxNativeViewInstance );
+
+    this.setOnMoveBeginListener( ( point: LatLng ) => {
+
+      console.log( "Mapbox:initEventHandlerShim(): moveBegin:", point );
+
+      if ( typeof settings.onMoveBeginEvent != 'undefined' ) {
+        settings.onMoveBeginEvent( point );
+      }
+
     }, mapboxNativeViewInstance );
 
   }
@@ -1478,10 +1517,16 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // ----------------------------------------------------------------------------------
 
+  /**
+  * get users current location
+  *
+  * @deprecated
+  */
+
   getUserLocation(): Promise<UserLocation> {
     return new Promise((resolve, reject) => {
       try {
-        const loc = this._locationLayerPlugin ? this._locationLayerPlugin.getLocationEngine().getLastLocation() : null;
+        const loc = null;
         if (loc === null) {
           reject("Location not available");
         } else {
@@ -1779,6 +1824,43 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // ----------------------------------------------------------------------------------
 
+  setOnMoveBeginListener(listener: (data?: LatLng) => void, nativeMap?): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+
+        if (! this._mapboxMapInstance ) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        console.log( "Mapbox::setOnMoveBeginListener():" );
+
+        this._mapboxMapInstance.addOnMoveListener(
+            new com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener({
+              onMoveBegin: (detector: any /* MoveGestureDetector */) => {
+                const coordinate = this._mapboxMapInstance.getCameraPosition().target;
+                return listener({
+                  lat: coordinate.getLatitude(),
+                  lng: coordinate.getLongitude()
+                });
+              },
+              onMove: (detector: any /* MoveGestureDetector */) => {
+              },
+              onMoveEnd: (detector: any /* MoveGestureDetector */) => {
+              }
+            })
+        );
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setOnMoveBeginListener: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  // ----------------------------------------------------------------------------------
+
   setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
@@ -1787,6 +1869,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject("No map has been loaded");
           return;
         }
+
+        console.log( "Mapbox::setOnScrollListener():" );
 
         // the 'onMove' event seems like the one closest to the iOS implementation
 
@@ -3270,7 +3354,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // ---------------------------------------------------------------------------------------
 
-  trackUser(options: TrackUserOptions, nativeMap?): Promise<void> {
+  /**
+  * constantly center the map on the users location.
+  *
+  * @deprecated
+  */
+
+  trackUser( options: TrackUserOptions, nativeMap? ): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
 
@@ -3279,13 +3369,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        if ( ! this._locationLayerPlugin ) {
-          reject("The map is not currently showing the user location");
-          return;
-        }
-
-        this._locationLayerPlugin.setRenderMode( this._getUserLocationRenderMode(options.mode) );
-        this._locationLayerPlugin.setCameraMode( this._getUserLocationCameraMode(options.mode) );
+        console.log( "Mapbox::trackUser(): deprecated" );
 
         resolve();
       } catch (ex) {
@@ -3392,43 +3476,69 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // -----------------------------------------------------------------
 
   /**
+  * convert string to camera mode constant.
   *
-  * @link https://github.com/mapbox/mapbox-plugins-android/blob/3a92bdf28b3bd76c9e83627f985baeff1b26d401/plugin-locationlayer/src/main/java/com/mapbox/mapboxsdk/plugins/locationlayer/modes/RenderMode.java#L28 
+  * @link https://docs.mapbox.com/android/api/map-sdk/8.1.0/com/mapbox/mapboxsdk/location/modes/CameraMode.html
   */
 
-  _getUserLocationRenderMode(input: UserTrackingMode): any {
+  _stringToCameraMode( mode: UserLocationCameraMode ): any {
 
-    const RenderMode = com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode;
+    const modeRef = com.mapbox.mapboxsdk.location.modes.CameraMode;
+ 
+    switch( mode ) {
 
-    if (input === "FOLLOW_WITH_HEADING") {
-      return RenderMode.COMPASS;
-    } else if (input === "FOLLOW_WITH_COURSE") {
-      return RenderMode.GPS;
-    } else {
-      return RenderMode.NORMAL;
+      case "NONE":
+        return modeRef.NONE;
+
+      case "NONE_COMPASS":
+        return modeRef.NONE_COMPASS;
+
+      case "NONE_GPS":
+        return modeRef.NONE_GPS;
+
+      case "TRACKING":
+        return modeRef.TRACKING;
+
+      case "TRACK_COMPASS":
+        return modeRef.TRACK_COMPASS;
+
+      case "TRACKING_GPS":
+        return modeRef.TRACKING_GPS;
+
+      case "TRACK_GPS_NORTH":
+        return modeRef.TRACK_GPS_NORTH;
+
     }
   }
 
-  // -------------------------------------------------------------------
+  // ---------------------------------------------------------------
 
   /**
-  *
-  * @link https://github.com/mapbox/mapbox-plugins-android/blob/3a92bdf28b3bd76c9e83627f985baeff1b26d401/plugin-locationlayer/src/main/java/com/mapbox/mapboxsdk/plugins/locationlayer/modes/CameraMode.java#L28
+  * convert string to render mode
   */
- 
-  _getUserLocationCameraMode(input: UserTrackingMode): any {
 
-    const CameraMode = com.mapbox.mapboxsdk.plugins.locationlayer.modes.CameraMode;
+  _stringToRenderMode( mode ): any {
 
-    if (input === "FOLLOW") {
-      return CameraMode.TRACKING;
-    } else if (input === "FOLLOW_WITH_HEADING") {
-      return CameraMode.TRACKING_COMPASS;
-    } else if (input === "FOLLOW_WITH_COURSE") {
-      return CameraMode.TRACKING_COMPASS;
-    } else {
-      return CameraMode.NONE;
+    let renderMode: any;
+
+    switch( mode ) {
+
+      case 'NORMAL':
+        renderMode = com.mapbox.mapboxsdk.location.modes.RenderMode.NORMAL;
+      break;
+
+      case 'COMPASS':
+        renderMode = com.mapbox.mapboxsdk.location.modes.RenderMode.COMPASS;
+      break;
+
+      case 'GPS':
+        renderMode = com.mapbox.mapboxsdk.location.modes.RenderMode.GPS;
+      break;
+
     }
+
+    return renderMode;
+
   }
 
   // ---------------------------------------------------------------
@@ -3454,15 +3564,222 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // --------------------------------------------------------------
 
   /**
-  * locationLayer
+  * show a user location marker
   *
-  * @todo for reasons unclear to me, this suddenly started throwing an OnMapChangeListener exception. I'm not sure why it worked before.
+  * This method must not be called before location permissions have been granted.
+  *
+  * Supported options are:
+  *
+  * - elevation
+  * - accuracyColor
+  * - accuracyAlpha
+  * - useDefaultLocationEngine
+  * - renderMode
+  * - cameraMode
+  * - clickListener
+  * - cameraTrackingChangeListener
+  *
+  * @param {object} options 
+  *
+  * @link https://github.com/mapbox/mapbox-android-demo/blob/master/MapboxAndroidDemo/src/main/java/com/mapbox/mapboxandroiddemo/examples/location/LocationComponentOptionsActivity.java 
+  * @link https://developer.android.com/reference/android/graphics/Color
+  *
+  * @todo at least with simulated data, the location is only updated once hence adding support for forceLocation method.
   */
 
-  _showLocation(theMapView, mapboxMap) {
-    // this._locationLayerPlugin = new com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin(theMapView, mapboxMap);
+  showUserLocationMarker( options: any, nativeMap? ) : Promise<void> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        console.log( "Mapbox::showUserLocationMarker(): top" );
+
+        if (! this._mapboxMapInstance ) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        if ( ! com.mapbox.android.core.permissions.PermissionsManager.areLocationPermissionsGranted( application.android.context ) ) {
+
+          console.log( "Mapbox::showUserLocationMarker(): location permissions are not granted." );
+
+          reject( "Location permissions not granted." );
+          return;
+        } 
+
+        let componentOptionsBuilder = com.mapbox.mapboxsdk.location.LocationComponentOptions.builder( application.android.context );
+
+        if ( typeof options.elevation != 'undefined' ) {
+          componentOptionsBuilder.elevation( new java.lang.Float( options.elevation ));
+        }
+
+        if ( typeof options.accuracyColor != 'undefined' ) {
+          componentOptionsBuilder.accuracyColor( android.graphics.Color.parseColor( options.accuracyColor ))
+        }
+         
+        if ( typeof options.accuracyAlpha != 'undefined' ) {
+          componentOptionsBuilder.accuracyAlpha( new java.lang.Float( options.accuracyAlpha ));
+        }
+
+        let componentOptions = componentOptionsBuilder.build();
+
+        console.log( "Mapbox::showUserLocationMarker(): after componentOptions.build()" );
+
+        this._locationComponent = this._mapboxMapInstance.getLocationComponent();
+
+        console.log( "Mapbox::showUserLocationMarker(): after getLocationComponent" );
+
+        let activationOptionsBuilder = com.mapbox.mapboxsdk.location.LocationComponentActivationOptions.builder( application.android.context, this._mapboxMapInstance.getStyle() );
+
+        console.log( "Mapbox::showUserLocationMarker(): after activationOptionsBuilder" );
+
+        activationOptionsBuilder.locationComponentOptions( componentOptions );
+
+        let useDefaultEngine = true;
+
+        if ( typeof options.useDefaultLocationEngine != 'undefined' ) {
+          useDefaultEngine = options.useDefaultLocationEngine;
+        }
+
+        console.log( "Mapbox::showUserLocationMarker(): before useDefaultEngine" );
+
+        activationOptionsBuilder.useDefaultLocationEngine( useDefaultEngine );
+
+        console.log( "Mapbox::showUserLocationMarker(): after useDefaultEngine" );
+
+        let locationComponentActivationOptions = activationOptionsBuilder.build(); 
+
+        console.log( "Mapbox::showUserLocationMarker(): after ActivationOptions" );
+
+        this._locationComponent.activateLocationComponent( locationComponentActivationOptions );
+        this._locationComponent.setLocationComponentEnabled( true );
+
+        let cameraMode = 'TRACKING';
+
+        if ( typeof options.cameraMode != 'undefined' ) {
+          cameraMode = this._stringToCameraMode( options.cameraMode );
+        }
+
+        this._locationComponent.setCameraMode( cameraMode );
+
+        let renderMode = com.mapbox.mapboxsdk.location.modes.RenderMode.COMPASS;
+
+        if ( typeof options.renderMode != 'undefined' ) {
+          renderMode = this._stringToRenderMode( options.renderMode );
+        }
+
+        this._locationComponent.setRenderMode( renderMode );
+
+        console.log( "Mapbox::showUserLocationMarker(): after renderMode" );
+
+        if ( typeof options.clickListener != 'undefined' ) {
+
+          this._locationComponent.addOnLocationClickListener( 
+            new com.mapbox.mapboxsdk.location.OnLocationClickListener({
+              onLocationComponentClick: ( component ) => { 
+                options.clickListener( component );
+              }
+            })
+          );
+
+        }
+
+        if ( typeof options.cameraTrackingChangedListener != 'undefined' ) {
+          this._locationComponent.addOnCameraTrackingChangedListener( options.cameraTrackingChangedListener );
+        }
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.showUserLocationMarker: " + ex);
+        reject(ex);
+      }
+    });
+
+  } // end of showUserLocationMarker()
+
+  // ---------------------------------------------------------------
+
+  /**
+  * Change the mode of the user location marker
+  *
+  * Used to change the camera tracking and render modes of an existing
+  * marker. 
+  *
+  * The marker must be configured using showUserLocationMarker before this method
+  * can called.
+  */
+
+  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode, nativeMap? ) : Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        if ( ! this._locationComponent ) {
+          reject( "No location component has been loaded");
+          return;
+        }
+
+        console.log( "Mapbox::changeUserLocationMarkerMode(): current render mode is:", this._locationComponent.getRenderMode() );
+
+        console.log( "Mapbox::changeUserLocationMarkerMode(): changing renderMode to '" + renderModeString + "' cameraMode '" + cameraModeString + "'" );
+
+        let cameraMode = this._stringToCameraMode( cameraModeString );
+        let renderMode = this._stringToRenderMode( renderModeString );
+
+        this._locationComponent.setCameraMode( cameraMode );
+        this._locationComponent.setRenderMode( renderMode );
+
+        console.log( "Mapbox::changeUserLocationMarkerMode(): new render mode is:", this._locationComponent.getRenderMode() );
+
+      } catch (ex) {
+        console.log("Error in mapbox.showUserLocationMarker: " + ex);
+        reject(ex);
+      }
+    });
+
   }
 
+  // ---------------------------------------------------------------
+
+  /**
+  * force updating of user location
+  *
+  * This method forces the user location marker, if displayed, to move to a new location
+  *
+  * @todo figure out why the user location marker is not updating.
+  */
+
+  forceUserLocationUpdate( location: any, nativeMap? ) : Promise<void> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        console.log( "Mapbox::forceUserLocation(): top" );
+
+        if (! this._locationComponent ) {
+          reject("No location component has been loaded");
+          return;
+        }
+
+        // the location object needs to be converted into an android location
+
+        let nativeLocation = new android.location.Location( 'background' );
+
+        nativeLocation.setLatitude( location.latitude );
+        nativeLocation.setLongitude( location.longitude );
+        nativeLocation.setAltitude( location.altitude );
+
+        this._locationComponent.forceLocationUpdate( nativeLocation );
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.forceUserLocationUpdate: " + ex);
+        reject(ex);
+      }
+    })
+
+  };
+    
   // ---------------------------------------------------------------
 
   _getClickedMarkerDetails( clicked ) {

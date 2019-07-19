@@ -193,10 +193,17 @@ export interface AddGeoJsonClusteredOptions {
   clusters?: Array<MapboxCluster>;
 }
 
-export type UserTrackingMode = "NONE" | "FOLLOW" | "FOLLOW_WITH_HEADING" | "FOLLOW_WITH_COURSE";
+export type UserLocationCameraMode = 
+  "NONE" | 
+  "NONE_COMPASS" |
+  "NONE_GPS" |
+  "TRACKING" |
+  "TRACK_COMPASS" |
+  "TRACKING_GPS" |
+  "TRACK_GPS_NORTH";
 
 export interface TrackUserOptions {
-  mode: UserTrackingMode;
+  mode: UserLocationCameraMode;
   /**
    * iOS only, as Android is always animated. Default true (because of Android).
    */
@@ -321,6 +328,18 @@ export interface ShowOptions {
   onMapReady? : any;
 
   /**
+  * callback on scroll event
+  */
+
+  onScrollEvent? : any;
+
+  /**
+  * callback on move begin event
+  */
+
+  onMoveBeginEvent? : any;
+
+  /**
   * Android context
   */
 
@@ -366,7 +385,7 @@ export interface MapboxCommonApi {
 
 export interface MapboxApi {
 
-  initEventHandlerShim( mapboxNativeViewInstance : any ) : void;
+  initEventHandlerShim( settings: any, mapboxNativeViewInstance : any ) : void;
 
   onMapEvent( eventName, id, callback, nativeMapView? ) : void;
 
@@ -415,6 +434,12 @@ export interface MapboxApi {
   getTilt(nativeMap?: any): Promise<number>;
 
   getUserLocation(nativeMap?: any): Promise<UserLocation>;
+
+  showUserLocationMarker( options: any, nativeMap?: any ) : void;
+
+  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode, nativeMap?: any ) : void;
+
+  forceUserLocationUpdate( location: any, nativeMap? : any ) : void;
 
   trackUser(options: TrackUserOptions, nativeMap?: any): Promise<void>;
 
@@ -574,6 +599,12 @@ export interface MapboxViewApi {
 
   trackUser(options: TrackUserOptions): Promise<any>;
 
+  showUserLocationMarker( options ): void;
+
+  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode ) : void;
+
+  forceUserLocationUpdate( location ) : void;
+
   addLayer( style ): Promise<any>;
 
   removeLayer( id : string ): Promise<any>;
@@ -723,6 +754,18 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   getUserLocation(): Promise<UserLocation> {
     return this.mapbox.getUserLocation(this.getNativeMapView());
+  }
+
+  showUserLocationMarker( options ) : void {
+    this.mapbox.showUserLocationMarker( options, this.getNativeMapView() );
+  }
+
+  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode ) : void {
+    this.mapbox.changeUserLocationMarkerMode( renderModeString, cameraModeString, this.getNativeMapView()  );
+  }
+
+  forceUserLocationUpdate( location ) : void {
+    this.mapbox.forceUserLocationUpdate( location, this.getNativeMapView() );
   }
 
   trackUser(options: TrackUserOptions): Promise<any> {
@@ -892,6 +935,9 @@ delayProperty.register(MapboxViewCommonBase);
 export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
   static mapReadyEvent: string = "mapReady";
+  static scrollEvent: string = "scrollEvent";
+  static moveBeginEvent: string = "moveBeginEvent";
+
   static locationPermissionGrantedEvent: string = "locationPermissionGranted";
   static locationPermissionDeniedEvent: string = "locationPermissionDenied";
 
