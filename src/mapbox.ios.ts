@@ -1314,11 +1314,21 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
 
-        const nativeMapView = nativeMapViewInstance || _mapbox;
+        const theMap: MGLMapView = nativeMapViewInstance || _mapbox.mapView;
 
-//        nativeMapView.mapboxMap.getStyle().removeLayer( id ) ;
+        console.log( "Mapbox::removeLayer(): attempting to remove layer '" + id + "'" );
 
-        console.log( "Mapbox:removeLayer(): after removing layer" );
+        let layer = theMap.style.layerWithIdentifier( id );
+
+        console.log( "Mapbox:removeLayer(): got layer object: ", layer );
+
+        if ( ! layer ) {
+          throw new Error( "Layer '" + id + "' not found when attempting to remove it." ); 
+        }
+
+        theMap.style.removeLayer(layer);
+
+        console.log( "Mapbox:removeLayer(): after removing layer " + id );
 
         resolve();
 
