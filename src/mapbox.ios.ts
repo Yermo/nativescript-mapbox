@@ -28,7 +28,7 @@ import {
   ShowOptions,
   TrackUserOptions,
   UserLocation,
-  UserTrackingMode,
+  UserLocationCameraMode,
   Viewport
 } from "./mapbox.common";
 
@@ -95,7 +95,8 @@ const _getMapStyle = (input: any): NSURL => {
   }
 };
 
-const _getTrackingMode = (input: UserTrackingMode): MGLUserTrackingMode => {
+const _getTrackingMode = (input: UserLocationCameraMode): MGLUserTrackingMode => {
+/*
   if (input === "FOLLOW") {
     return MGLUserTrackingMode.Follow;
   } else if (input === "FOLLOW_WITH_HEADING") {
@@ -105,6 +106,10 @@ const _getTrackingMode = (input: UserTrackingMode): MGLUserTrackingMode => {
   } else {
     return MGLUserTrackingMode.None;
   }
+*/
+
+    return MGLUserTrackingMode.None;
+
 };
 
 /*************** XML definition START ****************/
@@ -217,7 +222,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * @param { MapboxView } mapboxView
   */
 
-  initEventHandlerShim( mapboxNativeViewInstance : any ) {
+  initEventHandlerShim( settings: any, mapboxNativeViewInstance : any ) {
 
     console.log( "Mapbox:initEventHandlerShim(): top" );
 
@@ -665,6 +670,17 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         reject(ex);
       }
     });
+  }
+
+  showUserLocationMarker( options, nativeMap?): void {
+
+  }
+
+  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode, nativeMap? ) : void {
+
+  }
+
+  forceUserLocationUpdate( location: any, nativeMap? : any ) : void {
   }
 
   // --------------------------------------------------------------
