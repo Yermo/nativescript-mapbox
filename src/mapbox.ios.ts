@@ -37,6 +37,7 @@ import { Color } from "tns-core-modules/color";
 import { GeoUtils } from './geo.utils';
 
 // Export the enums for devs not using TS
+
 export { MapStyle };
 
 let _markers = [];
@@ -53,6 +54,7 @@ const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
   mapView.scrollEnabled = !settings.disableScroll;
   mapView.zoomEnabled = !settings.disableZoom;
   mapView.allowsTilting = !settings.disableTilt;
+
   // mapView.showsScale = settings.showScale; // TODO, default false
   // mapView.showsHeading = true;
   // mapView.showsUserHeadingIndicator = true;
@@ -114,6 +116,13 @@ const _getTrackingMode = (input: UserLocationCameraMode): MGLUserTrackingMode =>
 
 /*************** XML definition START ****************/
 
+/**
+* Map View Class instantiated from XML
+*
+* This class is created by the NativeScript XML view parsing
+* code. 
+*/
+
 export class MapboxView extends MapboxViewBase {
 
   private nativeMapView: MGLMapView;
@@ -155,9 +164,20 @@ export class MapboxView extends MapboxViewBase {
     if (!this.nativeMapView && this.config.accessToken) {
       this.mapbox = new Mapbox();
       let settings = Mapbox.merge(this.config, Mapbox.defaults);
+
+      console.log( "MapboxView::initMap(): to with config:", this.config );
+
       let drawMap = () => {
+
         MGLAccountManager.accessToken = settings.accessToken;
-        this.nativeMapView = MGLMapView.alloc().initWithFrameStyleURL(CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), _getMapStyle(settings.style));
+
+        this.nativeMapView = MGLMapView.alloc().initWithFrameStyleURL(
+          CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), 
+          _getMapStyle(settings.style)
+        );
+
+        // this delegate class is defined later in this file and is where, in Obj-C land, 
+        // callbacks are delivered and handled.
 
         this.nativeMapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback( () => {
 
@@ -177,9 +197,28 @@ export class MapboxView extends MapboxViewBase {
             ios: this.nativeMapView
           });
         });
+
         _setMapboxMapOptions(this.nativeMapView, settings);
         _markers = [];
+
         this.nativeView.addSubview(this.nativeMapView);
+
+        // this.notify will notify an event listener specified
+        // in the XML, in this case (onMoveBegin)="..."
+
+        this.mapbox.setOnMoveBeginListener( (data?: LatLng) => {
+
+          console.log( "MapboxView::initMap(): onMoveBegin listener" );
+
+          this.notify({
+            eventName: MapboxViewBase.moveBeginEvent,
+            object: this,
+            map: this,
+            ios: this.nativeMapView
+          });
+
+        }, this.nativeMapView );
+
       };
       setTimeout(drawMap, settings.delay ? settings.delay : 0);
     }
@@ -198,6 +237,314 @@ export class MapboxView extends MapboxViewBase {
 
 /*************** XML definition END ****************/
 
+/**
+* a custom user location marker 
+*
+* We want to add some behavior to the user location marker to visibly
+* show the user when locations are being stored and when they are not.
+*
+* Sadly, it's not as easy under iOS as it is on Android. It involves 
+* creating a custom annotation view.
+*
+* @link https://docs.mapbox.com/ios/maps/examples/user-location-annotation/
+*/
+
+export class CustomUserLocationAnnotationView extends MGLUserLocationAnnotationView implements MGLUserLocationAnnotationView {
+
+  public size : number;
+  public dot : CALayer;
+  public arrow : CAShapeLayer;
+
+  // may be NORMAL, COMPASS, or GPS.
+
+  private userLocationRenderMode : string;
+  private renderModeChanged : boolean;
+
+  /**
+  * init
+  *
+  * @link https://docs.nativescript.org/core-concepts/ios-runtime/HelloWorld
+  */
+
+  public init() {
+
+    this.size = 48;
+    super.initWithFrame( CGRectMake( 0, 0, this.size, this.size ) );
+
+    this.renderModeChanged = true;
+    this.userLocationRenderMode = 'NORMAL';
+
+    return this;
+
+  }
+
+  /**
+  * update
+  *
+  * The note from the Objective-C sample indicates this method may be called quite
+  * often so it needs to be kept lightweight.
+  */
+
+  update() {
+
+    if ( CLLocationCoordinate2DIsValid( this.userLocation.coordinate )) {
+
+      // if it's the first time here, setup the layers that make up the 
+      // location marker. 
+
+      if ( ! this.dot ) {
+        this.drawNonTrackingLocationMarker();
+      }
+
+      if ( this.userLocationRenderMode == 'GPS' ) {
+        this.updateHeading();
+      }
+
+    }
+
+  }
+
+  /**
+  * Draw the GPS tracking arrow.
+  *
+  * @link https://docs.nativescript.org/ns-framework-modules/color
+  */
+
+  drawTrackingLocationMarker() {
+
+    console.log( "CustomerUserLocationAnnotatinView::drawTrackingLocationMarker()" );
+
+    this.drawTrackingDot();
+    this.drawArrow();
+
+  } // end of setupLayers()
+
+  /**
+  * draw the non-tracking marker
+  */
+
+  drawNonTrackingLocationMarker() {
+
+    console.log( "CustomerUserLocationAnnotatinView::drawNonTrackingLocationMarker()" );
+
+    this.drawNonTrackingDot();
+
+    if ( this.arrow ) {
+      this.arrow.removeFromSuperlayer();
+      this.arrow = null;
+    } 
+
+  }
+
+  /**
+  * draw the tracking dot.
+  */
+
+  drawTrackingDot() {
+
+      this.size = 48;
+
+      // we need to adjust the size of the bounds of the marker. The Tracking marker
+      // is larger than the non tracking marker.
+
+      this.bounds = CGRectMake( 0, 0, this.size, this.size );
+
+      let dot = CALayer.layer();
+
+      dot.frame = this.bounds;
+
+      // user corner radius to turn the layer into a circle
+
+      dot.cornerRadius = this.size / 2;
+      dot.backgroundColor = this.tintColor.CGColor;
+      dot.borderWidth = 4;
+
+      let whiteColor = new Color( "#FFFFFF" );
+      dot.borderColor = whiteColor.ios.CGColor;
+
+      if ( ! this.dot ) {
+        this.layer.addSublayer( dot );
+      } else {
+        this.layer.replaceSublayerWith( this.dot, dot );
+      }
+
+      // QUESTION: does GC catch this?
+
+      this.dot = dot;
+  }
+
+  /**
+  * draw the non-tracking dot.
+  */
+
+  drawNonTrackingDot() {
+
+      this.size = 24;
+      this.bounds = CGRectMake( 0, 0, this.size, this.size );
+      let dot = CALayer.layer();
+
+      dot.frame = this.bounds;
+
+      // user corner radius to turn the layer into a circle
+
+      dot.cornerRadius = this.size / 2;
+      dot.backgroundColor = this.tintColor.CGColor;
+
+      dot.borderWidth = 1;
+
+      let whiteColor = new Color( "#FFFFFF" );
+      dot.borderColor = whiteColor.ios.CGColor;
+
+      if ( ! this.dot ) {
+        this.layer.addSublayer( dot );
+      } else {
+        this.layer.replaceSublayerWith( this.dot, dot );
+      }
+
+      // QUESTION: does GC catch this?
+
+      this.dot = dot;
+  }
+
+  /**
+  * draw an arrow
+  */
+
+  drawArrow() {
+
+      let arrow = CAShapeLayer.layer();
+
+      arrow.path = this.arrowPath();
+      arrow.frame = CGRectMake( 0, 0, this.size / 2, this.size / 2 );
+      arrow.position = CGPointMake( CGRectGetMidX( this.dot.frame ), CGRectGetMidY( this.dot.frame ) );
+      arrow.fillColor = this.dot.borderColor;
+      
+      if ( ! this.arrow ) {
+        this.layer.addSublayer( arrow );
+      } else { 
+        this.layer.replaceSublayerWith( this.arrow, arrow );
+      }
+
+      // QUESTION: Does GC catch this?
+
+      this.arrow = arrow;
+  }
+
+  /**
+  * update arrow heading
+  *
+  * @link https://docs.nativescript.org/core-concepts/ios-runtime/types/C-Functions
+  */
+
+  updateHeading() {
+
+    // just to avoid a possible race condition where the arrow isnt' drawn yet
+
+    if ( ! this.arrow ) {
+      return;
+    }
+
+    if ( typeof this.userLocation == 'undefined' ) {
+      return;
+    }
+
+    if (( typeof this.userLocation.heading == 'undefined' ) || ( this.userLocation.heading === null )) {
+      return;
+    }
+
+    if (( typeof this.userLocation.heading.trueHeading == 'undefined' ) || ( this.userLocation.heading.trueHeading === null )) {
+      return;
+    }
+
+    if ( this.userLocation.heading.trueHeading > 0 ) {
+      this.arrow.hidden = false;
+
+      // get the difference between the map's current direction and the
+      // user's heading, then convert it from degrees to radians
+      //
+      // The original Objective-C example uses the inline C function MGLRadiansFromDegrees but because
+      // it's declared as inline it is not available for NativeScript. See linked article above.
+                              
+      // let rotation : number = MGLRadiansFromDegrees( this.mapView.direction - this.userLocation.heading.trueHeading );
+
+      let degrees : number = this.mapView.direction - this.userLocation.heading.trueHeading;
+
+      // in radians
+
+      let rotation : number = degrees * Math.PI / 180;
+
+      rotation = -rotation;
+
+      // if the difference would be perceptible, rotate the arrow.
+
+      if ( fabs( rotation ) > 0.01 ) {
+     
+        // Disable implicit animations of this rotation, which reduces lag between updates
+
+        CATransaction.begin();
+        CATransaction.setDisableActions( true );
+
+        this.arrow.setAffineTransform( CGAffineTransformRotate( CGAffineTransformIdentity, rotation ) );
+   
+        CATransaction.commit();
+      }
+    } else {
+      this.arrow.hidden = true;
+    }
+
+  }
+
+  /**
+  * Calculate the vector path for an arrow
+  */
+
+  arrowPath() {
+
+    let max : number = this.size / 2;
+    let pad : number = 3;
+
+    let top : CGPoint = CGPointMake( max * 0.5, 0 );
+    let left : CGPoint = CGPointMake( 0 + pad, max - pad );
+    let right : CGPoint = CGPointMake( max - pad, max - pad );
+    let center : CGPoint = CGPointMake( max * 0.5, max * 0.6 );
+
+    let bezierPath = UIBezierPath.bezierPath();
+    bezierPath.moveToPoint( top );
+    bezierPath.addLineToPoint( left );
+    bezierPath.addLineToPoint( center );
+
+    bezierPath.addLineToPoint( right );
+    bezierPath.addLineToPoint( top );
+    bezierPath.closePath();
+
+    return bezierPath.CGPath;
+
+  }
+ 
+  /**
+  * change Render mode
+  *
+  * @param {string} renderMode
+  */
+
+  changeUserLocationRenderMode( renderMode ) {
+
+    console.log( "CustomUserLocationAnnotatinView::changeUserLocationRenderMode(): changing mode to '" + renderMode + "'" );
+
+    this.userLocationRenderMode = renderMode;
+
+    if ( renderMode == 'GPS' ) {
+      this.drawTrackingLocationMarker();
+    } else {
+      this.drawNonTrackingLocationMarker();
+    }
+
+  }
+
+} // end of class CustomUserLocationAnnotationView
+
+// ----------------------------------------------------------------------
+
 export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // list of circle layers
@@ -211,6 +558,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // registered callbacks.
 
   private eventCallbacks : any[] = [];
+
+  // user location marker render mode
+
+  private userLocationRenderMode : string;
 
   // --------------------------------------------------------------------
 
@@ -310,8 +661,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // -------------------------------------------------------------------------------
 
-  show(options: ShowOptions): Promise<any> {
-    return new Promise((resolve, reject) => {
+  /**
+  * create an display the map
+  */
+
+  show( options: ShowOptions ): Promise<any> {
+
+    return new Promise( (resolve, reject) => {
       try {
         const settings: ShowOptions = Mapbox.merge(options, Mapbox.defaults);
 
@@ -329,13 +685,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           _mapView.removeFromSuperview();
         }
 
-        const view = utils.ios.getter(UIApplication, UIApplication.sharedApplication).keyWindow.rootViewController.view,
-            frameRect = view.frame,
-            mapFrame = CGRectMake(
-                settings.margins.left,
-                settings.margins.top,
-                frameRect.size.width - settings.margins.left - settings.margins.right,
-                frameRect.size.height - settings.margins.top - settings.margins.bottom
+        const view = utils.ios.getter( UIApplication, UIApplication.sharedApplication ).keyWindow.rootViewController.view,
+          frameRect = view.frame,
+          mapFrame = CGRectMake(
+            settings.margins.left,
+            settings.margins.top,
+            frameRect.size.width - settings.margins.left - settings.margins.right,
+            frameRect.size.height - settings.margins.top - settings.margins.bottom
             ),
             styleURL = _getMapStyle(settings.style);
 
@@ -355,8 +711,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         _addMarkers(settings.markers);
 
         // wrapping in a little timeout since the map area tends to flash black a bit initially
+
         setTimeout(() => {
-          view.addSubview(_mapbox.mapView);
+          view.addSubview( _mapbox.mapView );
         }, 500);
 
       } catch (ex) {
@@ -672,13 +1029,167 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  showUserLocationMarker( options, nativeMap?): void {
+  /**
+  * convert string to camera mode constant.
+  *
+  * Supported modes on iOS are different than on Android.
+  *
+  * @todo come up with a reasonable set of cross platform defaults.
+  */
+
+  _stringToCameraMode( mode: UserLocationCameraMode ): any {
+
+    switch( mode ) {
+
+      case "NONE":
+        return MGLUserTrackingMode.None;
+
+      case "NONE_COMPASS":
+
+        console.log( "MapboxView::_stringToCameraMode(): NONE_COMPASS unsupported on iOS" );
+        return MGLUserTrackingMode.None;
+
+      case "NONE_GPS":
+
+        console.log( "MapboxView::_stringToCameraMode(): NONE_GPS unsupported on iOS" );
+        return MGLUserTrackingMode.None;
+
+      case "TRACKING":
+        return MGLUserTrackingMode.Follow;
+
+      case "TRACK_COMPASS":
+        return MGLUserTrackingMode.FollowWithHeading;
+
+      case "TRACKING_GPS":
+
+        // a reasonable approximation.
+
+        return MGLUserTrackingMode.Follow;
+
+      case "TRACK_GPS_NORTH":
+        return MGLUserTrackingMode.FollowWithCourse;
+
+    }
+  }
+
+ /**
+  * convert string to render mode
+  */
+
+  _stringToRenderMode( mode ): any {
+
+    let renderMode: any;
+
+    switch( mode ) {
+
+      case 'NORMAL':
+        return 'NORMAL';
+
+      case 'COMPASS':
+        return 'COMPASS';
+
+      case 'GPS':
+        return 'GPS';
+
+    }
 
   }
 
-  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode, nativeMap? ) : void {
+  /**
+  * show a user location marker
+  *
+  * This method must not be called before location permissions have been granted.
+  *
+  * Supported options under iOS are:
+  *
+  * - renderMode
+  * - cameraMode
+  * - clickListener
+  *
+  * Other options are ignored. Compare with the android version that supports a 
+  * different set of options.
+  *
+  * @param {object} options
+  */
+
+  showUserLocationMarker( options, nativeMap?): Promise<void> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+    
+        // userLocation marker.
+
+        theMap.showsUserLocation = true;
+
+        theMap.userTrackingMode = this._stringToCameraMode( options.cameraMode );
+
+        theMap.showsUserHeadingIndicator = true;
+
+        this.userLocationRenderMode = this._stringToRenderMode( options.renderMode );
+
+        // the "delegate" needs to know the modes
+
+        let delegate : MGLMapViewDelegateImpl = <MGLMapViewDelegateImpl>theMap.delegate;
+        
+        // tell the delegate to tell the CustomerLocationAnnotationView to change the
+        // appearance of the marker.
+
+        delegate.changeUserLocationRenderMode( this.userLocationRenderMode );
+        
+        if ( typeof options.clickListener != 'undefined' ) {
+
+          delegate.setUserLocationClickListener( options.clickListener );
+
+        }
+
+        resolve();
+
+      } catch (ex) {
+        console.log("Error in mapbox.getUserLocation: " + ex);
+        reject(ex);
+      }
+    });
 
   }
+
+  /**
+  * Change the mode of the user location marker
+  *
+  * Used to change the camera tracking and render modes of an existing
+  * marker.
+  *
+  * The marker must be configured using showUserLocationMarker before this method
+  * can called.
+  */
+
+  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode, nativeMap? ) : Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        
+        console.log( "Mapbox::changeUserLocationMarkerMode(): changing renderMode to '" + renderModeString + "' cameraMode '" + cameraModeString + "'" );
+
+        theMap.userTrackingMode = this._stringToCameraMode( cameraModeString );
+
+        let delegate : MGLMapViewDelegateImpl = <MGLMapViewDelegateImpl>theMap.delegate;
+        let renderMode = this._stringToRenderMode( renderModeString );
+        delegate.changeUserLocationRenderMode( renderMode );
+
+      } catch (ex) {
+        console.log("Error in mapbox.showUserLocationMarker: " + ex);
+        reject(ex);
+      }
+    });
+
+  }
+
+  /**
+  * ignored on iOS
+  */
 
   forceUserLocationUpdate( location: any, nativeMap? : any ) : void {
   }
@@ -1003,6 +1514,50 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           let recognizer: UIGestureRecognizer = theMap.gestureRecognizers.objectAtIndex(i);
           if (recognizer instanceof UIPanGestureRecognizer) {
             recognizer.addTargetAction(theMap['mapPanHandler'], "pan");
+            break;
+          }
+        }
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.setOnScrollListener: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  /**
+  * simulates onMoveBegin single event callback
+  *
+  * This will call the listener provided once per pan akin to the way
+  * onMoveBegin on the Android side works.
+  */
+
+  setOnMoveBeginListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        // adding the pan handler to the map oject so it's not GC'd
+        theMap['mapOnMoveBeginHandler'] = MapPanHandlerImpl.initWithOwnerAndListenerForMap(new WeakRef(this), listener, theMap);
+
+        // tell the panHandler that we're only interested in the first pan per pan gesture
+
+        theMap[ 'mapOnMoveBeginHandler' ].setOnMoveBegin();
+
+        // there's already a pan recognizer, so find it and attach a target action
+
+        for (let i = 0; i < theMap.gestureRecognizers.count; i++) {
+
+          let recognizer: UIGestureRecognizer = theMap.gestureRecognizers.objectAtIndex(i);
+
+          if (recognizer instanceof UIPanGestureRecognizer) {
+            recognizer.addTargetAction( theMap[ 'mapOnMoveBeginHandler' ], "pan" );
             break;
           }
         }
@@ -2016,9 +2571,15 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   static new(): MGLMapViewDelegateImpl {
     return <MGLMapViewDelegateImpl>super.new();
   }
-
+  
   private mapLoadedCallback: (mapView: MGLMapView) => void;
   private styleLoadedCallback: (mapView: MGLMapView) => void;
+
+  private mapboxApi : any;
+
+  private userLocationClickListener : any;
+  private userLocationRenderMode : any;
+  private userLocationAnnotationView : CustomUserLocationAnnotationView;
 
   // -----------------------
 
@@ -2027,8 +2588,41 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   */
 
   public initWithCallback( mapLoadedCallback: (mapView: MGLMapView) => void): MGLMapViewDelegateImpl {
+
+    console.log( "MGLMapViewDelegateImpl::initWithCallback()" );
+
     this.mapLoadedCallback = mapLoadedCallback;
     return this;
+  }
+
+  // -----------------------
+
+  /**
+  * set a reference to the mapboxAPI instance
+  */
+
+  setMapboxApi( api ) {
+    this.mapboxApi = api;
+  }
+
+  // -----------------------
+
+  /**
+  * set the user location click listener callback
+  */
+
+  setUserLocationClickListener( callback ) {
+    this.userLocationClickListener = callback;
+  }
+
+  // -----------------------
+
+  /**
+  * set user location marker modes
+  */
+
+  changeUserLocationRenderMode( userLocationRenderMode ) {
+    this.userLocationAnnotationView.changeUserLocationRenderMode( userLocationRenderMode );
   }
 
   // -----------------------
@@ -2109,8 +2703,22 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
 
   // ------------------------
 
+  /**
+  * disable the default user location callout
+  *
+  * This took forever to find. The default iOS click handler for the user location
+  * marker is about useless. It just displays "You Are Here". The examples do not
+  * show how to disable it. 
+  */
+
   mapViewAnnotationCanShowCallout(mapView: MGLMapView, annotation: MGLAnnotation): boolean {
-    return true;
+
+    if ( annotation.isKindOfClass( MGLUserLocation.class() ) ) {
+      return false;
+    } else {
+      return true;
+    }
+
   }
 
   // -------------------------
@@ -2192,6 +2800,21 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
   */
 
   mapViewDidSelectAnnotation(mapView: MGLMapView, annotation: MGLAnnotation): void {
+
+    console.log( "MGLMapViewDelegateImpl::mapViewDidSelectAnntation()" );
+
+    if ( annotation.isKindOfClass( MGLUserLocation.class() ) ) {
+      console.log( "MGLMapViewDelegateImpl::mapViewDidSelectAnnotation(): tapped the user location button" );
+
+      if ( typeof this.userLocationClickListener != 'undefined' ) {
+        this.userLocationClickListener( annotation );
+        return;
+      }
+
+      mapView.deselectAnnotationAnimated( annotation, false );
+
+    }
+
     let cachedMarker = this.getTappedMarkerDetails(annotation);
     if (cachedMarker && cachedMarker.onTap) {
       cachedMarker.onTap(cachedMarker);
@@ -2229,7 +2852,29 @@ class MGLMapViewDelegateImpl extends NSObject implements MGLMapViewDelegate {
       }
     }
   }
-}
+
+  // ------------------------------------------------------------------------------------
+
+  /**
+  * override the standard location marker
+  */
+
+  mapViewViewForAnnotation( mapView: MGLMapView, annotation: MGLAnnotation): MGLAnnotationView {
+
+    console.log( "MGLMapViewDelegateImpl::mapViewViewForAnnotation() top" );
+
+    if ( annotation.isKindOfClass( MGLUserLocation.class() ) ) {
+
+      this.userLocationAnnotationView = <CustomUserLocationAnnotationView>CustomUserLocationAnnotationView.alloc().init();
+
+      return this.userLocationAnnotationView;
+    }
+
+    return null;
+
+  }
+
+} // end of MGLMapViewDelegateImpl
 
 // --------------------------------------------------------------------------------------
 
@@ -2288,9 +2933,16 @@ class MapLongPressHandlerImpl extends NSObject {
   };
 }
 
+/**
+* pan handler
+*
+* This is used by the OnScrollListener
+*/
+
 class MapPanHandlerImpl extends NSObject {
   private _owner: WeakRef<Mapbox>;
   private _listener: (data?: LatLng) => void;
+  private onMoveBegin : boolean;
   private _mapView: MGLMapView;
 
   public static initWithOwnerAndListenerForMap(owner: WeakRef<Mapbox>, listener: (data?: LatLng) => void, mapView: MGLMapView): MapPanHandlerImpl {
@@ -2298,12 +2950,43 @@ class MapPanHandlerImpl extends NSObject {
     handler._owner = owner;
     handler._listener = listener;
     handler._mapView = mapView;
+
+    handler.onMoveBegin = false;
+
     return handler;
   }
 
-  public pan(recognizer: UIPanGestureRecognizer): void {
+  public setOnMoveBegin() {
+    this.onMoveBegin = true;
+  }
+
+  public pan( recognizer: UIPanGestureRecognizer ): void {
     const panPoint = recognizer.locationInView(this._mapView);
     const panCoordinate = this._mapView.convertPointToCoordinateFromView(panPoint, this._mapView);
+
+    console.log( "MapPanHandlerImpl::pan(): top with state:", recognizer.state );
+
+    // if this is the beginning of the pan simulate the Android onMoveBegin
+    //
+    // See the objc platform declarations in objc!UIKit.d.ts. It doesn't quite match the apple documention
+
+    if ( this.onMoveBegin ) {
+
+      if ( recognizer.state == UIGestureRecognizerState.Began ) {
+
+        console.log( "MapPanHandlerImpl::pan(): calling onMoveBegin listener" );
+
+        this._listener({
+          lat: panCoordinate.latitude,
+          lng: panCoordinate.longitude
+        });
+
+      }
+
+      return;
+
+    }
+
     this._listener({
       lat: panCoordinate.latitude,
       lng: panCoordinate.longitude
@@ -2314,6 +2997,12 @@ class MapPanHandlerImpl extends NSObject {
     "pan": {returns: interop.types.void, params: [interop.types.id]}
   };
 }
+
+/**
+* swipe handler 
+*
+* Current unused
+*/
 
 class MapSwipeHandlerImpl extends NSObject {
   private _owner: WeakRef<Mapbox>;
