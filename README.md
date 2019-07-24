@@ -1,16 +1,22 @@
-# This is a Fork
+# This is a Fork of Nativescript-Mapbox
 
 This is fork of the [NativeScript Mapbox plugin by EddyVerbruggen](https://github.com/EddyVerbruggen/nativescript-mapbox).
 
-The hope is that that changes I make here will be, over time, [incorporated into the upstream repository](https://github.com/EddyVerbruggen/nativescript-mapbox/issues/300).
+The original thought was to submit the changes I made here to the upstream project but the projects have diverged to the point
+that merging the two would involve significant work. 
 
-In the mean time, this forks adds:
+This forks adds:
 
-- support for the Mapbox Native Android SDK v 7.1.2 and iOS v 4.9.0
-- addLayer() and removeLayer() methods mirroring the methods from mapbox-gl-js supporting lines and circles with various styling options including stops and dash arrays.
+- significant code reorganization and comments.
+- support for the Mapbox Native Android SDK v 8.1.0 and iOS v 5.1.0
+- addLayer() and removeLayer() methods mirroring the methods from mapbox-gl-js supporting lines and circles 
+  with various styling options including stops and dash arrays.
 - click handlers for layers on Android (incomplete on iOS)
-- updating of line layers with new points to animate them (incomplete)
+- updating of line layers with new points to animate them 
+- customized UserLocation marker
+- the beginnings of an angular demo in ./demo-angular
 
+Most of the remaining documentation comes for the upstream fork. 
 
 <a href="https://www.mapbox.com">
   <img src="/screenshots/mapbox_logo.png" width="400"/>
