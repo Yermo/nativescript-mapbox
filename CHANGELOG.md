@@ -5,6 +5,12 @@
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
 
+## 5.0.0 
+
+**Implemented enchancements:**
+
+TODO.
+
 ## [4.4.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.4.0) (2018-10-15)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.3.1...4.4.0)
 

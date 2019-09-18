@@ -1,6 +1,6 @@
 {
   "nativescript": {
-    "id": "org.nativescript.mydrawerng",
+    "id": "com.flyingbricksoftware.MapboxAngularDemo",
     "tns-ios": {
       "version": "6.1.0"
     },
@@ -8,8 +8,8 @@
       "version": "6.1.1"
     }
   },
-  "description": "NativeScript Application",
-  "license": "SEE LICENSE IN <your-license-filename>",
+  "description": "NativeScript Mapbox Plugin Angular Demo",
+  "license": "SEE LICENSE IN LICENSE",
   "repository": "<fill-your-repository-here>",
   "scripts": {
     "lint": "tslint \"src/**/*.ts\"",
