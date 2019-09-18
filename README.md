@@ -2,9 +2,6 @@
 
 This is fork of the [NativeScript Mapbox plugin by EddyVerbruggen](https://github.com/EddyVerbruggen/nativescript-mapbox).
 
-The original thought was to submit the changes I made here to the upstream project but the projects have diverged to the point
-that merging the two would involve significant work. 
-
 This forks adds:
 
 - significant code reorganization and comments.
@@ -14,13 +11,25 @@ This forks adds:
 - click handlers for layers on Android (incomplete on iOS)
 - updating of line layers with new points to animate them 
 - customized UserLocation marker
-- the beginnings of an angular demo in ./demo-angular
+- "markingMode":"none" support under Android.
+- an angular demo in ./demo-angular
 
 Most of the remaining documentation comes for the upstream fork. 
 
 <a href="https://www.mapbox.com">
   <img src="/screenshots/mapbox_logo.png" width="400"/>
 </a>
+
+# To run the Angular demo
+
+```
+cd src
+npm build dist
+cd ../demo-angular
+tns run <platform>
+```
+
+As of this writing the non-angular demo is not functional.
 
 # NativeScript Mapbox plugin
 
