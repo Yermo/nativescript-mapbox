@@ -437,6 +437,8 @@ export interface MapboxApi {
 
   showUserLocationMarker( options: any, nativeMap?: any ) : void;
 
+  hideUserLocationMarker( nativeMap?: any ) : void;
+
   changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode, nativeMap?: any ) : void;
 
   forceUserLocationUpdate( location: any, nativeMap? : any ) : void;
@@ -605,6 +607,8 @@ export interface MapboxViewApi {
 
   showUserLocationMarker( options ): void;
 
+  hideUserLocationMarker(): void;
+
   changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode ) : void;
 
   forceUserLocationUpdate( location ) : void;
@@ -766,6 +770,10 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   showUserLocationMarker( options ) : void {
     this.mapbox.showUserLocationMarker( options, this.getNativeMapView() );
+  }
+
+  hideUserLocationMarker() : void {
+    this.mapbox.hideUserLocationMarker( this.getNativeMapView() );
   }
 
   changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode ) : void {

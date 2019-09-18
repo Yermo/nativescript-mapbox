@@ -1154,6 +1154,31 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   }
 
+  // ------------------------------------------------------------------------------
+
+  /**
+  * hide the user location marker
+  *
+  * @todo unfinished
+  */
+
+  hideUserLocationMarker( nativeMap? ): Promise<void> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        resolve();
+
+      } catch (ex) {
+        console.log("Error in mapbox.getUserLocation: " + ex);
+        reject(ex);
+      }
+    });
+
+  }
+
+  // --------------------------------------------------------------------------------
+
   /**
   * Change the mode of the user location marker
   *
