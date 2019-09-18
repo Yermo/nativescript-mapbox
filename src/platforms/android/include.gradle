@@ -12,11 +12,11 @@ dependencies {
 
     implementation "com.mapbox.mapboxsdk:mapbox-sdk-geojson:4.8.0"
 
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:8.1.0'){
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:8.3.0'){
         transitive=false
     }
 
-    implementation "com.mapbox.mapboxsdk:mapbox-android-gestures:0.4.2"
+    implementation "com.mapbox.mapboxsdk:mapbox-android-gestures:0.5.0"
 
     // service library
 
@@ -24,7 +24,7 @@ dependencies {
 
     // Annotation Plugin
 
-    implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v7:0.6.0'
+    implementation 'com.mapbox.mapboxsdk:mapbox-android-plugin-annotation-v8:0.7.0'
 
 }
 
