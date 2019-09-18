@@ -6,6 +6,7 @@
         "emitDecoratorMetadata": true,
         "noEmitHelpers": true,
         "noEmitOnError": true,
+        "skipLibCheck": true,
         "lib": [
             "es6",
             "dom",
@@ -15,6 +16,9 @@
         "paths": {
             "~/*": [
                 "src/*"
+            ],
+            "*": [
+                "./node_modules/*"
             ]
         }
     },
