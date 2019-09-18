@@ -1,9 +1,19 @@
 import { NgModule, NO_ERRORS_SCHEMA } from "@angular/core";
 import { NativeScriptModule } from "nativescript-angular/nativescript.module";
 
+// So the RadSideDrawer will work
+
+import { NativeScriptUISideDrawerModule } from "nativescript-ui-sidedrawer/angular";
+
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
-import { MapComponent } from "./map/map.component";
+import { MapComponent } from "./components/map/map.component";
+import { HomePageComponent } from "./pages/home/home-page.component";
+import { TestPageComponent } from "./pages/test/test-page.component";
+
+import { EventsService } from "./services/events.service";
+import { PlatformService } from "./services/platform.service";
+import { SettingsService } from "./services/settings.service";
 
 // Uncomment and add to NgModule imports if you need to use two-way binding
 // import { NativeScriptFormsModule } from "nativescript-angular/forms";
@@ -17,13 +27,20 @@ import { MapComponent } from "./map/map.component";
     ],
     imports: [
         NativeScriptModule,
-        AppRoutingModule
+        AppRoutingModule,
+        NativeScriptUISideDrawerModule
     ],
     declarations: [
         AppComponent,
-        MapComponent
+        MapComponent,
+        HomePageComponent,
+        TestPageComponent
     ],
-    providers: [],
+    providers: [
+      EventsService,
+      PlatformService,
+      SettingsService
+    ],
     schemas: [
         NO_ERRORS_SCHEMA
     ]
