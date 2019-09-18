@@ -5,7 +5,7 @@
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
 
-## 5.0.0 
+## 5.0.0-alpha.1 
 
 **Implemented enchancements:**
 
