@@ -5,10 +5,10 @@ import { RouterExtensions } from "nativescript-angular/router";
 import * as app from "tns-core-modules/application";
 
 @Component({
-    selector: "test-page",
-    templateUrl: "./test-page.component.html"
+    selector: "test-no-destroy-page",
+    templateUrl: "./test-no-destroy-page.component.html"
 })
-export class TestPageComponent implements OnInit, OnDestroy {
+export class TestNoDestroyPageComponent implements OnInit, OnDestroy {
 
   constructor(
     private routerExtensions: RouterExtensions,
@@ -17,11 +17,11 @@ export class TestPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log( "TestPageComponent::ngOnInit()" );
+    console.log( "TestNoDestroyPageComponent::ngOnInit()" );
   }
 
   ngOnDestroy(): void {
-    console.log( "TestPageComponent::ngOnDestroy()" );
+    console.log( "TestNoDestroyPageComponent::ngOnDestroy()" );
   }
 
   onDrawerButtonTap(): void {

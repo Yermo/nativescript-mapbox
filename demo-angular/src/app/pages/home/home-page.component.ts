@@ -121,6 +121,8 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
   /**
   * destroy
+  *
+  * @link https://docs.nativescript.org/angular/core-concepts/angular-navigation#custom-route-reuse-strategy
   */
 
   ngOnDestroy() {

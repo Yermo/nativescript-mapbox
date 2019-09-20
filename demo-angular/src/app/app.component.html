@@ -16,9 +16,19 @@ The NativeScript Angular Mapbox demo is based on the app-drawer template
                     <Label col="1" text="Home" class="p-r-10"></Label>
                 </GridLayout>
 
-                <GridLayout columns="auto, *" class="sidedrawer-list-item" [class.selected]="isComponentSelected('/test')" (tap)="onNavItemTap('/test')">
+                <GridLayout columns="auto, *" class="sidedrawer-list-item" [class.selected]="isComponentSelected('/test-crash')" (tap)="onNavItemTap('/test-crash')">
                     <Label col="0" text="&#xf1ea;" class="fa"></Label>
-                    <Label col="1" text="Test Navigation" class="p-r-10"></Label>
+                    <Label col="1" text="Test Destroy Map Crash" class="p-r-10"></Label>
+                </GridLayout>
+
+                <GridLayout columns="auto, *" class="sidedrawer-list-item" [class.selected]="isComponentSelected('/test-no-destroy')" (tap)="onNavItemTap('/test-no-destroy')">
+                    <Label col="0" text="&#xf1ea;" class="fa"></Label>
+                    <Label col="1" text="Test Forward/Back" class="p-r-10"></Label>
+                </GridLayout>
+
+                <GridLayout columns="auto, *" class="sidedrawer-list-item" [class.selected]="isComponentSelected('/toggle-map-test')" (tap)="onNavItemTap('/toggle-map-test')">
+                    <Label col="0" text="&#xf1ea;" class="fa"></Label>
+                    <Label col="1" text="Toggle Map Test" class="p-r-10"></Label>
                 </GridLayout>
 
             </StackLayout>

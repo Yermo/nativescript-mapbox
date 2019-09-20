@@ -76,6 +76,8 @@ export class MapboxView extends MapboxViewBase {
 
   private nativeMapView: any; // com.mapbox.mapboxsdk.maps.MapView
 
+  private settings: any;
+
   constructor() {
     super();
 
@@ -165,9 +167,21 @@ export class MapboxView extends MapboxViewBase {
 
   // -------------------------------------------------------
 
+  /**
+  * when the view is destroyed.
+  *
+  * This is called by the framework when the view is destroyed (made not visible)
+  */
+
   disposeNativeView(): void {
 
     console.log( "MapboxView::disposeNativeView(): top" );
+
+    this.mapbox.destroy();
+
+    if ( typeof this.settings.onMapDestroyed != 'undefined' ) {
+      this.settings.onMapDestroyed();
+    }
 
   }
 
@@ -230,6 +244,18 @@ export class MapboxView extends MapboxViewBase {
           });
 
         },
+        onMapDestroyed: ( map ) => {
+
+          console.log( "MapboxView::init(): onDestroy event" );
+
+          this.notify({
+            eventName: MapboxViewBase.mapDestroyedEvent,
+            object: this,
+            map: this,
+            android: this.nativeMapView
+          });
+
+        },
         onScrollEvent: ( event ) => {
 
           console.log( "MapboxView::init(): onScrollEvent event" );
@@ -259,12 +285,12 @@ export class MapboxView extends MapboxViewBase {
 
       };  // end of options
 
-      let settings = Mapbox.merge( this.config, Mapbox.defaults );
-      settings = Mapbox.merge( settings, options );
+      this.settings = Mapbox.merge( this.config, Mapbox.defaults );
+      this.settings = Mapbox.merge( this.settings, options );
 
-      console.log( "MapboxView::init(): settings are:", settings.touch );
+      console.log( "MapboxView::init(): settings are:", this.settings.touch );
 
-      this.mapbox.show( settings );
+      this.mapbox.show( this.settings );
 
     }
   }
@@ -802,6 +828,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
 
       if ( this._mapboxViewInstance ) {
+
         const viewGroup = this._mapboxViewInstance.getParent();
         if (viewGroup !== null) {
 

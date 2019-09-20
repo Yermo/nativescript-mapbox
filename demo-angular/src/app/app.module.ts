@@ -10,10 +10,13 @@ import { AppComponent } from "./app.component";
 import { MapComponent } from "./components/map/map.component";
 import { HomePageComponent } from "./pages/home/home-page.component";
 import { TestPageComponent } from "./pages/test/test-page.component";
+import { TestNoDestroyPageComponent } from "./pages/test-no-destroy/test-no-destroy-page.component";
+import { ToggleMapTestPageComponent } from "./pages/toggle-map-test/toggle-map-test-page.component";
 
 import { EventsService } from "./services/events.service";
 import { PlatformService } from "./services/platform.service";
 import { SettingsService } from "./services/settings.service";
+import { DebugService } from "./services/debug.service";
 
 // Uncomment and add to NgModule imports if you need to use two-way binding
 // import { NativeScriptFormsModule } from "nativescript-angular/forms";
@@ -34,12 +37,15 @@ import { SettingsService } from "./services/settings.service";
         AppComponent,
         MapComponent,
         HomePageComponent,
-        TestPageComponent
+        TestPageComponent,
+        TestNoDestroyPageComponent,
+        ToggleMapTestPageComponent
     ],
     providers: [
       EventsService,
       PlatformService,
-      SettingsService
+      SettingsService,
+      DebugService
     ],
     schemas: [
         NO_ERRORS_SCHEMA

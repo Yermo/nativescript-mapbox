@@ -14,6 +14,9 @@ import * as app from "tns-core-modules/application";
 
 import { isAndroid, isIOS } from "tns-core-modules/platform";
 
+import { EventsService } from './services/events.service';
+import { DebugService } from './services/debug.service';
+
 // ---------------------------------------------------------------------------
 
 @Component({
@@ -28,6 +31,8 @@ export class AppComponent implements OnInit {
     constructor(
       private router: Router, 
       private routerExtensions: RouterExtensions,
+      private eventsService: EventsService,
+      private debugService: DebugService
     ) {
     }
 
@@ -58,9 +63,68 @@ export class AppComponent implements OnInit {
 
     // ----------------------------------------------------------------------------------------
 
+    /**
+    * Navigate to the named route.
+    *
+    *
+    * @see MapComponent
+    *
+    * @todo I could not get the Page events to work the way I expected in map.component so I'm using my own events here.
+    */
+
     onNavItemTap(navItemRoute: string): void {
 
         console.log( "AppComponent:onNavItemTap(): routing to '" + navItemRoute + "'" );
+
+        // The map.component listens to the destroyMap event. It hides the container
+        // of the Mapbox tag which in turns causes the MapboxView.disposeNativeView() method to be called 
+        // in the plugin which then calls destroy() that calls into the Native Android SDK onDestroy method.
+        //
+        // Once the onDestroy method returns, the onMapDestroyed() callback specified here is called.
+        // In this way we can be sure the map is completely dead before proceeding. 
+        //
+        // FIXME: For reasons that are not clear to me, called destroy on the mapbox view directly causes an 
+        // intermittent crash in android.graphics.drawable.ColorDrawable$ColorState.newDrawable when combining
+        // deleting the map and navigating away from a page. I'm not sure if this is a race condition or some
+        // other issue. I had the theory that somehow the map wasn't shutting down completely before the navigation
+        // event happened ... so I implemented the callback approach below but sadly it still occasionally crashes.
+        //
+        // - wrap an *ngIf around a container around the map to delete it (instead of calling destroy().
+        // - wait for the delete to complete
+
+        if ( navItemRoute == '/test-crash' ) {
+
+          // the map component does the transition in this case after the map
+          // has been hidden.
+
+          console.log( "AppComponent::onNavItemTap() before destroyMap event." );
+
+          this.eventsService.publish( 'destroyMap', { 
+            mapId : 'mainMap', 
+            onMapDestroyed: () => {
+
+              setTimeout( () => {
+                this.routerExtensions.navigate([navItemRoute], {
+                  transition: {
+                    name: "fade"
+                  }
+                });
+
+                const sideDrawer = <RadSideDrawer>app.getRootView();
+                sideDrawer.closeDrawer();
+
+                console.log( "AppComponent::onNavItemTap(): after onMapDestroyed event '" + navItemRoute + "' ---- '" + this.debugService.incrementCounter( navItemRoute ) );
+
+              }, 100 );
+
+            }
+          });
+
+          return;
+
+        }
+
+        console.log( "AppComponent::onNavItemTap(): '" + navItemRoute + "' ---- '" + this.debugService.incrementCounter( navItemRoute ) );
 
         this.routerExtensions.navigate([navItemRoute], {
           transition: {

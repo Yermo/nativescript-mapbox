@@ -607,7 +607,7 @@ export interface MapboxViewApi {
 
   showUserLocationMarker( options ): void;
 
-  hideUserLocationMarker(): void;
+  hideUserLocationMarker( options ): void;
 
   changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode ) : void;
 
@@ -951,6 +951,7 @@ delayProperty.register(MapboxViewCommonBase);
 export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
   static mapReadyEvent: string = "mapReady";
+  static mapDestroyedEvent: string = "mapDestroyed";
   static scrollEvent: string = "scrollEvent";
   static moveBeginEvent: string = "moveBeginEvent";
 
