@@ -69,6 +69,8 @@ export class AppComponent implements OnInit {
     *
     * @see MapComponent
     *
+    * @link https://github.com/NativeScript/android-runtime/issues/1487
+    *
     * @todo I could not get the Page events to work the way I expected in map.component so I'm using my own events here.
     */
 
@@ -76,21 +78,20 @@ export class AppComponent implements OnInit {
 
         console.log( "AppComponent:onNavItemTap(): routing to '" + navItemRoute + "'" );
 
-        // The map.component listens to the destroyMap event. It hides the container
+        // In an attempt to work around the intermittent NativeScript/Mapbox/Plugin/DunnoWhatsCausingit?? crash
+        // the map.component listens to the destroyMap event. It hides the container
         // of the Mapbox tag which in turns causes the MapboxView.disposeNativeView() method to be called 
         // in the plugin which then calls destroy() that calls into the Native Android SDK onDestroy method.
         //
-        // Once the onDestroy method returns, the onMapDestroyed() callback specified here is called.
+        // Once the Mapbox onDestroy method returns, the onMapDestroyed() callback specified here is called.
         // In this way we can be sure the map is completely dead before proceeding. 
         //
-        // FIXME: For reasons that are not clear to me, called destroy on the mapbox view directly causes an 
-        // intermittent crash in android.graphics.drawable.ColorDrawable$ColorState.newDrawable when combining
+        // FIXME: For reasons that are not clear to me, calling destroy on the mapbox view directly causes an 
+        // frequent intermittent crash in android.graphics.drawable.ColorDrawable$ColorState.newDrawable when combining
         // deleting the map and navigating away from a page. I'm not sure if this is a race condition or some
         // other issue. I had the theory that somehow the map wasn't shutting down completely before the navigation
-        // event happened ... so I implemented the callback approach below but sadly it still occasionally crashes.
-        //
-        // - wrap an *ngIf around a container around the map to delete it (instead of calling destroy().
-        // - wait for the delete to complete
+        // event happened ... so I implemented the callback approach below but sadly it still occasionally crashes but
+        // not as frequently. From testing, the longer I make the timeout the less frequently the crash happens.
 
         if ( navItemRoute == '/test-crash' ) {
 
@@ -101,6 +102,9 @@ export class AppComponent implements OnInit {
 
           this.eventsService.publish( 'destroyMap', { 
             mapId : 'mainMap', 
+
+            // see components/map.component.ts. Once the map is destroyed it calls this method.
+
             onMapDestroyed: () => {
 
               setTimeout( () => {
@@ -115,7 +119,7 @@ export class AppComponent implements OnInit {
 
                 console.log( "AppComponent::onNavItemTap(): after onMapDestroyed event '" + navItemRoute + "' ---- '" + this.debugService.incrementCounter( navItemRoute ) );
 
-              }, 100 );
+              }, 500 );
 
             }
           });
