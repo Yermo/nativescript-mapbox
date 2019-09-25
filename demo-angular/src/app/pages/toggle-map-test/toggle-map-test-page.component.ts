@@ -21,9 +21,9 @@ import { EventsService } from '../../services/events.service';
 import { DebugService } from '../../services/debug.service';
 
 // the Mapbox access token and the Mapbox map style to use are set
-// in the config.ts file.
+// in the mapbox_config.ts file.
 
-import { SETTINGS } from '../../config';
+import { SETTINGS } from '../../../../../mapbox_config';
 
 // ------------------------------------------------------------------------------
 
