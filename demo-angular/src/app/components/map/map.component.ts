@@ -161,7 +161,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
   // After map is destroyed optional callback to call. (Provided by event)
 
-  afterMapDestroyed : any;
+  afterMapDestroyed : any = null;
 
   // akin to shown but used by other components who might update the map. 
   //
@@ -227,7 +227,10 @@ export class MapComponent implements OnInit, OnDestroy {
 
     this.events.subscribe( 'destroyMap', async ( data ) => {
 
+      console.log( "MapComponent::registerEventHandlers(): got destroyMap event for component '" + this.id + "' for map '" + data.mapId + "'" );
+
       if ( this.id == data.mapId ) {
+
         console.log( "MapComponent::registerEventHandlers(): got destroyMap event ------------------------ " + this.debugService.incrementCounter( 'mapView' ) );
 
         await this.saveMapState();
@@ -319,16 +322,22 @@ export class MapComponent implements OnInit, OnDestroy {
   /**
   * when the map is destroyed
   *
+  * @see app.component.ts
+  *
   * @todo this is an unsuccessful attempt at working around the intermittent crash problem under Android.
   */
 
   onMapDestroyed(): void {
 
-    console.log( "MapComponent:onMapDestroyed(): top" );
+    // If we are just toggling the map we may not have an afterMapDestoryed event. 
 
-    this.afterMapDestroyed();
+    if ( this.afterMapDestroyed ) {
+      console.log( "MapComponent:onMapDestroyed(): top" );
 
-    console.log( "MapComponent::onMapDestroyed(): bottom" );
+      this.afterMapDestroyed();
+
+      console.log( "MapComponent::onMapDestroyed(): bottom" );
+    }
 
   }
 
