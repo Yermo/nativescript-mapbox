@@ -10,6 +10,7 @@ import { AppComponent } from "./app.component";
 import { MapComponent } from "./components/map/map.component";
 import { HomePageComponent } from "./pages/home/home-page.component";
 import { TestPageComponent } from "./pages/test/test-page.component";
+import { PlainPageComponent } from "./pages/plain/plain-page.component";
 import { TestNoDestroyPageComponent } from "./pages/test-no-destroy/test-no-destroy-page.component";
 import { ToggleMapTestPageComponent } from "./pages/toggle-map-test/toggle-map-test-page.component";
 
@@ -38,6 +39,7 @@ import { DebugService } from "./services/debug.service";
         MapComponent,
         HomePageComponent,
         TestPageComponent,
+        PlainPageComponent,
         TestNoDestroyPageComponent,
         ToggleMapTestPageComponent
     ],

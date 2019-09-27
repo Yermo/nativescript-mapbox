@@ -119,7 +119,7 @@ export class AppComponent implements OnInit {
 
                 console.log( "AppComponent::onNavItemTap(): after onMapDestroyed event '" + navItemRoute + "' ---- '" + this.debugService.incrementCounter( navItemRoute ) );
 
-              }, 500 );
+              }, 100 );
 
             }
           });
