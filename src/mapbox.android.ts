@@ -78,13 +78,40 @@ export class MapboxView extends MapboxViewBase {
 
   private settings: any;
 
+  private gcFixIndex : number;
+
   constructor() {
     super();
 
     console.log( "MapboxView::constructor(): building new MapboxView object." );
 
+    this.gcFixInit();
   }
 
+  // ------------------------------------------------------
+
+  /**
+  * create a new entry in the global gc fix map.
+  *
+  * We may have multiple maps on a page.
+  */
+
+  gcFixInit() {
+
+    if ( typeof global[ 'MapboxView' ] == 'undefined' ) {
+      this.gcFixIndex = 0;
+      global[ 'MapboxView' ] = [
+        {}
+      ];
+
+    } else {
+      global[ 'MapboxView' ].push( {} );
+      this.gcFixIndex = global[ 'MapboxView' ].length - 1;
+    }
+
+    console.log( "MapboxView::gcFixInit(): index is:", this.gcFixIndex );
+  }  
+  
   // ------------------------------------------------------
 
   /**
@@ -109,11 +136,7 @@ export class MapboxView extends MapboxViewBase {
 
   gcFix( key : string, ref : any ) {
 
-    if ( typeof global[ 'MapboxView' ] == 'undefined' ) {
-      global[ 'MapboxView' ] = {};
-    }
-
-    global[ 'MapboxView' ][ key ] = ref;
+    global[ 'MapboxView' ][ this.gcFixIndex ][ key ] = ref;
 
   }
 
@@ -124,7 +147,7 @@ export class MapboxView extends MapboxViewBase {
   */
 
   gcClear() {
-    global[ 'MapboxView' ] = {}
+    global[ 'MapboxView' ][ this.gcFixIndex ] = null;
   }
 
   // ------------------------------------------------------
@@ -156,13 +179,44 @@ export class MapboxView extends MapboxViewBase {
 
     let nativeView = new android.widget.FrameLayout( this._context );
 
-    setTimeout(() => {
-      this.initMap();
-    }, 0);
-
     this.gcFix( 'android.widget.FrameLayout', nativeView );
 
+    console.log( "MapboxView:createNativeView(): bottom" );
+
     return nativeView;
+  }
+
+  // -------------------------------------------------------
+
+  /**
+  * init the native view.
+  */
+
+  public initNativeView(): void {
+
+    console.log( "MapboxView::initNativeView(): top" );
+
+    super.initNativeView();
+
+    console.log( "MapboxView::initNativeView(): after super.initNativeView()" );
+
+    // wait for the view to be fully loaded before initializing the map
+
+    this.on( 'loaded', () => {
+      console.log( "MapboxView::on() loaded" );
+      this.initMap();
+    });
+
+    this.on( 'unloaded', () => {
+      if ( typeof this.settings.onMapDestroyed != 'undefined' ) {
+
+        this.gcClear();
+
+        console.log( "MapboxView::on unloaded. Calling onMapDestroyed" );
+        this.settings.onMapDestroyed();
+      }
+    });
+
   }
 
   // -------------------------------------------------------
@@ -179,9 +233,7 @@ export class MapboxView extends MapboxViewBase {
 
     this.mapbox.destroy();
 
-    if ( typeof this.settings.onMapDestroyed != 'undefined' ) {
-      this.settings.onMapDestroyed();
-    }
+    console.log( "MapboxView::disposeNativeView(): bottom" );
 
   }
 
@@ -200,7 +252,7 @@ export class MapboxView extends MapboxViewBase {
 
   initMap(): void {
 
-    console.log( "MapboxView:initMap(): top" );
+    console.log( "MapboxView:initMap(): top - accessToken is '" + this.config.accessToken + "'" );
 
     if ( ! this.nativeMapView && this.config.accessToken ) {
 
@@ -234,7 +286,7 @@ export class MapboxView extends MapboxViewBase {
         },
         onMapReady: ( map ) => {
 
-          console.log( "MapboxView::init(): onMapReady event" );
+          console.log( "MapboxView::initMap(): onMapReady event" );
 
           this.notify({
             eventName: MapboxViewBase.mapReadyEvent,
@@ -246,7 +298,7 @@ export class MapboxView extends MapboxViewBase {
         },
         onMapDestroyed: ( map ) => {
 
-          console.log( "MapboxView::init(): onDestroy event" );
+          console.log( "MapboxView::initMap(): onDestroy event" );
 
           this.notify({
             eventName: MapboxViewBase.mapDestroyedEvent,
@@ -258,7 +310,7 @@ export class MapboxView extends MapboxViewBase {
         },
         onScrollEvent: ( event ) => {
 
-          console.log( "MapboxView::init(): onScrollEvent event" );
+          console.log( "MapboxView::initMap(): onScrollEvent event" );
 
           this.notify({
             eventName: MapboxViewBase.scrollEvent,
@@ -271,7 +323,7 @@ export class MapboxView extends MapboxViewBase {
         },
         onMoveBeginEvent: ( event ) => {
 
-          console.log( "MapboxView::init(): onMoveBeginEvent event" );
+          console.log( "MapboxView::initMap(): onMoveBeginEvent event" );
 
           this.notify({
             eventName: MapboxViewBase.moveBeginEvent,
@@ -288,9 +340,11 @@ export class MapboxView extends MapboxViewBase {
       this.settings = Mapbox.merge( this.config, Mapbox.defaults );
       this.settings = Mapbox.merge( this.settings, options );
 
-      console.log( "MapboxView::init(): settings are:", this.settings.touch );
+      console.log( "MapboxView::initMap(): before show." );
 
       this.mapbox.show( this.settings );
+
+      console.log( "MapboxView::initMap(): bottom." );
 
     }
   }
@@ -475,6 +529,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       console.log( "Mapbox::constructor: activityBackPressedEvent Event: " + args.eventName + ", Activity: " + args.activity);
       // Set args.cancel = true to cancel back navigation and do something custom.
     });
+
+    console.log( "Mapbox::constructor(): end of Mapbox constructor." );
 
   } // end of constructor
 
@@ -831,9 +887,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         const viewGroup = this._mapboxViewInstance.getParent();
         if (viewGroup !== null) {
-
           console.log( "Mapbox::destroy(): removing _mapboxViewInstance view." );
-
           viewGroup.removeView( this._mapboxViewInstance );
         }
 
@@ -843,11 +897,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         this._mapboxViewInstance = null;
         this._mapboxMapInstance = null;
-
-        setTimeout( () => {
-          console.log( "Mapbox::destroy(): timeout callback to clear gc fix cache" );
-          this.gcClear();
-        }, 100 );
 
       }
 
