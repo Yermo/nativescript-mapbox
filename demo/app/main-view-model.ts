@@ -4,8 +4,11 @@ import { alert, AlertOptions } from "tns-core-modules/ui/dialogs";
 import * as platform from "tns-core-modules/platform";
 import { Mapbox, MapStyle, OfflineRegion, LatLng, Viewport, DownloadProgress, MapboxMarker } from "nativescript-mapbox";
 
+import { SETTINGS } from '../../mapbox_config';
+
 const isIOS = platform.device.os === platform.platformNames.ios;
-const ACCESS_TOKEN = "<ACCESS_TOKEN_HERE>";
+
+const ACCESS_TOKEN = SETTINGS.mapbox_access_token;
 
 export class HelloWorldModel extends Observable {
 
@@ -434,7 +437,7 @@ export class HelloWorldModel extends Observable {
 
   public doTrackUser(): void {
     this.mapbox.trackUser({
-      mode: "FOLLOW_WITH_HEADING",
+      mode: "TRACKING_GPS",
       animated: true
     }).then(() => console.log("Following"));
   }

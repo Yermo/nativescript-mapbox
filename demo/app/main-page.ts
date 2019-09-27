@@ -4,6 +4,8 @@ import { Color } from "tns-core-modules/color";
 import { HelloWorldModel } from "./main-view-model";
 import { MapboxViewApi, LatLng } from "nativescript-mapbox";
 
+import { SETTINGS } from '../../mapbox_config';
+
 // ----------------------------------------------------------------
 
 /**
@@ -20,8 +22,14 @@ export function pageLoaded(args: observable.EventData) {
 
   if ( ! page.bindingContext ) {
     page.bindingContext = new HelloWorldModel();
+
+    // propagate the ACCESS_TOKEN to the XML. 
+
+    page.bindingContext.set( 'ACCESS_TOKEN', SETTINGS.mapbox_access_token );
   }
 }
+
+// -----------------------------------------------------------
 
 function onLocationPermissionGranted(args) {
 
@@ -31,13 +39,18 @@ function onLocationPermissionGranted(args) {
   console.log("onLocationPermissionGranted, map: " + map);
 }
 
+// -----------------------------------------------------------
+
 function onLocationPermissionDenied(args) {
 
   console.log( "locationPermissionDenied(): callback" );
 
   let map: MapboxViewApi = args.map;
   console.log("onLocationPermissionDenied, map: " + map);
+
 }
+
+// -----------------------------------------------------------
 
 function onMapReady(args) {
 
@@ -68,6 +81,7 @@ function onMapReady(args) {
   // map.setMapStyle("~/OSM-map-style.json");
 
   // .. or use the convenience methods exposed on args.map, for instance:
+
   map.addMarkers([
     {
       id: 2,
@@ -185,6 +199,8 @@ function onMapReady(args) {
   //   });
   // }, 25000);
 }
+
+// -----------------------------------------------------------
 
 exports.onMapReady = onMapReady;
 exports.onLocationPermissionGranted = onLocationPermissionGranted;
