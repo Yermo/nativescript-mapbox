@@ -6,7 +6,7 @@
 
 import * as utils from "tns-core-modules/utils/utils";
 import * as application from "tns-core-modules/application";
-import * as frame from "tns-core-modules/ui/frame";
+import { Frame, topmost } from "tns-core-modules/ui/frame";
 import * as fs from "tns-core-modules/file-system";
 import { Color } from "tns-core-modules/color";
 import * as http from "tns-core-modules/http";
@@ -76,7 +76,7 @@ export class MapboxView extends MapboxViewBase {
 
   private nativeMapView: any; // com.mapbox.mapboxsdk.maps.MapView
 
-  private settings: any;
+  private settings: any = null;
 
   private gcFixIndex : number;
 
@@ -88,6 +88,16 @@ export class MapboxView extends MapboxViewBase {
     this.gcFixInit();
   }
 
+  // ------------------------------------------------------
+
+  /**
+  * programmatically include settings
+  */
+
+  setConfig( settings : any ) {
+    this.settings = settings;
+  }
+  
   // ------------------------------------------------------
 
   /**
@@ -196,6 +206,7 @@ export class MapboxView extends MapboxViewBase {
 
     console.log( "MapboxView::initNativeView(): top" );
 
+    (<any>this.nativeView).owner = this;
     super.initNativeView();
 
     console.log( "MapboxView::initNativeView(): after super.initNativeView()" );
@@ -231,7 +242,11 @@ export class MapboxView extends MapboxViewBase {
 
     console.log( "MapboxView::disposeNativeView(): top" );
 
+    (<any>this.nativeView).owner = null;
+
     this.mapbox.destroy();
+
+    super.disposeNativeView();
 
     console.log( "MapboxView::disposeNativeView(): bottom" );
 
@@ -247,19 +262,20 @@ export class MapboxView extends MapboxViewBase {
   *
   * @see show()
   *
-  * @link notify
+  * @link https://docs.nativescript.org/core-concepts/events
   */
 
   initMap(): void {
 
     console.log( "MapboxView:initMap(): top - accessToken is '" + this.config.accessToken + "'" );
 
-    if ( ! this.nativeMapView && this.config.accessToken ) {
+    if ( ! this.nativeMapView && ( this.config.accessToken || this.settings.accessToken )) {
 
       this.mapbox = new Mapbox();
 
-      // the notify method comes from the NativeScript contentview class and is the glue 
-      // that joins this code with whatever callbacks are set in the Mapbox XML tag describing the map.
+      // the NativeScript contentview class extends from Observable to provide the notify method
+      // which is the glue that joins this code with whatever callbacks are set in the Mapbox XML 
+      // tag describing the map.
 
       let options = {
         context: this._context,
@@ -286,7 +302,13 @@ export class MapboxView extends MapboxViewBase {
         },
         onMapReady: ( map ) => {
 
-          console.log( "MapboxView::initMap(): onMapReady event" );
+          console.log( "MapboxView::initMap(): onMapReady event - calling notify with the MapboxViewBase.mapReadyEvent" );
+
+          if ( this.hasListeners( MapboxViewBase.mapReadyEvent ) ) {
+            console.log( "MapboxView::initMap(): onMapReady has listeners." );
+          } else {
+            console.log( "MapboxView::initMap(): onMapReady DOES NOT HAVE listeners." );
+          }
 
           this.notify({
             eventName: MapboxViewBase.mapReadyEvent,
@@ -337,7 +359,14 @@ export class MapboxView extends MapboxViewBase {
 
       };  // end of options
 
-      this.settings = Mapbox.merge( this.config, Mapbox.defaults );
+      console.log( "MapboxView::initMap(): this.config is:", this.config );
+
+      if ( ! this.settings ) {
+        this.settings = Mapbox.merge( this.config, Mapbox.defaults );
+      } else {
+        this.settings = Mapbox.merge( this.settings, Mapbox.defaults );
+      }
+
       this.settings = Mapbox.merge( this.settings, options );
 
       console.log( "MapboxView::initMap(): before show." );
@@ -565,7 +594,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     global[ 'Mapbox' ] = {};
   }
 
-
   // ---------------------------------------------------------------------------------
 
   /**
@@ -671,7 +699,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
           let onDidFinishLoadingMapListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingMapListener({
             onDidFinishLoadingMap : map => {
-              console.error( "Mapbox::show(): finished loading map:", map );
+              console.log( "Mapbox::show(): finished loading map:" );
             }
           });
  
@@ -692,7 +720,11 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               // is initialized. We do not consider the map ready until the style has successfully
               // loaded.
 
+              console.log( "Mapbox::show(): attempting to set style '" + settings.style );
+
               this.setMapStyle( settings.style ).then( ( style ) => {
+
+                console.log( "Mapbox::show(): style loaded." );
 
                 // initialize the event handlers now that we have a constructed view.
 
@@ -730,7 +762,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               });
 
             }
-          });
+          }); // end of onReady callback.
 
           this._mapboxViewInstance.getMapAsync( onMapReadyCallback );
 
@@ -749,14 +781,21 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
             settings.parentView.addView( this._mapboxViewInstance );
 
-          } else {
+          } else if ( settings.container ) {
 
-            console.log( "Mapbox::show(): adding map to topmost frame." );
+            console.log( "Mapbox::show(): adding map to passed in container" );
 
-            const topMostFrame = frame.topmost();
-            const context = application.android.currentContext;
-            const mapViewLayout = new android.widget.FrameLayout(context);
+            // application.android.currentContext has been removed.
 
+            context = application.android.foregroundActivity
+
+            if ( ! context ) {
+              context = application.android.startActivity;
+            }
+
+            const mapViewLayout = new android.widget.FrameLayout( context );
+
+/*
             this.gcFix( 'android.widget.FrameLayout', mapViewLayout );
 
             const density = utils.layout.getDisplayDensity();
@@ -767,29 +806,32 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
             console.log( "Mapbox::show(): before currentPage" );
 
-            const viewWidth = topMostFrame.currentPage.android.getWidth();
-            const viewHeight = topMostFrame.currentPage.android.getHeight();
+            const viewWidth = settings.container.getMeasuredWidth();
+            const viewHeight = settings.container.getMeasuredHeight();
 
             console.log( "Mapbox::show(): viewWidth '" + viewWidth + "' viewHeight '" + viewHeight + "'" );
 
-            const params = new android.widget.FrameLayout.LayoutParams(viewWidth - left - right, viewHeight - top - bottom);
+            const params = new android.widget.FrameLayout.LayoutParams( viewWidth - left - right, viewHeight - top - bottom );
 
             this.gcFix( 'android.widget.FrameLayout.LayoutParams', params );
 
             console.log( "Mapbox::show(): after LayoutParams" );
 
-            params.setMargins(left, top, right, bottom);
-            this._mapboxViewInstance.setLayoutParams(params);
+            params.setMargins( left, top, right, bottom );
+            this._mapboxViewInstance.setLayoutParams( params );
+*/
+
+            console.log( "Mapbox::show(): before adding mapboxViewInstance to FrameLayout" );
 
             mapViewLayout.addView( this._mapboxViewInstance );
 
-            if (topMostFrame.currentPage.android.getParent()) {
-              topMostFrame.currentPage.android.getParent().addView(mapViewLayout);
-            } else {
-              topMostFrame.currentPage.android.addView(mapViewLayout);
-            }
+            console.log( "Mapbox::show(): before adding FrameLayout to container" );
+
+            settings.container.addChild( mapViewLayout );
 
           }
+
+          console.log( "Mapbox::show(): showIt() bottom" );
 
         }; // end of showIt()
 
@@ -861,14 +903,17 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       if ( this.lineManager ) {
         this.lineManager.onDestroy();
+        this.lineManager = null;
       }
 
       if ( this.circleManager ) {
         this.circleManager.onDestroy();
+        this.circleManager = null;
       }
 
       if ( this.symbolManager ) {
         this.symbolManager.onDestroy();
+        this.symbolManager = null;
       }
 
       // if we have a location marker we need to disable it before destroying the map
@@ -3876,7 +3921,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     let hasPermission = android.os.Build.VERSION.SDK_INT < 23; // Android M. (6.0)
     if (!hasPermission) {
       hasPermission = android.content.pm.PackageManager.PERMISSION_GRANTED ===
-          android.support.v4.content.ContextCompat.checkSelfPermission(application.android.foregroundActivity, android.Manifest.permission.ACCESS_FINE_LOCATION);
+
+        android.support.v4.app.ActivityCompat.checkSelfPermission(application.android.foregroundActivity, android.Manifest.permission.ACCESS_FINE_LOCATION);
+ 
+//      android.support.v4.content.ContextCompat.checkSelfPermission(application.android.foregroundActivity, android.Manifest.permission.ACCESS_FINE_LOCATION);
     }
     return hasPermission;
   }
