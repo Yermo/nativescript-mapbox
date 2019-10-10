@@ -72,12 +72,11 @@ To add the plugin to our own project first
 cd src
 npm run build.dist
 ```
-then in your package.json file add
+then in your package.json file in the dependencies section add:
 
 ```
   "nativescript-mapbox": "file:/path/to/nativescript-mapbox/publish/dist/package"
 ```
-to your depedencies list.
 
 If you get an error during iOS build related to Podspec versions, probably the easiest fix is:
 `tns platform remove ios` and `tns platform add ios`.
