@@ -2,6 +2,31 @@
   <TabView>
     <TabView.items>
 
+      <TabViewItem title="Single Map">
+        <TabViewItem.view>
+          <GridLayout columns="*, *" rows="110, *, 160" horizontalAlignment="stretch">
+            <ContentView row="1" colSpan="2" style="margin-top: 6; margin-bottom: 6; border-color: #fff">
+              <map:MapboxView
+                  delay="2000"
+                  latitude="52.3702160"
+                  longitude="4.8951680"
+                  zoomLevel="7"
+                  mapStyle="streets"
+                  mapReady="onMapReady"
+                  locationPermissionGranted="onLocationPermissionGranted"
+                  locationPermissionDenied="onLocationPermissionDenied"
+                  showUserLocation="true"
+                  hideLogo="true"
+                  hideCompass="false"
+                  hideAttribution="true"
+                  accessToken="{{ACCESS_TOKEN}}">
+              </map:MapboxView>
+            </ContentView>
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+
+<!--
       <TabViewItem title="By XML">
         <TabViewItem.view>
           <GridLayout columns="*, *" rows="110, *, 160" horizontalAlignment="stretch">
@@ -76,10 +101,11 @@
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>
+-->
 
       <TabViewItem title="By Code">
         <TabViewItem.view>
-          <GridLayout columns="*, *, *, *" rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto" horizontalAlignment="stretch" class="tab-content">
+          <GridLayout columns="*, *, *, *" rows="auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, *" horizontalAlignment="stretch" class="tab-content">
 
             <Button row="0" col="0" text="show" tap="{{ doShow }}" class="button" />
             <Button row="0" col="1"  text="hide" tap="{{ doHide }}" class="button" />
@@ -123,6 +149,8 @@
             <Button row="10" colSpan="2"  text="location perm?" tap="{{ doCheckHasFineLocationPermission }}" class="button button-permissions" />
             <Button row="10" col="2" colSpan="2"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" class="button button-permissions" />
 
+            <StackLayout row="11" col="0" colSpan="4" id="mapContainer">
+            </StackLayout>
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>

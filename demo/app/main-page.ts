@@ -16,7 +16,7 @@ export function pageLoaded(args: observable.EventData) {
 
   let page = <pages.Page>args.object;
 
-  console.log( "pageLoaded(): callback" );
+  console.log( "main-page::pageLoaded(): callback" );
 
   // avoid creating duplicates of the model onPause/onResume.
 
@@ -31,9 +31,9 @@ export function pageLoaded(args: observable.EventData) {
 
 // -----------------------------------------------------------
 
-function onLocationPermissionGranted(args) {
+export function onLocationPermissionGranted(args) {
 
-  console.log( "locationPermissionGranted(): callback" );
+  console.log( "main-page::locationPermissionGranted(): callback" );
 
   let map: MapboxViewApi = args.map;
   console.log("onLocationPermissionGranted, map: " + map);
@@ -41,20 +41,31 @@ function onLocationPermissionGranted(args) {
 
 // -----------------------------------------------------------
 
-function onLocationPermissionDenied(args) {
+export function onLocationPermissionDenied(args) {
 
-  console.log( "locationPermissionDenied(): callback" );
+  console.log( "main-page::locationPermissionDenied(): callback" );
 
   let map: MapboxViewApi = args.map;
-  console.log("onLocationPermissionDenied, map: " + map);
+  console.log( "main-page::onLocationPermissionDenied, map: " + map );
 
 }
 
 // -----------------------------------------------------------
 
-function onMapReady(args) {
+/**
+* callback when map is ready
+*
+* This is called once the map is ready to use. 
+*
+* NOTE: if this function is not exported, the component-builder will
+* not pick it up and it will never get called. Something changed 
+* as this used to work without the export. This took basically forever to figure
+* out.
+*/
 
-  console.log( "mapReady(): callback" );
+export function onMapReady(args) {
+
+  console.log( "main-page::mapReady(): callback" );
 
   let map: MapboxViewApi = args.map;
 
@@ -62,7 +73,7 @@ function onMapReady(args) {
 
   const nativeMapView = args.ios ? args.ios : args.android;
 
-  console.log( `Mapbox onMapReady for ${args.ios ? "iOS" : "Android"}, native object received: ${nativeMapView}` );
+  console.log( `main-page::Mapbox onMapReady for ${args.ios ? "iOS" : "Android"}, native object received: ${nativeMapView}` );
 
   map.setOnMapClickListener( (point: LatLng) => {
     console.log(`Map tapped: ${JSON.stringify(point)}`);
@@ -82,6 +93,8 @@ function onMapReady(args) {
 
   // .. or use the convenience methods exposed on args.map, for instance:
 
+  console.log( "main-page: before adding marker" );
+
   map.addMarkers([
     {
       id: 2,
@@ -91,14 +104,14 @@ function onMapReady(args) {
       subtitle: 'Really really nice location',
       iconPath: 'res/markers/green_pin_marker.png',
       onTap: () => {
-        console.log("'Nice location' marker tapped");
+        console.log("main-page 'Nice location' marker tapped");
       },
       onCalloutTap: () => {
-        console.log("'Nice location' marker callout tapped");
+        console.log("main-page 'Nice location' marker callout tapped");
       }
     }]
   ).then(() => {
-    console.log("Markers added");
+    console.log("main-page Markers added");
     setTimeout(() => {
       map.queryRenderedFeatures({
         point: {
@@ -107,6 +120,8 @@ function onMapReady(args) {
         }
       }).then(result => console.log(JSON.stringify(result)));
     }, 1000);
+  }).catch( ( error ) => {
+    console.error( "main-page: error adding markers:", error );
   });
 
   setTimeout(() => {
@@ -200,8 +215,4 @@ function onMapReady(args) {
   // }, 25000);
 }
 
-// -----------------------------------------------------------
-
-exports.onMapReady = onMapReady;
-exports.onLocationPermissionGranted = onLocationPermissionGranted;
-exports.onLocationPermissionDenied = onLocationPermissionDenied;
+// END
