@@ -374,8 +374,6 @@ export interface ShowOptions {
 
   /**
   * callback on Map Ready
-  *
-  * Android only
   */
   
   onMapReady? : any;
@@ -1023,6 +1021,9 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 * @link https://docs.nativescript.org/plugins/ui-plugin-custom
 */
 
+export const mapReadyProperty = new Property<MapboxViewCommonBase, string>({name: "mapReady"});
+mapReadyProperty.register( MapboxViewCommonBase );
+
 export const zoomLevelProperty = new Property<MapboxViewCommonBase, number>({name: "zoomLevel"});
 zoomLevelProperty.register(MapboxViewCommonBase);
 
@@ -1106,17 +1107,22 @@ delayProperty.register(MapboxViewCommonBase);
 * the Mapbox XML tag.
 *
 * @see MapboxView
+*
+* @link https://docs.nativescript.org/plugins/ui-plugin-custom
 */
 
 export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
-  static mapReadyEvent: string = "mapReady";
-  static mapDestroyedEvent: string = "mapDestroyed";
-  static scrollEvent: string = "scrollEvent";
-  static moveBeginEvent: string = "moveBeginEvent";
+  // this took forever to find. The component-builder module apparently
+  // looks for static members to find events on controls.
 
-  static locationPermissionGrantedEvent: string = "locationPermissionGranted";
-  static locationPermissionDeniedEvent: string = "locationPermissionDenied";
+  public static mapReadyEvent: string = "mapReady";
+  public static mapDestroyedEvent: string = "mapDestroyed";
+  public static scrollEvent: string = "scrollEvent";
+  public static moveBeginEvent: string = "moveBeginEvent";
+
+  public static locationPermissionGrantedEvent: string = "locationPermissionGranted";
+  public static locationPermissionDeniedEvent: string = "locationPermissionDenied";
 
   protected config: any = {};
 
@@ -1125,14 +1131,13 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
   }
 
   [mapStyleProperty.setNative](value: string) {
+    console.log( "MapboxViewBase::mapStyle.setNative(): setting value '" + value + "'" );
     this.config.style = value;
     this.config.mapStyle = value;
   }
 
   [accessTokenProperty.setNative](value: string) {
-
     console.log( "MapboxViewBase::accessTokenProperty.setNative(): setting value '" + value + "'" );
-
     this.config.accessToken = value;
   }
 
