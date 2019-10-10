@@ -18,3 +18,11 @@ tns run android
 ```
 tns run ios
 ```
+
+# Tests
+
+```
+npm run e2e -- --runType android28
+```
+
+where android28 is one of the images listed in the e2e config.
