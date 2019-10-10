@@ -5,7 +5,7 @@ This is fork of the [NativeScript Mapbox plugin by EddyVerbruggen](https://githu
 This forks adds:
 
 - significant code reorganization and comments.
-- support for the Mapbox Native Android SDK v 8.1.0 and iOS v 5.1.0
+- support for the Mapbox Native Android SDK v 8.4.0 and iOS v 5.1.0
 - addLayer() and removeLayer() methods mirroring the methods from mapbox-gl-js supporting lines and circles 
   with various styling options including stops and dash arrays.
 - click handlers for layers on Android (incomplete on iOS)
@@ -24,12 +24,19 @@ Most of the remaining documentation comes for the upstream fork.
 
 ```
 cd src
-npm build dist
+npm run build.dist
 cd ../demo-angular
 tns run <platform>
 ```
 
-As of this writing the non-angular demo is not functional.
+# To run the plain Nativescript demo
+
+```
+cd src
+npm run build.dist
+cd ../demo
+tns run <platform>
+```
 
 # NativeScript Mapbox plugin
 
@@ -49,17 +56,28 @@ Awesome native OpenGL-powered maps - by Mapbox
 
 <img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
-> Plugin version 4.4.0 may crash on Android when pausing and resuming the app. If this affects you, pin your version to "4.3.1" for now. So in package.json do `"nativescript-mapbox": "4.3.1"` (without the `~` / `^` version prefix).
+> This version of the plugin still crashes randomly on Android when navigating away from a map. There is an e2e test in the demo-angular app that exercises this bug. 
 
 ## Prerequisites
-You need a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
+You either need your own tile server such as the one provided by [openmaptiles.org](https://openmaptiles.org) or a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
 Once you've registered go to your Account > Apps > New token. The 'Default Secret Token' is what you'll need.
 
+Your access_token can then be set in the top level mapbox_config.ts file.
+
 ## Installation
-From the command prompt go to your app's root folder and execute:
+This version of the plugin is still in development and not yet available via NPM.
+
+To add the plugin to our own project first 
 ```
-tns plugin add nativescript-mapbox
+cd src
+npm run build.dist
 ```
+then in your package.json file add
+
+```
+  "nativescript-mapbox": "file:/path/to/nativescript-mapbox/publish/dist/package"
+```
+to your depedencies list.
 
 If you get an error during iOS build related to Podspec versions, probably the easiest fix is:
 `tns platform remove ios` and `tns platform add ios`.
@@ -75,16 +93,18 @@ If you get an error related to `TelemetryService` then please check it's there.
 ## Usage
 
 ### Demo app (XML + TypeScript)
-If you want a quickstart, [clone our demo app](https://github.com/EddyVerbruggen/nativescript-mapbox-demo).
+If you want a quickstart, see the demo in this repository.
 It shows you how to draw a map in XML and JS with almost all possible options.
 
+> Not all features are working as of this writing.
+
 ### Demo app (Angular)
-This plugin is part of the [plugin showcase app](https://github.com/EddyVerbruggen/nativescript-pluginshowcase/tree/master/app/mapping) I built using Angular.
+There is also the beginnings of an Angular demo in demo-angular in this repository.
 
 ## Declaring a map in the view
 
 ### XML
-You can instantiate a map from JS or TS but declaring it in XML has a few advantages. As the map is yet another view component it will play nice with any NativeScript layout you throw it in. You can also easily add multiple maps to the same page or to different pages in any layout you like.
+You can instantiate a map from JS or TS. As the map is yet another view component it will play nice with any NativeScript layout you throw it in. You can also easily add multiple maps to the same page or to different pages in any layout you like.
 
 A simple layout could look like this:
 
@@ -97,7 +117,6 @@ Could be rendered by a definition like this:
   <StackLayout>
     <Label text="Nice map, huh!" class="title"/>
     <ContentView height="240" width="240">
-      <!-- IMPORTANT: plugin version 3 uses :MapboxView, lower versions use :Mapbox -->
       <map:MapboxView
           accessToken="your_token"
           mapStyle="traffic_night"
