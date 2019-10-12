@@ -214,18 +214,19 @@ export class MapboxView extends MapboxViewBase {
     // wait for the view to be fully loaded before initializing the map
 
     this.on( 'loaded', () => {
-      console.log( "MapboxView::on() loaded" );
+      console.log( "MapboxView::initNativeView(): on - loaded" );
       this.initMap();
     });
 
     this.on( 'unloaded', () => {
+
+      console.log( "MapboxView::initNativeView(): on - unloaded" );
+
       if ( typeof this.settings.onMapDestroyed != 'undefined' ) {
-
-        this.gcClear();
-
-        console.log( "MapboxView::on unloaded. Calling onMapDestroyed" );
+        console.log( "MapboxView::initNativeView(). on unloaded Calling onMapDestroyed" );
         this.settings.onMapDestroyed();
       }
+
     });
 
   }
@@ -235,16 +236,24 @@ export class MapboxView extends MapboxViewBase {
   /**
   * when the view is destroyed.
   *
-  * This is called by the framework when the view is destroyed (made not visible)
+  * This is called by the framework when the view is destroyed (made not visible).
+  *
+  * However, it does not seem to be called when the page is unloaded.
+  *
+  * @link https://docs.nativescript.org/plugins/ui-plugin-custom
   */
 
-  disposeNativeView(): void {
+  async disposeNativeView(): Promise<void> {
 
     console.log( "MapboxView::disposeNativeView(): top" );
 
     (<any>this.nativeView).owner = null;
 
-    this.mapbox.destroy();
+    await this.mapbox.destroy();
+
+    console.log( "MapboxView::disposeNativeView(): after mapbox.destroy()" );
+
+    this.gcClear();
 
     super.disposeNativeView();
 
@@ -416,6 +425,23 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   private symbolManager : any = null;
 
   private _offlineManager : any;
+
+  // event listeners
+
+  private onDidFailLoadingMapListener;
+  private onDidFinishLoadingMapListener;
+  private onMapReadyCallback;
+  private onDidFinishLoadingStyleListener;
+  private onAnnotationClickListener;
+  private onMapClickListener; 
+  private onMapLongClickListener;
+  private onMoveListener;
+  private onScrollListener;
+  private onFlingListener;
+  private onCameraMoveListener; 
+  private onCameraMoveCancelListener;
+  private onCameraIdleListener;
+  private onLocationClickListener;          
 
   private _markers = [];
   private _polylines = [];
@@ -685,31 +711,31 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           // define some listeners to inform in case the map does not
           // load.
 
-          let onDidFailLoadingMapListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener({
+          this.onDidFailLoadingMapListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener({
             onDidFailLoadingMap : error => {
               console.error( "Mapbox::show(): failed to load map:", error );
             }
           });
 
-          console.log( "Mapbox::show(): about on add onDidFailLoadingMapListener:", onDidFailLoadingMapListener );
+          console.log( "Mapbox::show(): about on add onDidFailLoadingMapListener:", this.onDidFailLoadingMapListener );
           
-          this._mapboxViewInstance.addOnDidFailLoadingMapListener( onDidFailLoadingMapListener );
+          this._mapboxViewInstance.addOnDidFailLoadingMapListener( this.onDidFailLoadingMapListener );
 
-          this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener', onDidFailLoadingMapListener );
+          this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener', this.onDidFailLoadingMapListener );
 
-          let onDidFinishLoadingMapListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingMapListener({
+          this.onDidFinishLoadingMapListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingMapListener({
             onDidFinishLoadingMap : map => {
               console.log( "Mapbox::show(): finished loading map:" );
             }
           });
  
-          this._mapboxViewInstance.addOnDidFinishLoadingMapListener( onDidFinishLoadingMapListener );
+          this._mapboxViewInstance.addOnDidFinishLoadingMapListener( this.onDidFinishLoadingMapListener );
 
-          this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingMapListener', onDidFinishLoadingMapListener );
+          this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingMapListener', this.onDidFinishLoadingMapListener );
  
           console.log( "Mapbox::show(): after adding fail listener()" );
 
-          let onMapReadyCallback = new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
+          this.onMapReadyCallback = new com.mapbox.mapboxsdk.maps.OnMapReadyCallback({
             onMapReady: mbMap => {
 
               this._mapboxMapInstance = mbMap;
@@ -764,9 +790,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             }
           }); // end of onReady callback.
 
-          this._mapboxViewInstance.getMapAsync( onMapReadyCallback );
+          this._mapboxViewInstance.getMapAsync( this.onMapReadyCallback );
 
-          this.gcFix( 'com.mapbox.mapboxsdk.maps.OnMapReadyCallback', onMapReadyCallback );
+          this.gcFix( 'com.mapbox.mapboxsdk.maps.OnMapReadyCallback', this.onMapReadyCallback );
 
           // mapView.onResume();
 
@@ -794,32 +820,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             }
 
             const mapViewLayout = new android.widget.FrameLayout( context );
-
-/*
-            this.gcFix( 'android.widget.FrameLayout', mapViewLayout );
-
-            const density = utils.layout.getDisplayDensity();
-            const left = settings.margins.left * density;
-            const right = settings.margins.right * density;
-            const top = settings.margins.top * density;
-            const bottom = settings.margins.bottom * density;
-
-            console.log( "Mapbox::show(): before currentPage" );
-
-            const viewWidth = settings.container.getMeasuredWidth();
-            const viewHeight = settings.container.getMeasuredHeight();
-
-            console.log( "Mapbox::show(): viewWidth '" + viewWidth + "' viewHeight '" + viewHeight + "'" );
-
-            const params = new android.widget.FrameLayout.LayoutParams( viewWidth - left - right, viewHeight - top - bottom );
-
-            this.gcFix( 'android.widget.FrameLayout.LayoutParams', params );
-
-            console.log( "Mapbox::show(): after LayoutParams" );
-
-            params.setMargins( left, top, right, bottom );
-            this._mapboxViewInstance.setLayoutParams( params );
-*/
 
             console.log( "Mapbox::show(): before adding mapboxViewInstance to FrameLayout" );
 
@@ -899,6 +899,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   destroy( nativeMap?: any ): Promise<any> {
     return new Promise( async (resolve, reject) => {
 
+      this.clearEventListeners();
+      this.gcClear();
+
       console.log( "Mapbox::destroy(): destroying mapbox view." );
 
       if ( this.lineManager ) {
@@ -936,6 +939,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           viewGroup.removeView( this._mapboxViewInstance );
         }
 
+	this._mapboxViewInstance.onPause();
+	this._mapboxViewInstance.onStop();
+	this._mapboxViewInstance.destroyDrawingCache();
+
         // let the API know that we're programmatically destroying the map.
 
         this._mapboxViewInstance.onDestroy();
@@ -948,6 +955,77 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       resolve();
 
     });
+
+  }
+
+  // ----------------------------------------------------------------------------------
+
+  /**
+  * Clear Event Listeners
+  *
+  * Explicitly clear all registered event listeners. It's not clear to me whether or not this 
+  * is strictly necessary as I imagine these should all get cleaned up when the map is destroyed
+  * but given the complication of NativeScript's garbage collection scheme it seems like a good
+  * idea to remove these handlers explicitly.
+  */
+
+  private clearEventListeners() {
+
+    if ( this.onDidFailLoadingMapListener ) { 
+      this._mapboxViewInstance.removeOnDidFailLoadingMapListener( this.onDidFailLoadingMapListener );
+    }
+
+    if ( this.onDidFinishLoadingMapListener ) { 
+      this._mapboxViewInstance.removeOnDidFinishLoadingMapListener( this.onDidFinishLoadingMapListener );
+    }
+
+    if ( this.onDidFinishLoadingStyleListener ) { 
+      this._mapboxViewInstance.removeOnDidFinishLoadingStyleListener( this.onDidFinishLoadingStyleListener );
+    }
+
+    if (  this.onAnnotationClickListener ) { 
+      this.lineManager.removeClickListener( this.onAnnotationClickListener );
+    }
+
+    if ( this.onDidFailLoadingMapListener ) { 
+      this._mapboxViewInstance.removeOnDidFailLoadingMapListener( this.onDidFailLoadingMapListener );
+    }
+
+    if ( this.onMapClickListener ) {
+      this._mapboxMapInstance.removeOnMapClickListener( this.onMapClickListener );
+    }
+
+    if ( this.onMapLongClickListener ) { 
+      this._mapboxMapInstance.removeOnMapLongClickListener( this.onMapLongClickListener );
+    }
+
+    if ( this.onMoveListener ) { 
+      this._mapboxMapInstance.removeOnMoveListener( this.onMoveListener );
+    }
+
+    if ( this.onScrollListener ) { 
+      this._mapboxMapInstance.removeOnMoveListener( this.onScrollListener );
+    }
+
+    if ( this.onFlingListener ) {     
+      this._mapboxMapInstance.removeOnFlingListener( this.onFlingListener );
+    }
+
+    if ( this.onCameraMoveListener ) { 
+      this._mapboxMapInstance.removeOnCameraMoveListener( this.onCameraMoveListener );
+    }
+
+    if ( this.onCameraMoveCancelListener ) { 
+      this._mapboxMapInstance.removeOnCameraMoveCancelListener( this.onCameraMoveCancelListener );
+    }
+
+    if (  this.onCameraIdleListener ) { 
+      this._mapboxMapInstance.removeOnCameraIdleListener( this.onCameraIdleListener );
+    }
+
+    if (  this.onLocationClickListener ) {
+      this._locationComponent.removeOnLocationClickListener( this.onLocationClickListener );
+    }
 
   }
 
@@ -1457,7 +1535,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         // callback for when the style is successfully loaded.
 
-        let onDidFinishLoadingStyleListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener({
+        this.onDidFinishLoadingStyleListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener({
           onDidFinishLoadingStyle : style => {
 
             console.log( "Mapbox:setMapStyle(): style loaded" );
@@ -1472,7 +1550,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
             this.gcFix( 'lineManager', this.lineManager );
 
-            let onAnnotationClickListener = new com.mapbox.mapboxsdk.plugins.annotation.OnAnnotationClickListener({
+            this.onAnnotationClickListener = new com.mapbox.mapboxsdk.plugins.annotation.OnAnnotationClickListener({
               onAnnotationClick: line => {
                 console.log( "Mapbox:setMapStyle(): click on line:", line );
 
@@ -1482,22 +1560,22 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               }
             });
 
-            this.lineManager.addClickListener( onAnnotationClickListener );
+            this.lineManager.addClickListener( this.onAnnotationClickListener );
 
-            this.gcFix( 'com.mapbox.mapboxsdk.plugins.annotation.OnAnnotationClickListener', onAnnotationClickListener );
+            this.gcFix( 'com.mapbox.mapboxsdk.plugins.annotation.OnAnnotationClickListener', this.onAnnotationClickListener );
 
             resolve( style );
 
           }
         });
 
-        this._mapboxViewInstance.addOnDidFinishLoadingStyleListener( onDidFinishLoadingStyleListener );
+        this._mapboxViewInstance.addOnDidFinishLoadingStyleListener( this.onDidFinishLoadingStyleListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener', onDidFinishLoadingStyleListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener', this.onDidFinishLoadingStyleListener );
 
         // callback if loading the style fails.
 
-        let onDidFailLoadingMapListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener({
+        this.onDidFailLoadingMapListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener({
           onDidFailLoadingMap : error => {
             console.log( "Mapbox:setMapStyle(): style failed" );
             reject( error );
@@ -1506,9 +1584,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         console.log( "Mapbox::setMapStyle(): before onDidFailLoadingMapListener" );
 
-        this._mapboxViewInstance.addOnDidFailLoadingMapListener( onDidFailLoadingMapListener );
+        this._mapboxViewInstance.addOnDidFailLoadingMapListener( this.onDidFailLoadingMapListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener', onDidFailLoadingMapListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener', this.onDidFailLoadingMapListener );
 
         let builder = new com.mapbox.mapboxsdk.maps.Style.Builder();
 
@@ -2122,7 +2200,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         }
 
 
-        let onMapClickListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener({
+        this.onMapClickListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener({
           onMapClick: point => {
 
             console.log( "Mapbox:setOnMapClickListener(): click event at point:", point );
@@ -2135,9 +2213,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           }
         });
 
-        this._mapboxMapInstance.addOnMapClickListener( onMapClickListener );
+        this._mapboxMapInstance.addOnMapClickListener( this.onMapClickListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener', onMapClickListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener', this.onMapClickListener );
 
         resolve();
       } catch (ex) {
@@ -2158,7 +2236,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        let onMapLongClickListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapLongClickListener({
+        this.onMapLongClickListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapLongClickListener({
           onMapLongClick: point => {
             return listener({
               lat: point.getLatitude(),
@@ -2167,9 +2245,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           }
         });
 
-        this._mapboxMapInstance.addOnMapLongClickListener( onMapLongClickListener );
+        this._mapboxMapInstance.addOnMapLongClickListener( this.onMapLongClickListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnMapLongClickListener', onMapLongClickListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnMapLongClickListener', this.onMapLongClickListener );
 
         resolve();
       } catch (ex) {
@@ -2192,7 +2270,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         console.log( "Mapbox::setOnMoveBeginListener():" );
 
-        let onMoveListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener({
+        this.onMoveListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener({
           onMoveBegin: (detector: any /* MoveGestureDetector */) => {
             const coordinate = this._mapboxMapInstance.getCameraPosition().target;
             return listener({
@@ -2206,9 +2284,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           }
         });
 
-        this._mapboxMapInstance.addOnMoveListener( onMoveListener );
+        this._mapboxMapInstance.addOnMoveListener( this.onMoveListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener', onMoveListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener', this.onMoveListener );
 
         resolve();
       } catch (ex) {
@@ -2233,7 +2311,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         // the 'onMove' event seems like the one closest to the iOS implementation
 
-        let onMoveListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener({
+        this.onScrollListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener({
           onMoveBegin: (detector: any /* MoveGestureDetector */) => {
           },
           onMove: (detector: any /* MoveGestureDetector */) => {
@@ -2247,9 +2325,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           }
         });
 
-        this._mapboxMapInstance.addOnMoveListener( onMoveListener );
+        this._mapboxMapInstance.addOnMoveListener( this.onScrollListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnMoveListener', onMoveListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnScrollListener', this.onScrollListener );
 
         resolve();
       } catch (ex) {
@@ -2270,15 +2348,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        let onFlingListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnFlingListener({
+        this.onFlingListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnFlingListener({
           onFling: () => {
             return listener();
           }
         });
 
-        this._mapboxMapInstance.addOnFlingListener( onFlingListener );
+        this._mapboxMapInstance.addOnFlingListener( this.onFlingListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnFlingListener', onFlingListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnFlingListener', this.onFlingListener );
 
         resolve();
       } catch (ex) {
@@ -2299,15 +2377,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
  
-        let onCameraMoveListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveListener({
+        this.onCameraMoveListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveListener({
           onCameraMove: () => {
             return listener();
           }
         });
 
-        this._mapboxMapInstance.addOnCameraMoveListener( onCameraMoveListener );
+        this._mapboxMapInstance.addOnCameraMoveListener( this.onCameraMoveListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveListener', onCameraMoveListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveListener', this.onCameraMoveListener );
 
         resolve();
       } catch (ex) {
@@ -2328,15 +2406,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        let onCameraMoveCancelListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveCanceledListener({
+        this.onCameraMoveCancelListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveCanceledListener({
           onCameraMoveCanceled: () => {
             return listener();
           }
         });
 
-        this._mapboxMapInstance.addOnCameraMoveCancelListener( onCameraMoveCancelListener );
+        this._mapboxMapInstance.addOnCameraMoveCancelListener( this.onCameraMoveCancelListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveCanceledListener', onCameraMoveCancelListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraMoveCanceledListener', this.onCameraMoveCancelListener );
 
         resolve();
       } catch (ex) {
@@ -2357,15 +2435,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        let onCameraIdleListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener({
+        this.onCameraIdleListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener({
           onCameraIdle: () => {
             return listener();
           }
         });
 
-        this._mapboxMapInstance.addOnCameraIdleListener( onCameraIdleListener );
+        this._mapboxMapInstance.addOnCameraIdleListener( this.onCameraIdleListener );
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener', onCameraIdleListener );
+        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapboxMap.OnCameraIdleListener', this.onCameraIdleListener );
 
         resolve();
       } catch (ex) {
@@ -4051,15 +4129,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         if ( typeof options.clickListener != 'undefined' ) {
  
-          let onLocationClickListener = new com.mapbox.mapboxsdk.location.OnLocationClickListener({
+          this.onLocationClickListener = new com.mapbox.mapboxsdk.location.OnLocationClickListener({
             onLocationComponentClick: ( component ) => { 
               options.clickListener( component );
             }
           });
 
-          this._locationComponent.addOnLocationClickListener( onLocationClickListener );
+          this._locationComponent.addOnLocationClickListener( this.onLocationClickListener );
 
-          this.gcFix( 'com.mapbox.mapboxsdk.location.OnLocationClickListener', onLocationClickListener );
+          this.gcFix( 'com.mapbox.mapboxsdk.location.OnLocationClickListener', this.onLocationClickListener );
 
         }
 
