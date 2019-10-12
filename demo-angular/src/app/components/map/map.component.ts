@@ -3,7 +3,7 @@
 * 
 * Implements a map directive for NativeScript Angular
 *
-* @author Yermo Lamers, Flying Brick Software, LLC
+* @author Yermo Lamers, Flying Brick Software, LLC https://github.com/Yermo
 */
 
 import {
@@ -13,13 +13,12 @@ import {
   ViewChild,
   ViewContainerRef,
   Input,
-  NgZone
+  NgZone,
+  HostListener
 } from '@angular/core';
 
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import * as app from "tns-core-modules/application";
-
-import { Subject } from 'rxjs/Subject';
 
 // Mapbox GL Native API
 
@@ -31,12 +30,10 @@ import { SettingsService } from '../../services/settings.service';
 import { DebugService } from '../../services/debug.service';
 
 // This is the magic glue that tells NativeScript that when it encounters
-// a Mapbox tag it should create a MapboxView.
+// a Mapbox XML tag it should create a MapboxView.
 
 import { registerElement } from "nativescript-angular/element-registry";
 registerElement( "Mapbox", () => require("nativescript-mapbox").MapboxView);
-
-import { Page } from "tns-core-modules/ui/page";
 
 // -------------------------------------------------------------------------------------------------
 
@@ -107,14 +104,12 @@ export class MapComponent implements OnInit, OnDestroy {
   * ready promise
   *
   * The map can take some time to be "ready" especially if it's slow to load the style
-  * so this promise is used by subtags. Before attempting to access the map, they
+  * so this promise is used by child tags. Before attempting to access the map, they
   * wait for the promise to be resolved.
   */
 
   public readyPromise:Promise<any>;
-
   public readyPromiseResolver:any;
-
   public isReady : boolean = false;
 
   @Input() id : string;
@@ -138,24 +133,18 @@ export class MapComponent implements OnInit, OnDestroy {
 
   @ViewChild( 'mapContainer', { read: ViewContainerRef, static: false }) mapContainer;
 
-  public mapboxView: MapboxViewApi;
-  public mapboxApi: Mapbox;
+  public mapboxView: MapboxViewApi = null;
+  public mapboxApi: Mapbox = null;
 
   // initial coordinates for the map if no location is available.
 
   @Input() fallbackLatitude : string;
   @Input() fallbackLongitude: string;
   
-  // FIXME: for some reason on startup we're getting a platform:resume event
-  // so we guard against that on first launch
-
-  private firstLaunch : boolean = true;
-
   // whether or not to show the map
   //
-  // To work around the Android random crash bug we destroy the map using 
-  // an ngIf. Before navigating away, this is set to false destroying the
-  // map. 
+  // When navigating away from the page we destroy the map by 
+  // setting this to false (see the *ngIf on the StackLayout tag in the template above).
 
   shown : boolean = true;
 
@@ -163,12 +152,6 @@ export class MapComponent implements OnInit, OnDestroy {
 
   afterMapDestroyed : any = null;
 
-  // akin to shown but used by other components who might update the map. 
-  //
-  // FIXME: ugly.
-
-  isVisible : boolean = false;
-  
   // ----------------------------------
 
   /**
@@ -180,7 +163,6 @@ export class MapComponent implements OnInit, OnDestroy {
   constructor( 
     public ngZone: NgZone,
     public viewContainerRef: ViewContainerRef,
-    public page: Page,
 
     public platform: PlatformService,
     public settingsService: SettingsService,
@@ -204,6 +186,9 @@ export class MapComponent implements OnInit, OnDestroy {
 
   /**
   * register event handlers
+  *
+  * @link https://github.com/NativeScript/NativeScript/issues/7954
+  * @link https://github.com/NativeScript/NativeScript/issues/7867
   */
 
   registerEventHandlers() {
@@ -222,8 +207,10 @@ export class MapComponent implements OnInit, OnDestroy {
       this.onResume();
     });
 
-    // FIXME: This hack is an unsuccessful attempt to address the intermittent crash problem on navigating away
-    // after removing the map.
+    // I thought that maybe the intermittent crash on navigation was due to a race condition so I added this
+    // method which is raised from app.component.html when navigating away from the map page. The idea is
+    // to completely hide and destroy the map object before initiating the navigation. This is probably 
+    // overkill as the bug I was trying to work around is not due to a race condition. (See link above)
 
     this.events.subscribe( 'destroyMap', async ( data ) => {
 
@@ -237,7 +224,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
         this.shown = false;
 
-        // FIXME: ugly hack. See onMapDestroyed()
+        // FIXME: ugly hack. See onMapDestroyed() in app.component.ts
 
         this.afterMapDestroyed = data.onMapDestroyed;
 
@@ -253,18 +240,16 @@ export class MapComponent implements OnInit, OnDestroy {
 
   /**
   * unregister event handlers 
-  *
-  * @todo under Android events sometimes undefined here. Not yet sure why.
   */
 
   unRegisterEventHandlers() {
 
-    if ( typeof this.events != 'undefined' ) {
-      this.events.unsubscribe( 'platform:pause' );
-      this.events.unsubscribe( 'platform:exit' );
-      this.events.unsubscribe( 'platform:resume' );
-      this.events.unsubscribe( 'destroyMap' );
-    }
+    this.events.unsubscribe( 'platform:pause' );
+    this.events.unsubscribe( 'platform:exit' );
+    this.events.unsubscribe( 'platform:resume' );
+    this.events.unsubscribe( 'destroyMap' );
+
+    this.readyPromise = null;
 
   }
 
@@ -307,78 +292,11 @@ export class MapComponent implements OnInit, OnDestroy {
 
     this.mapboxView = args.map;
 
-    this.firstLaunch = false;
-
-    this.isVisible = true;
-
     this.declareReady();
 
     console.log( "MapComponent:onMapReady(): after declareReady()" );
 
   } // end of onMapReady()
-
-  // -------------------------------------------------------------------------------
-
-  /**
-  * when the map is destroyed
-  *
-  * @see app.component.ts
-  *
-  * @todo this is an unsuccessful attempt at working around the intermittent crash problem under Android.
-  */
-
-  onMapDestroyed(): void {
-
-    // If we are just toggling the map we may not have an afterMapDestoryed event. 
-
-    if ( this.afterMapDestroyed ) {
-      console.log( "MapComponent:onMapDestroyed(): top" );
-
-      this.afterMapDestroyed();
-
-      console.log( "MapComponent::onMapDestroyed(): bottom" );
-    }
-
-  }
-
-  // --------------------------------------
-
-  /**
-  * on scroll event
-  */
-
-  onMoveBegin( event ) : void {
-
-    console.log( "MapComponent::onMoveBegin()" );
-
-    this.events.publish( "map:moveBegin" );
-
-  }
-
-  // --------------------------------------
-
-  /**
-  * on location permission
-  *
-  * @todo FIXME: This callback apparently does not work when the location is first being granted.
-  */
-
-  onLocationPermissionGranted() { 
-    console.log( "MapComponent:onLocationPermissionGranted(): callback" );
-  }
-
-  // --------------------------------------
-
-  onLocationPermissionDenied() { 
-    console.log( "MapComponent:onLocationPermissionDenied(): callback" );
-
-    return dialogs.alert({
-      title: "Location Denied",
-      message: "Unable to get current location because the location permission has not been granted.",
-      okButtonText: "OK",
-    });
-
-  }
 
   // --------------------------------------
 
@@ -389,11 +307,7 @@ export class MapComponent implements OnInit, OnDestroy {
   */
 
   async onPause() {
-
-    this.isVisible = false;
     this.shown = false;
-
-    console.log( "MapComponent:onPause(): finished" );
   }
 
   // --------------------------------------
@@ -403,7 +317,7 @@ export class MapComponent implements OnInit, OnDestroy {
   */
 
   onExit() {
-    this.onPause();
+    this.shown = false;
   }
 
   // --------------------------------------
@@ -413,19 +327,7 @@ export class MapComponent implements OnInit, OnDestroy {
   */
 
   onResume() {
-
-    this.isVisible = true;
-
-    console.log( "MapComponent:onResume(): Resume event received with firstLaunch '" + this.firstLaunch + "' and mapboxView '" + this.mapboxView + "'" );
-    
-    if ( this.platform.is( "android" ) && ! this.firstLaunch && ! this.mapboxView ) {
-
-      console.log( "MapComponent:onResume(): re-inserting map" );
-
-      this.shown = true;
-
-    }
-
+    this.shown = true;
   }
 
   // ---------------------------------------------------------------
@@ -456,65 +358,43 @@ export class MapComponent implements OnInit, OnDestroy {
 
   }
 
+  // -------------------------------------------------------------------------------
+
+  /**
+  * when the map is destroyed
+  *
+  * @see app.component.ts
+  */
+
+  onMapDestroyed(): void {
+
+    // If we are just toggling the map from one of the other test pages, we may not have an afterMapDestroyed event. 
+
+    if ( this.afterMapDestroyed ) {
+      this.afterMapDestroyed();
+    }
+
+  }
+
   // -------------------------------------------------
 
   /**
   * on Destroy
+  *
+  * @link https://nativescripting.com/posts/force-component-destroy-by-using-page-life-cycle
+  *
+  * @todo when laterally navigating to a page the components are constructed, but when navigating away, ngOnDestroy is not automatically called. I do not understand why.
   */
 
+  @HostListener('unloaded')
   async ngOnDestroy() {
 
-    console.log( "MapComponent:onDestroy(): onDestroy called." );
+    console.log( "MapComponent:ngOnDestroy()" );
+
+    // this prevents memory leaks.
 
     this.unRegisterEventHandlers();
 
-  }
-
-  // ---------------------------------------------------------------
-
-  /**
-  * Center the map on a location
-  *
-  * Move the map to center on the given coordinates. 
-  */
-
-  centerOn( location: any ) {
-
-    console.log( "MapComponent::centerOn(): top" );
-
-    this.mapboxView.setCenter({
-      lat: location.latitude,
-      lng: location.longitude,
-      animated: true
-    });
-
-  }
-
-  // ---------------------------------------------------------------
-
-  /**
-  * Set the zoom to the specified value
-  */
-
-  zoom( zoomLevel: number ) {
-  }
-
-  // ---------------------------------------------------------------
-
-  /**
-  * Attribution Control
-  */
-
-  addAttributionControl( position: string ) {
-  }
-
-  // ---------------------------------------------------------------
-
-  /**
-  * Zoom control
-  */
-
-  addZoomControl( position: string ) {
   }
 
   // ---------------------------------------------------------------------------------------
@@ -578,6 +458,94 @@ export class MapComponent implements OnInit, OnDestroy {
     }
 
     return settings;
+  }
+
+  // --------------------------------------
+  // NOT USED
+  // --------------------------------------
+
+  /**
+  * on scroll event
+  */
+
+  onMoveBegin( event ) : void {
+
+    console.log( "MapComponent::onMoveBegin()" );
+
+    this.events.publish( "map:moveBegin" );
+
+  }
+
+  // --------------------------------------
+
+  /**
+  * on location permission
+  *
+  * @todo FIXME: This callback apparently does not work when the location is first being granted.
+  */
+
+  onLocationPermissionGranted() { 
+    console.log( "MapComponent:onLocationPermissionGranted(): callback" );
+  }
+
+  // --------------------------------------
+
+  onLocationPermissionDenied() { 
+    console.log( "MapComponent:onLocationPermissionDenied(): callback" );
+
+    return dialogs.alert({
+      title: "Location Denied",
+      message: "Unable to get current location because the location permission has not been granted.",
+      okButtonText: "OK",
+    });
+
+  }
+
+  // ---------------------------------------------------------------
+
+  /**
+  * Center the map on a location
+  *
+  * Move the map to center on the given coordinates. 
+  */
+
+  centerOn( location: any ) {
+
+    console.log( "MapComponent::centerOn(): top" );
+
+    this.mapboxView.setCenter({
+      lat: location.latitude,
+      lng: location.longitude,
+      animated: true
+    });
+
+  }
+
+  // ---------------------------------------------------------------
+
+  /**
+  * Set the zoom to the specified value
+  */
+
+  zoom( zoomLevel: number ) {
+  }
+
+  // ---------------------------------------------------------------
+
+  /**
+  * Attribution Control
+  */
+
+  addAttributionControl( position: string ) {
+  }
+
+  // ---------------------------------------------------------------
+
+  /**
+  * Zoom control
+  */
+
+  addZoomControl( position: string ) {
   }
 
   // ---------------------------------------------------------------------------------------

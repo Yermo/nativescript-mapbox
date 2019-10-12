@@ -66,10 +66,11 @@ export class AppComponent implements OnInit {
     /**
     * Navigate to the named route.
     *
-    *
     * @see MapComponent
     *
     * @link https://github.com/NativeScript/android-runtime/issues/1487
+    * @link https://github.com/NativeScript/NativeScript/issues/7954
+    * @link https://github.com/NativeScript/NativeScript/issues/7867
     *
     * @todo I could not get the Page events to work the way I expected in map.component so I'm using my own events here.
     */
@@ -78,6 +79,16 @@ export class AppComponent implements OnInit {
 
         console.log( "AppComponent:onNavItemTap(): routing to '" + navItemRoute + "'" );
 
+	// I am leaving this here for posterity. It was a red herring trying to track down an intermittent
+	// crash bug on Android. I originally thought it might be due to a race condition.
+	//
+	// While it's probably not necessary, I still like the idea of waiting until the map is completely destroyed before navigating.
+	//
+	// The intermittent crash on navigation under Android turns out to be a markingMode:"none" bug in
+	// tns-core-modules (as of 6.1.1) and has been a long standing bug.
+	//
+	// Historical:
+	// 
         // In an attempt to work around the intermittent NativeScript/Mapbox/Plugin/DunnoWhatsCausingit?? crash
         // the map.component listens to the destroyMap event. It hides the container
         // of the Mapbox tag which in turns causes the MapboxView.disposeNativeView() method to be called 
@@ -85,20 +96,13 @@ export class AppComponent implements OnInit {
         //
         // Once the Mapbox onDestroy method returns, the onMapDestroyed() callback specified here is called.
         // In this way we can be sure the map is completely dead before proceeding. 
-        //
-        // FIXME: For reasons that are not clear to me, calling destroy on the mapbox view directly causes an 
-        // frequent intermittent crash in android.graphics.drawable.ColorDrawable$ColorState.newDrawable when combining
-        // deleting the map and navigating away from a page. I'm not sure if this is a race condition or some
-        // other issue. I had the theory that somehow the map wasn't shutting down completely before the navigation
-        // event happened ... so I implemented the callback approach below but sadly it still occasionally crashes but
-        // not as frequently. From testing, the longer I make the timeout the less frequently the crash happens.
 
         if ( navItemRoute == '/test-crash' ) {
 
-          // the map component does the transition in this case after the map
-          // has been hidden.
+          // The idea here is we want to wait until we've gotten confirmation that the map component
+          // has been destroyed.
 
-          console.log( "AppComponent::onNavItemTap() before destroyMap event." );
+          console.log( "AppComponent::onNavItemTap() publishing destroyMap event." );
 
           this.eventsService.publish( 'destroyMap', { 
             mapId : 'mainMap', 
@@ -106,6 +110,8 @@ export class AppComponent implements OnInit {
             // see components/map.component.ts. Once the map is destroyed it calls this method.
 
             onMapDestroyed: () => {
+
+              console.log( "AppComponent::onNavItem() - onMapDestroyed callback" );
 
               setTimeout( () => {
                 this.routerExtensions.navigate([navItemRoute], {

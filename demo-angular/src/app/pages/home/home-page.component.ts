@@ -71,6 +71,9 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
     console.log( "HomePageComponent:ngOnInit(): checking for location services." );
 
+/** ----------------------------------------------------------------
+* temporarily disabled
+
     if ( ! isLocationEnabled ) {
 
       dialogs.alert({
@@ -115,6 +118,7 @@ export class HomePageComponent implements OnInit, OnDestroy {
       }
     });
 
+---------------------------------------------- */ 
   }
 
   // -------------------------------------------------

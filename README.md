@@ -56,13 +56,17 @@ Awesome native OpenGL-powered maps - by Mapbox
 
 <img src="https://raw.githubusercontent.com/EddyVerbruggen/nativescript-mapbox/master/screenshots/ios-demoapp-slice.png" width="375px" height="196px" />
 
-> This version of the plugin still crashes randomly on Android when navigating away from a map. There is an e2e test in the demo-angular app that exercises this bug. 
+> There is a NativeScript Core Modules bug under Android that causes random crashes on navigation. See ./demo-angular/README.md for a workaround.
+> https://github.com/NativeScript/NativeScript/issues/7954
+> https://github.com/NativeScript/NativeScript/issues/7867
 
 ## Prerequisites
 You either need your own tile server such as the one provided by [openmaptiles.org](https://openmaptiles.org) or a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
 Once you've registered go to your Account > Apps > New token. The 'Default Secret Token' is what you'll need.
 
 Your access_token can then be set in the top level mapbox_config.ts file.
+
+The style can be set to one of the Mapbox style names or it can be the URL of your own hosted tile server.
 
 ## Installation
 This version of the plugin is still in development and not yet available via NPM.
@@ -95,7 +99,7 @@ If you get an error related to `TelemetryService` then please check it's there.
 If you want a quickstart, see the demo in this repository.
 It shows you how to draw a map in XML and JS with almost all possible options.
 
-> Not all features are working as of this writing.
+> Not all features are working as of this writing, notably user location.
 
 ### Demo app (Angular)
 There is also the beginnings of an Angular demo in demo-angular in this repository.
@@ -179,6 +183,8 @@ All currently supported options for your XML based map are (__don't__ use other 
 |`disableScroll`|false|Don't allow the user to move the center of the map (one finger drag)
 |`disableTilt`|false|Don't allow the user to tilt the map (two finger drag up or down)
 |`mapReady`|-|The name of a callback function you can declare to interact with the map after it has been drawn
+|`mapDestroyed`|-|The name of a function to be called when the map is destroyed.
+|`moveBeginEvent`|-|The name of a function to be called when the map is moved.
 |`locationPermissionGranted`|-|The name of a callback function you can declare to get notified when the user granted location permissions
 |`locationPermissionDenied`|-|The name of a callback function you can declare to get notified when the user denied location permissions (will never fire on iOS because there's nothing to deny)
 
@@ -241,13 +247,27 @@ Check out the usage details on the functions below.
 
 ## Declaring a map programmatically
 
+Add a container to your view XML where you want to programmatically add the map. Give it an id. 
+
+```
+<StackLayout id="mapContainer">
+```
+
 ### show
 ```js
   var mapbox = require("nativescript-mapbox");
   var platform = require("platform");
   var isIOS = platform.device.os === platform.platformNames.ios;
 
+  // get a reference to the container where to place the map.
+
+  const StackLayout = page.getViewById( 'mapContainer' );
+
   mapbox.show({
+    // NOTE: passing in the container (i.e. StackLayout) here.
+
+    container: StackLayout,
+
     accessToken: 'YOUR_API_ACCESS_TOKEN', // see 'Prerequisites' above
     style: mapbox.MapStyle.TRAFFIC_DAY, // see the mapbox.MapStyle enum for other options, default mapbox.MapStyle.STREETS
     margins: {
@@ -513,6 +533,89 @@ The map will continuously move along with the last known location.
   });
 ```
 
+### addLayer
+NOTE: For version 5 the API for addLayer() has changed and is now a subset of the web-gl-js API.
+
+https://docs.mapbox.com/mapbox-gl-js/style-spec/#layers
+ 
+To add a line:
+
+```js
+  mapbox.addLayer({
+    'id': someid,
+    'type': 'line',
+    'source': {
+      'type': 'geojson',
+      'data': {
+        "type": "Feature",
+          "geometry": {
+          "type": "LineString",
+            "coordinates": [ [ lng, lat ], [ lng, lat ], ..... ]
+          }
+        }
+      }
+    },
+    'layout': {
+      'line-cap': 'round',
+      'line-join': 'round'
+    },    
+    'paint': {
+      'line-color': '#ed6498',
+      'line-width': 5,
+      'line-opacity': .8,
+      'line-dash-array': [ 1, 1, 1, ..]
+    }
+  });
+```
+
+To add a circle:
+
+```js
+  mapbox.addLayer({
+    "id": someid,
+    "type": 'circle',
+    "radius-meters": 500,   // FIXME: radius in meters used for in-circle click detection. 
+    "source": {
+      "type": 'geojson',
+      "data": {
+        "type": "Feature",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [ lng, lat ]
+        }
+      }
+    }, 
+    "paint": {
+      "circle-radius": {
+        "stops": [
+          [0, 0],
+          [20, 8000 ]
+        ],
+        "base": 2
+      },
+      'circle-opacity': 0.05,
+      'circle-color': '#ed6498',
+      'circle-stroke-width': 2,
+      'circle-stroke-color': '#ed6498'
+    } 
+  });
+```
+### removeLayer
+Remove a layer added with addLayer() by id.
+
+```js
+  mapbox.removeLayer( id );
+```
+
+### addLinePoint
+Dynamically add a point to a line.
+
+```js
+  mapbox.addLinePoint( <id of line layer>, lnglat )
+```
+
+where lnglat is an array of two points, a longitude and a latitude.
+
 ### addPolygon
 Draw a shape. Just connect the dots like we did as a toddler.
 
@@ -571,6 +674,8 @@ or remove specific polygon id's (which you specified previously).
 ```
 
 ### addPolyline
+Deprecated. Use addLayer() instead.
+
 Draw a polyline. Connect the points given as parameters.
 
 ```js
@@ -598,6 +703,8 @@ Draw a polyline. Connect the points given as parameters.
 ```
 
 ### removePolylines
+Deprecated. Use removeLayer() instead.
+
 You can either remove all polylines by not passing in an argument,
 or remove specific polyline id's (which you specified previously).
 
