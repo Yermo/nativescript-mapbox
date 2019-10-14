@@ -16,6 +16,7 @@ import {
   AddGeoJsonClusteredOptions,
   AddPolygonOptions,
   AddPolylineOptions,
+  AddSourceOptions,
   AnimateCameraOptions,
   DeleteOfflineRegionOptions,
   DownloadOfflineRegionOptions,
@@ -2749,6 +2750,152 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // -------------------------------------------------------------------------------------
 
   /**
+  * add a geojson or vector source
+  *
+  * Add a source that can then be referenced in the style specification
+  * passed to addLayer().
+  *
+  * @link https://docs.mapbox.com/mapbox-gl-js/api/#map#addsource
+  */
+
+  addSource( id : string, options: AddSourceOptions, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const { url, type } = options;
+        const theMap = nativeMap;
+        let source;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        if ( theMap.mapboxMap.getSource(id) ) {
+          reject("Source exists: " + id);
+          return;
+        }
+
+        switch (type) {
+
+          case "vector":
+            source = new com.mapbox.mapboxsdk.style.sources.VectorSource(id, url);
+          break;
+
+          case 'geojson':
+
+            console.log( "Mapbox:addSource(): before addSource with geojson" );
+
+            let geojsonString = JSON.stringify( options.data );
+
+            let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
+
+            console.log( "Mapbox:addSource(): adding feature" );
+
+            // com.mapbox.mapboxsdk.maps.Style
+
+            let geoJsonSource = new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
+              id,
+              feature
+            );
+
+            this._mapboxMapInstance.getStyle().addSource( geoJsonSource );
+
+            this.gcFix( 'com.mapbox.mapboxsdk.style.sources.GeoJsonSource', geoJsonSource );
+
+            // To support handling click events on lines and circles, we keep the underlying 
+            // feature.
+            //
+            // FIXME: There should be a way to get the original feature back out from the source
+            // but I have not yet figured out how.
+
+            if ( options.data.geometry.type == 'LineString' ) {
+
+              this.lines.push({
+                type: 'line',
+                id: id,
+                feature: feature
+              });
+
+            } else if ( options.data.geometry.type == 'Point' ) {
+
+              // probably a circle
+
+              this.circles.push({
+                type: 'line',
+                id: id,
+                center: options.data.geometry.coordinates
+              });
+
+            }
+
+          break;
+
+          default:
+            reject("Invalid source type: " + type);
+            return;
+        }
+
+        if (!source) {
+          const ex = "No source to add";
+          console.log("Error in mapbox.addSource: " + ex);
+          reject(ex);
+          return;
+        }
+
+        theMap.mapboxMap.addSource(source);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addSource: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * remove source by id
+  */
+
+  removeSource( id: string, nativeMap? ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        theMap.mapboxMap.removeSource(id);
+
+        // if we've cached the underlying feature, remove it.
+        //
+        // since we don't know if it's a line or a circle we have to check both lists.
+
+        let offset = this.lines.findIndex( ( entry ) => { return entry.id == id; });
+
+        if ( offset != -1 ) {
+          this.lines.splice( offset, 1 );
+        }
+
+        offset = this.circles.findIndex( ( entry ) => { return entry.id == id; });
+
+        if ( offset != -1 ) {
+          this.circles.splice( offset, 1 );
+        }
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.removeSource: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------------------
+
+  /**
   * a rough analogue to the mapbox-gl-js addLayer() method
   *
   * It would be nice if this {N} API matched the mapbox-gl-js API which
@@ -2758,7 +2905,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * This method accepts a Mapbox-GL-JS style specification JSON object with some 
   * limitations:
   *
-  * - the source: must be a GeoJSON object. 
+  * - the source: must be a GeoJSON object, vector source definition, or an id of a source added via addSource()
   * - only a subset of paint properties are available. 
   *
   * @param {object} style - a style following the Mapbox style specification.
@@ -2792,6 +2939,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return retval;
 
   }
+
+  // -----------------------------------------------------------------------
 
   /**
   * remove layer by ID
@@ -2833,7 +2982,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * The idea for this method is to make sharing code between mapbox-gl-js Typescript web applications
   * and {N} native applications easier. 
   *
-  * For the moment this method only supports a source type of 'geojson'.
+  * For the moment this method only supports a source type of 'geojson' or a source by id added
+  * by addSource().
   *
   * Example style for a line:
   *
@@ -2844,7 +2994,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *   'type': 'geojson',
   *   'data': {
   *     "type": "Feature",
-  *       "geometry": {
+  *     "geometry": {
   *       "type": "LineString",
   *         "coordinates": [ [ lng, lat ], [ lng, lat ], ..... ]
   *       }
@@ -2863,6 +3013,17 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * }
   *
   * Do not call this method directly. Use addLayer().
+  *
+  * 'source' may also refer to a vector source
+  *
+  * 'source': {
+  *    'type': 'vector',
+  *    'url': '<url of vector source>'
+  *  }
+  *
+  * or it may be a string referring to the id of an already added source as in
+  *
+  * 'source': '<id of source>'
   *
   * To enable catching of click events on a line, when a click handler is added
   * to a line (using the onMapEvent() method above), the Annotations plugin is used to 
@@ -2893,32 +3054,23 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject( "Non line style passed to addLineLayer()" );
         }
 
-        // we need a source of type geojson.
+        // the source may be of type geojson, vector,  or it may be the id of a source added by addSource().
 
-        if (( typeof style.source == 'undefined' ) || ( style.source.type != 'geojson' )) {
-          reject( "Only GeoJSON sources are currently supported." );
+        let sourceId = null;
+
+        if ( typeof style.source != 'string' ) {
+
+          sourceId = style.id + '_source';
+         
+          this.addSource( sourceId, style.source );
+
+        } else {
+
+          sourceId = style.source;
+
         }
 
-        console.log( "Mapbox:addLineLayer(): before addSource with geojson" );
-
-        let geojsonString = JSON.stringify( style.source.data );
-
-        let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
-
-        console.log( "Mapbox:addLineLayer(): adding feature" );
-
-        // com.mapbox.mapboxsdk.maps.Style
-
-        let geoJsonSource = new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
-          style.id + '_source',
-          feature
-        );
-
-        this._mapboxMapInstance.getStyle().addSource( geoJsonSource );
-
-        this.gcFix( 'com.mapbox.mapboxsdk.style.sources.GeoJsonSource', geoJsonSource );
-
-        const line = new com.mapbox.mapboxsdk.style.layers.LineLayer( style.id, style.id + '_source' );
+        const line = new com.mapbox.mapboxsdk.style.layers.LineLayer( style.id, sourceId );
 
         console.log( "Mapbox:addLineLayer(): after LineLayer" );
 
@@ -3048,16 +3200,19 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         this._mapboxMapInstance.getStyle().addLayer( line );
 
+        // In support for clickable GeoJSON features.
+        //
         // FIXME: for the moment, because I have not been able to figure out how to pull the geometry
-        // from the line, we keep a reference to the feature so we can draw the clickable line when
-        // a click handler is added.
+        // from the source, we keep a reference to the feature so we can draw the clickable line when
+        // a click handler is added. This is only supported on GeoJSON features.
+        //
+        // see addSource()
 
-        this.lines.push({
-          type: 'line',
-          id: style.id,
-          layer: line,
-          feature: feature
-        });
+        let lineEntry = this.lines.find( ( entry ) => { return entry.id == sourceId; });
+
+        if ( lineEntry ) {
+          lineEntry.layer = line;
+        }
 
         console.log( "Mapbox:addLineLayer(): after addLayer" );
 
@@ -3093,6 +3248,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
 
+        // This only works for GeoJSON features.
+        //
         // The original thought was to query the source to get the points that make up the line
         // and then add a point to it. Unfortunately, it seems that the points in the source
         // are modified and do not match the original set of points that make up the map. I kept
@@ -3106,7 +3263,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         let lineEntry = this.lines.find( ( entry ) => { return entry.id == id; });
 
         if ( ! lineEntry ) {
-
           reject( "No such line layer '" + id + "'" );
           return;
         }
@@ -3146,312 +3302,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
 
   } // end of addLinePoint()
-
-  // -------------------------------------------------------------------------------------
-
-  /**
-  * add a line annotation
-  *
-  * Draws a line using the new Annotations plugin. 
-  *
-  * NOTE: This is here just for reference.
-  *
-  * The Annotations plugin allows for listening to events on a line which the standard Layer
-  * classes do not.
-  *
-  * However, what sucks is that:
-  *
-  * - Annotations do not provide the range of styling options that a line layer does
-  * - Annotations use a GeoJSON format, where styling is done via a properties child, instead of the Mapbox Style format. 
-  *
-  * {
-  *   "type": "FeatureCollection",
-  *   "features": [{
-  *     "type": "Feature",
-  *     "geometry": {
-  *       "type": "LineString",
-  *       "coordinates": [
-  *         [ -76.947041, 39.007846 ],
-  *         [ 12.5, 41.9 ]
-  *       ]
-  *     },
-  *     "properties": {
-  *       "line-color": "white",
-  *       "line-width": "8",
-  *       "is-draggable": false
-  *     }
-  *   }]
-  * } 
-  *
-  * @param {object} geojson - a GeoJSON feature collection.
-  * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
-  *
-  * @return {Promise<any>}
-  *
-  * @link https://docs.mapbox.com/android/api/plugins/annotation/0.5.0/com/mapbox/mapboxsdk/plugins/annotation/package-summary.html
-  * @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/Style.html#addSource-com.mapbox.mapboxsdk.style.sources.Source-
-  */
-
-  private addLineAnnotation( geojson, nativeMapViewInstance? ) : Promise<any> {
-
-    return new Promise((resolve, reject) => {
-      try {
-
-        console.log( "Mapbox:addLineAnnotation(): before addSource with geojson:", geojson );
-
-        let geojsonString = JSON.stringify( geojson );
-
-        console.log( "Mapbox:addLineAnnotation(): before create" );
-
-        let line = this.lineManager.create( geojsonString );
-
-        console.log( "Mapbox:addLineAnnotation(): added line annotation:", line );
-
-        resolve( line );
-
-      } catch (ex) {
-        console.log("Error in mapbox.addPolyline: " + ex);
-        reject(ex);
-      }
-    });
-
-  } // end of addLineAnnotation
-
-  // -------------------------------------------------------------------------------------
-
-  private async testLineAnnotation( nativeMapView ) {
-
-    let geojson = {
-      "type": "FeatureCollection",
-      "features": [{
-        "type": "Feature",
-        "geometry": {
-          "type": "LineString",
-          "coordinates": this.getTestCoords()
-        },
-        "properties": {
-          "line-color": "white",
-          "line-width": "8",
-          "line-dash-array": [ 2, 4, 2, 1 ] 
-        }
-      }]
-    }; 
-
-
-    let dashArray = Array.create( "java.lang.Float", geojson.features[0].properties[ 'line-dash-array' ].length );
-
-    for ( let i = 0; i < geojson.features[0].properties[ 'line-dash-array' ].length; i++ ) {
-      dashArray[i] = new java.lang.Float( geojson.features[0].properties[ 'line-dash-array' ][i] );
-    }
-
-    let line = await this.addLineAnnotation( geojson, nativeMapView );
-
-    this.lineManager.setLineDashArray( dashArray );
-
-  }
-
-  // -----------------------------------------------------------------------------------------
-
-  getTestCoords() {
-
- return [
-[-76.926164,39.019062],
-[-76.926100,39.019168],
-[-76.926013,39.019257],
-[-76.925905,39.019328],
-[-76.925777,39.019380],
-[-76.925632,39.019408],
-[-76.925481,39.019405],
-[-76.925337,39.019372],
-[-76.925209,39.019313],
-[-76.925104,39.019234],
-[-76.925026,39.019136],
-[-76.925010,39.018851],
-[-76.925054,39.018724],
-[-76.925139,39.018616],
-[-76.925252,39.018528],
-[-76.925387,39.018465],
-[-76.925539,39.018433],
-[-76.925694,39.018422],
-[-76.925857,39.018426],
-[-76.926027,39.018437],
-[-76.927847,39.018652],
-[-76.930178,39.019155],
-[-76.932151,39.019811],
-[-76.934475,39.020730],
-[-76.938543,39.022225],
-[-76.941642,39.022854],
-[-76.944704,39.023275],
-[-76.946380,39.024124],
-[-76.948033,39.025760],
-[-76.948497,39.027019],
-[-76.948306,39.028576],
-[-76.947345,39.030150],
-[-76.945672,39.031692],
-[-76.943317,39.033067],
-[-76.941067,39.034591],
-[-76.938712,39.036849],
-[-76.937134,39.039019],
-[-76.934067,39.043621],
-[-76.931722,39.047206],
-[-76.929912,39.050756],
-[-76.928589,39.053624],
-[-76.927063,39.056683],
-[-76.925731,39.058167],
-[-76.924575,39.059077],
-[-76.922749,39.060070],
-[-76.920061,39.061071],
-[-76.918383,39.061644],
-[-76.915324,39.062765],
-[-76.913071,39.063800],
-[-76.910303,39.065627],
-[-76.908491,39.067117],
-[-76.907337,39.068725],
-[-76.906080,39.071488],
-[-76.905077,39.073318],
-[-76.904587,39.074003],
-[-76.904400,39.074114],
-[-76.904184,39.074189],
-[-76.903946,39.074212],
-[-76.903712,39.074192],
-[-76.903464,39.074145],
-[-76.903301,39.074030],
-[-76.903158,39.073875],
-[-76.903071,39.073696],
-[-76.903039,39.073516],
-[-76.903065,39.073338],
-[-76.903149,39.073168],
-[-76.903282,39.073021],
-[-76.903465,39.072896],
-[-76.903679,39.072819],
-[-76.903903,39.072786],
-[-76.904124,39.072797],
-[-76.904329,39.072851],
-[-76.904518,39.072940],
-[-76.904706,39.073029],
-[-76.904855,39.073158],
-[-76.906221,39.074084],
-[-76.908129,39.074828],
-[-76.910401,39.075078],
-[-76.913482,39.074758],
-[-76.924829,39.073772],
-[-76.930687,39.073591],
-[-76.936115,39.073664],
-[-76.945228,39.074826],
-[-76.948338,39.075918],
-[-76.954834,39.079209],
-[-76.958566,39.081175],
-[-76.962182,39.082907],
-[-76.964617,39.083332],
-[-76.967407,39.083191],
-[-76.969484,39.083412],
-[-76.971742,39.084170],
-[-76.976687,39.086114],
-[-76.983025,39.088788],
-[-76.985704,39.089512],
-[-76.988488,39.089779],
-[-76.991281,39.089590],
-[-76.997539,39.088687],
-[-77.001787,39.088312],
-[-77.008541,39.087897],
-[-77.013845,39.087128],
-[-77.020459,39.085992],
-[-77.023236,39.085835],
-[-77.025211,39.086389],
-[-77.026750,39.087508],
-[-77.027710,39.089008],
-[-77.028146,39.090903],
-[-77.029034,39.093259],
-[-77.030437,39.094859],
-[-77.032618,39.096362],
-[-77.035143,39.097464],
-[-77.038513,39.098369],
-[-77.042130,39.099532],
-[-77.044851,39.100887],
-[-77.047813,39.102913],
-[-77.050996,39.105187],
-[-77.055267,39.108274],
-[-77.058337,39.110646],
-[-77.061623,39.113689],
-[-77.064504,39.115979],
-[-77.066908,39.117065],
-[-77.069589,39.117678],
-[-77.081940,39.120455],
-[-77.087705,39.123085],
-[-77.091849,39.124533],
-[-77.096482,39.125620],
-[-77.101050,39.126210],
-[-77.106463,39.126419],
-[-77.113894,39.126642],
-[-77.118437,39.126990],
-[-77.120607,39.127777],
-[-77.122318,39.129042],
-[-77.124218,39.131225],
-[-77.126393,39.133643],
-[-77.128644,39.135491],
-[-77.131388,39.136958],
-[-77.138116,39.139101],
-[-77.140084,39.138936],
-[-77.141828,39.138163],
-[-77.143102,39.136928],
-[-77.144688,39.135612],
-[-77.146269,39.135118],
-[-77.147972,39.135110],
-[-77.149904,39.135622],
-[-77.155834,39.137330],
-[-77.158453,39.137591],
-[-77.161087,39.137398],
-[-77.163593,39.136765],
-[-77.166115,39.135549],
-[-77.167949,39.134050],
-[-77.171853,39.129988],
-[-77.175581,39.126120],
-[-77.179622,39.122026],
-[-77.180894,39.121131],
-[-77.181190,39.121005],
-[-77.181495,39.120898],
-[-77.181806,39.120804],
-[-77.182127,39.120726],
-[-77.182461,39.120671],
-[-77.182803,39.120637],
-[-77.183148,39.120626],
-[-77.183494,39.120636],
-[-77.183839,39.120665],
-[-77.184182,39.120715],
-[-77.184520,39.120787],
-[-77.184852,39.120878],
-[-77.185494,39.121106],
-[-77.189478,39.122770],
-[-77.191456,39.123177],
-[-77.194133,39.123137],
-[-77.197993,39.123036],
-[-77.198559,39.123151],
-[-77.198828,39.123246],
-[-77.199081,39.123364],
-[-77.199314,39.123501],
-[-77.199519,39.123656],
-[-77.199701,39.123827],
-[-77.199863,39.124012],
-[-77.200012,39.124209],
-[-77.201714,39.126527],
-[-77.203814,39.128927],
-[-77.206368,39.131478],
-[-77.208734,39.134112],
-[-77.210918,39.137302],
-[-77.212660,39.140680],
-[-77.214526,39.145223],
-[-77.215510,39.146948],
-[-77.217811,39.149987],
-[-77.220639,39.152707],
-[-77.224698,39.155944],
-[-77.228768,39.158858],
-[-77.233073,39.161274],
-[-77.237891,39.163827],
-[-77.240401,39.165853],
-[-77.242376,39.168174]
-];
-
-  }
 
   // -------------------------------------------------------------------------------------
 
@@ -3497,6 +3347,17 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *    'circle-stroke-color': '#ed6498'
   *  } 
   *
+  * 'source' may also refer to a vector source
+  *
+  * 'source': {
+  *    'type': 'vector',
+  *    'url': '<url of vector source>'
+  *  }
+  *
+  * or it may be a string referring to the id of an already added source as in
+  *
+  * 'source': '<id of source>'
+  *
   * @param {object} style a Mapbox style describing the circle draw. 
   * @param {object} nativeMap view.
   */
@@ -3510,26 +3371,23 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject( "Non circle style passed to addCircle()" );
         }
 
-        // we need a source of type geojson.
+        // the source may be of type geojson or it may be the id of a source added by addSource().
 
-        if (( typeof style.source == 'undefined' ) || ( style.source.type != 'geojson' )) {
-          reject( "Only GeoJSON sources are currently supported." );
+        let sourceId = null;
+
+        if ( typeof style.source != 'string' ) {
+
+          sourceId = style.id + '_source';
+         
+          this.addSource( sourceId, style.source );
+
+        } else {
+
+          sourceId = style.source;
+
         }
 
-        console.log( "Mapbox:addCircleLayer(): before addSource with geojson:", style.source.data );
-
-        let geojsonString = JSON.stringify( style.source.data );
-
-        let feature : Feature = com.mapbox.geojson.Feature.fromJson( geojsonString );
-
-        this._mapboxMapInstance.getStyle().addSource(
-            new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
-              style.id,
-              feature
-            )
-        );
-
-        const circle = new com.mapbox.mapboxsdk.style.layers.CircleLayer( style.id, style.id );
+        const circle = new com.mapbox.mapboxsdk.style.layers.CircleLayer( style.id, sourceId );
 
         console.log( "Mapbox:addCircleLayer(): after CircleLayer" );
 
@@ -3660,13 +3518,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         console.log( "Mapbox:addCircleLayer(): added circle layer" );
 
-        this.circles.push({
-          type: 'circle',
-          id: style.id,
-          center: style.source.data.geometry.coordinates,
-          radius: style[ 'circle-radius' ],
-          layer: circle
-        });
+        // In support for clickable GeoJSON features.
+
+        let circleEntry = this.circles.find( ( entry ) => { return entry.id == sourceId; });
+
+        if ( circleEntry ) {
+          circleEntry.radius = style[ 'circle-radius' ];
+          circleEntry.layer = circle;
+        }
 
         console.log( "Mapbox:addCircleLayer(): after addLayer" );
 
@@ -3678,47 +3537,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
 
   } // end of addCircleLayer()
-
-  // -------------------------------------------------------------------------------------
-
-  /**
-  * add a circle Annotation
-  *
-  * Draw a circle Annotation based on a GeoJSON feature..
-  *
-  * This method is not used but is left here for reference. At the present moment
-  * these circles cannot be scaled according to zoom level (or other property). 
-  *
-  * @param {object} geojson . 
-  * @param {object} nativeMap view.
-  */
-
-  private addCircleAnnotation( geojson, nativeMapViewInstance? ): Promise<any> {
-
-    return new Promise((resolve, reject) => {
-      try {
-
-        console.log( "Mapbox:addCircleAnnotation(): top with geojson:", geojson );
-
-        // we need a source of type geojson.
-
-        console.log( "Mapbox:addCircleAnnotation(): before addSource with geojson:", geojson );
-
-        let geojsonString = JSON.stringify( geojson );
-
-        let layer = this.circleManager.create( geojsonString );
-
-        console.log( "Mapbox:addCircleAnnotation(): added circle annotation:", layer );
-
-        resolve( layer );
-
-      } catch (ex) {
-        console.log("Error in mapbox.addCircleAnnotation: " + ex);
-        reject(ex);
-      }
-    });
-
-  } // end of addCircleAnnotation()
 
   // ----------------------------------------
 
@@ -4341,6 +4159,355 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return Promise.all(iterations).then((output) => {
       return result;
     });
+  }
+
+  // -------------------------------------------------------------------------------------
+  // Current Unused. Left here for reference.
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * add a circle Annotation
+  *
+  * Draw a circle Annotation based on a GeoJSON feature..
+  *
+  * This method is not used but is left here for reference. At the present moment
+  * these circles cannot be scaled according to zoom level (or other property). 
+  *
+  * @param {object} geojson . 
+  * @param {object} nativeMap view.
+  */
+
+  private addCircleAnnotation( geojson, nativeMapViewInstance? ): Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        console.log( "Mapbox:addCircleAnnotation(): top with geojson:", geojson );
+
+        // we need a source of type geojson.
+
+        console.log( "Mapbox:addCircleAnnotation(): before addSource with geojson:", geojson );
+
+        let geojsonString = JSON.stringify( geojson );
+
+        let layer = this.circleManager.create( geojsonString );
+
+        console.log( "Mapbox:addCircleAnnotation(): added circle annotation:", layer );
+
+        resolve( layer );
+
+      } catch (ex) {
+        console.log("Error in mapbox.addCircleAnnotation: " + ex);
+        reject(ex);
+      }
+    });
+
+  } // end of addCircleAnnotation()
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * add a line annotation
+  *
+  * Draws a line using the new Annotations plugin. 
+  *
+  * NOTE: This is here just for reference.
+  *
+  * The Annotations plugin allows for listening to events on a line which the standard Layer
+  * classes do not.
+  *
+  * However, what sucks is that:
+  *
+  * - Annotations do not provide the range of styling options that a line layer does
+  * - Annotations use a GeoJSON format, where styling is done via a properties child, instead of the Mapbox Style format. 
+  *
+  * {
+  *   "type": "FeatureCollection",
+  *   "features": [{
+  *     "type": "Feature",
+  *     "geometry": {
+  *       "type": "LineString",
+  *       "coordinates": [
+  *         [ -76.947041, 39.007846 ],
+  *         [ 12.5, 41.9 ]
+  *       ]
+  *     },
+  *     "properties": {
+  *       "line-color": "white",
+  *       "line-width": "8",
+  *       "is-draggable": false
+  *     }
+  *   }]
+  * } 
+  *
+  * @param {object} geojson - a GeoJSON feature collection.
+  * @param {any} nativeMapView - native map view (com.mapbox.mapboxsdk.maps.MapView)
+  *
+  * @return {Promise<any>}
+  *
+  * @link https://docs.mapbox.com/android/api/plugins/annotation/0.5.0/com/mapbox/mapboxsdk/plugins/annotation/package-summary.html
+  * @link https://docs.mapbox.com/android/api/map-sdk/7.1.2/com/mapbox/mapboxsdk/maps/Style.html#addSource-com.mapbox.mapboxsdk.style.sources.Source-
+  */
+
+  private addLineAnnotation( geojson, nativeMapViewInstance? ) : Promise<any> {
+
+    return new Promise((resolve, reject) => {
+      try {
+
+        console.log( "Mapbox:addLineAnnotation(): before addSource with geojson:", geojson );
+
+        let geojsonString = JSON.stringify( geojson );
+
+        console.log( "Mapbox:addLineAnnotation(): before create" );
+
+        let line = this.lineManager.create( geojsonString );
+
+        console.log( "Mapbox:addLineAnnotation(): added line annotation:", line );
+
+        resolve( line );
+
+      } catch (ex) {
+        console.log("Error in mapbox.addPolyline: " + ex);
+        reject(ex);
+      }
+    });
+
+  } // end of addLineAnnotation
+
+  // -------------------------------------------------------------------------------------
+
+  private async testLineAnnotation( nativeMapView ) {
+
+    let geojson = {
+      "type": "FeatureCollection",
+      "features": [{
+        "type": "Feature",
+        "geometry": {
+          "type": "LineString",
+          "coordinates": this.getTestCoords()
+        },
+        "properties": {
+          "line-color": "white",
+          "line-width": "8",
+          "line-dash-array": [ 2, 4, 2, 1 ] 
+        }
+      }]
+    }; 
+
+
+    let dashArray = Array.create( "java.lang.Float", geojson.features[0].properties[ 'line-dash-array' ].length );
+
+    for ( let i = 0; i < geojson.features[0].properties[ 'line-dash-array' ].length; i++ ) {
+      dashArray[i] = new java.lang.Float( geojson.features[0].properties[ 'line-dash-array' ][i] );
+    }
+
+    let line = await this.addLineAnnotation( geojson, nativeMapView );
+
+    this.lineManager.setLineDashArray( dashArray );
+
+  }
+
+  // -----------------------------------------------------------------------------------------
+
+  getTestCoords() {
+
+ return [
+[-76.926164,39.019062],
+[-76.926100,39.019168],
+[-76.926013,39.019257],
+[-76.925905,39.019328],
+[-76.925777,39.019380],
+[-76.925632,39.019408],
+[-76.925481,39.019405],
+[-76.925337,39.019372],
+[-76.925209,39.019313],
+[-76.925104,39.019234],
+[-76.925026,39.019136],
+[-76.925010,39.018851],
+[-76.925054,39.018724],
+[-76.925139,39.018616],
+[-76.925252,39.018528],
+[-76.925387,39.018465],
+[-76.925539,39.018433],
+[-76.925694,39.018422],
+[-76.925857,39.018426],
+[-76.926027,39.018437],
+[-76.927847,39.018652],
+[-76.930178,39.019155],
+[-76.932151,39.019811],
+[-76.934475,39.020730],
+[-76.938543,39.022225],
+[-76.941642,39.022854],
+[-76.944704,39.023275],
+[-76.946380,39.024124],
+[-76.948033,39.025760],
+[-76.948497,39.027019],
+[-76.948306,39.028576],
+[-76.947345,39.030150],
+[-76.945672,39.031692],
+[-76.943317,39.033067],
+[-76.941067,39.034591],
+[-76.938712,39.036849],
+[-76.937134,39.039019],
+[-76.934067,39.043621],
+[-76.931722,39.047206],
+[-76.929912,39.050756],
+[-76.928589,39.053624],
+[-76.927063,39.056683],
+[-76.925731,39.058167],
+[-76.924575,39.059077],
+[-76.922749,39.060070],
+[-76.920061,39.061071],
+[-76.918383,39.061644],
+[-76.915324,39.062765],
+[-76.913071,39.063800],
+[-76.910303,39.065627],
+[-76.908491,39.067117],
+[-76.907337,39.068725],
+[-76.906080,39.071488],
+[-76.905077,39.073318],
+[-76.904587,39.074003],
+[-76.904400,39.074114],
+[-76.904184,39.074189],
+[-76.903946,39.074212],
+[-76.903712,39.074192],
+[-76.903464,39.074145],
+[-76.903301,39.074030],
+[-76.903158,39.073875],
+[-76.903071,39.073696],
+[-76.903039,39.073516],
+[-76.903065,39.073338],
+[-76.903149,39.073168],
+[-76.903282,39.073021],
+[-76.903465,39.072896],
+[-76.903679,39.072819],
+[-76.903903,39.072786],
+[-76.904124,39.072797],
+[-76.904329,39.072851],
+[-76.904518,39.072940],
+[-76.904706,39.073029],
+[-76.904855,39.073158],
+[-76.906221,39.074084],
+[-76.908129,39.074828],
+[-76.910401,39.075078],
+[-76.913482,39.074758],
+[-76.924829,39.073772],
+[-76.930687,39.073591],
+[-76.936115,39.073664],
+[-76.945228,39.074826],
+[-76.948338,39.075918],
+[-76.954834,39.079209],
+[-76.958566,39.081175],
+[-76.962182,39.082907],
+[-76.964617,39.083332],
+[-76.967407,39.083191],
+[-76.969484,39.083412],
+[-76.971742,39.084170],
+[-76.976687,39.086114],
+[-76.983025,39.088788],
+[-76.985704,39.089512],
+[-76.988488,39.089779],
+[-76.991281,39.089590],
+[-76.997539,39.088687],
+[-77.001787,39.088312],
+[-77.008541,39.087897],
+[-77.013845,39.087128],
+[-77.020459,39.085992],
+[-77.023236,39.085835],
+[-77.025211,39.086389],
+[-77.026750,39.087508],
+[-77.027710,39.089008],
+[-77.028146,39.090903],
+[-77.029034,39.093259],
+[-77.030437,39.094859],
+[-77.032618,39.096362],
+[-77.035143,39.097464],
+[-77.038513,39.098369],
+[-77.042130,39.099532],
+[-77.044851,39.100887],
+[-77.047813,39.102913],
+[-77.050996,39.105187],
+[-77.055267,39.108274],
+[-77.058337,39.110646],
+[-77.061623,39.113689],
+[-77.064504,39.115979],
+[-77.066908,39.117065],
+[-77.069589,39.117678],
+[-77.081940,39.120455],
+[-77.087705,39.123085],
+[-77.091849,39.124533],
+[-77.096482,39.125620],
+[-77.101050,39.126210],
+[-77.106463,39.126419],
+[-77.113894,39.126642],
+[-77.118437,39.126990],
+[-77.120607,39.127777],
+[-77.122318,39.129042],
+[-77.124218,39.131225],
+[-77.126393,39.133643],
+[-77.128644,39.135491],
+[-77.131388,39.136958],
+[-77.138116,39.139101],
+[-77.140084,39.138936],
+[-77.141828,39.138163],
+[-77.143102,39.136928],
+[-77.144688,39.135612],
+[-77.146269,39.135118],
+[-77.147972,39.135110],
+[-77.149904,39.135622],
+[-77.155834,39.137330],
+[-77.158453,39.137591],
+[-77.161087,39.137398],
+[-77.163593,39.136765],
+[-77.166115,39.135549],
+[-77.167949,39.134050],
+[-77.171853,39.129988],
+[-77.175581,39.126120],
+[-77.179622,39.122026],
+[-77.180894,39.121131],
+[-77.181190,39.121005],
+[-77.181495,39.120898],
+[-77.181806,39.120804],
+[-77.182127,39.120726],
+[-77.182461,39.120671],
+[-77.182803,39.120637],
+[-77.183148,39.120626],
+[-77.183494,39.120636],
+[-77.183839,39.120665],
+[-77.184182,39.120715],
+[-77.184520,39.120787],
+[-77.184852,39.120878],
+[-77.185494,39.121106],
+[-77.189478,39.122770],
+[-77.191456,39.123177],
+[-77.194133,39.123137],
+[-77.197993,39.123036],
+[-77.198559,39.123151],
+[-77.198828,39.123246],
+[-77.199081,39.123364],
+[-77.199314,39.123501],
+[-77.199519,39.123656],
+[-77.199701,39.123827],
+[-77.199863,39.124012],
+[-77.200012,39.124209],
+[-77.201714,39.126527],
+[-77.203814,39.128927],
+[-77.206368,39.131478],
+[-77.208734,39.134112],
+[-77.210918,39.137302],
+[-77.212660,39.140680],
+[-77.214526,39.145223],
+[-77.215510,39.146948],
+[-77.217811,39.149987],
+[-77.220639,39.152707],
+[-77.224698,39.155944],
+[-77.228768,39.158858],
+[-77.233073,39.161274],
+[-77.237891,39.163827],
+[-77.240401,39.165853],
+[-77.242376,39.168174]
+];
+
   }
 
 } // end of class Mapbox

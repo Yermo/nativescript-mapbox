@@ -8,6 +8,7 @@ import {
   AddGeoJsonClusteredOptions,
   AddPolygonOptions,
   AddPolylineOptions,
+  AddSourceOptions,
   AnimateCameraOptions,
   DeleteOfflineRegionOptions,
   DownloadOfflineRegionOptions,
@@ -1851,6 +1852,222 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // -------------------------------------------------------------------------------------
 
   /**
+  * add a vector or geojson source
+  *
+  * Add a source that can then be referenced in the style specification
+  * passed to addLayer().
+  *
+  * @link https://docs.mapbox.com/mapbox-gl-js/api/#map#addsource
+  */
+
+  addSource( id : string, options: AddSourceOptions, nativeMap? ): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        const { url, type } = options;
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let source;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        if (theMap.style.sourceWithIdentifier(id)) {
+          reject("Source exists: " + id);
+          return;
+        }
+
+        switch (type) {
+          case "vector":
+            source = MGLVectorTileSource.alloc().initWithIdentifierConfigurationURL(id, NSURL.URLWithString(url));
+          break;
+
+          case 'geojson':
+
+            // has a source with this id already been defined? If so, then it is an error (because attempting
+            // to add another source with the same id will crash the app.
+
+            if ( theMap.style.sourceWithIdentifier( id )) {
+              reject( "Remove the layer with this id first with 'removeLayer': " + id );
+              return;
+            }
+
+            // under iOS we handle lines and circles differently
+
+            if ( options.data.geometry.type == 'LineString' ) {
+ 
+              // after hours and hours of trial and error, I finally stumbled upon how to set things
+              // up so that MGLPolylineFeature.polylineWithCoordinatesCount works.
+              //
+              // Allocating an NSArray and passing it in would cause the app to crash.
+              // Creating a javascript array of CLLocationCoodinate2D entries would cause random
+              // lines to be drawn on the map.
+              //
+              // However, allocating a raw C buffer and accessing it through a reference cast to CLLocationCoordinate2D
+              // works (to my shock and horror).
+      
+              let coordinates = options.data.geometry.coordinates;
+
+              let buffer = malloc( coordinates.length * 2 * interop.sizeof(interop.types.double) );
+              let clCoordsArray = new interop.Reference( CLLocationCoordinate2D, buffer );
+
+              // We need to convert our coordinate array into an array of CLLocationCoodinate2D elements
+              // which are in lat/lng order and not lng/lat
+
+              for ( let i = 0; i < coordinates.length; i++ ) {
+                let newCoord : CLLocationCoordinate2D = CLLocationCoordinate2DMake( coordinates[i][1], coordinates[i][0] );
+                clCoordsArray[ i ] = newCoord;
+              }
+
+              console.log( "Mapbox:addSource(): after CLLocationCoordinate2D array before creating polyline source from clCoordsArray" );
+
+              let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( new interop.Reference( CLLocationCoordinate2D, clCoordsArray ), coordinates.length );
+
+              source = MGLShapeSource.alloc().initWithIdentifierShapeOptions( id, polyline, null );
+
+              theMap.style.addSource( source );
+
+              // To support handling click events on lines and circles, we keep the underlying 
+              // feature.
+              //
+              // FIXME: There should be a way to get the original feature back out from the source
+              // but I have not yet figured out how.
+
+              this.lines.push({
+                type: 'line',
+                id: id,
+                clCoordsArray: clCoordsArray,
+                numCoords: coordinates.length,
+                source: source
+              });
+
+            } else if ( options.data.geometry.type == 'Point' ) {
+
+              // FIXME: should be able to just call addSource here for type geoJson
+
+              console.log( "Mapbox:addSource(): before addSource with options:", options );
+
+              const geoJSON = `{"type": "FeatureCollection", "features": [ ${JSON.stringify(options.data)}]}`;
+
+              // this would otherwise crash the app
+
+              if ( theMap.style.sourceWithIdentifier( id ) ) {
+                reject( "Remove the layer with this id first with 'removeLayer': " + id );
+                return;
+              }
+
+              console.log( "Mapbox:addSource(): after checking for existing style" );
+
+              const geoDataStr = NSString.stringWithString( geoJSON );
+
+              console.log( "Mapbox:addSource(): after string" );
+
+              const geoData = geoDataStr.dataUsingEncoding( NSUTF8StringEncoding );
+
+              console.log( "Mapbox:addSource(): after encoding" );
+
+              const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
+
+              console.log( "Mapbox:addSource(): before alloc" );
+
+              const geo = NSData.alloc().initWithBase64EncodedStringOptions( geoDataBase64Enc, null );
+
+              console.log( "Mapbox:addSource(): before shape with id '" + id + "'" );
+
+              const shape = MGLShape.shapeWithDataEncodingError( geo, NSUTF8StringEncoding );
+
+              console.log( "Mapbox:addSource(): after shape before second alloc with id '" + id + "' and shape '" + shape + "'");
+        
+              const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions( id, shape, null );
+
+              console.log( "Mapbox:addSource(): before addSource" );
+
+              theMap.style.addSource( source );
+
+              // probably a circle
+
+              this.circles.push({
+                type: 'line',
+                id: id,
+                center: options.data.geometry.coordinates
+              });
+
+           }
+
+          break;
+
+          default:
+            reject("Invalid source type: " + type);
+            return;
+        }
+
+        if (!source) {
+          const ex = "No source to add";
+          console.log("Error in mapbox.addSource: " + ex);
+          reject(ex);
+          return;
+        }
+
+        theMap.style.addSource(source);
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addSource: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------------------
+
+  /**
+  * remove a vector source by id
+  */
+
+  removeSource(id: string, nativeMap?): Promise<any> {
+    return new Promise((resolve, reject) => {
+      try {
+        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+
+        if (!theMap) {
+          reject("No map has been loaded");
+          return;
+        }
+
+        const source = theMap.style.sourceWithIdentifier(id);
+        if (!source) {
+          reject("Source does not exist");
+          return;
+        }
+
+        theMap.style.removeSource(source);
+
+        // if we've cached the underlying feature, remove it.
+        //
+        // since we don't know if it's a line or a circle we have to check both lists.
+
+        let offset = this.lines.findIndex( ( entry ) => { return entry.id == id; });
+
+        if ( offset != -1 ) {
+          this.lines.splice( offset, 1 );
+        }
+
+        offset = this.circles.findIndex( ( entry ) => { return entry.id == id; });
+
+        if ( offset != -1 ) {
+          this.circles.splice( offset, 1 );
+        }
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.removeSource: " + ex);
+        reject(ex);
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------------------------
+
+  /**
   * a rough analogue to the mapbox-gl-js addLayer() method
   *
   * It would be nice if this {N} API matched the mapbox-gl-js API which
@@ -1980,6 +2197,17 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   *
   * Do not call this method directly. Use addLayer().
   *
+  * 'source' may also refer to a vector source
+  *
+  * 'source': {
+  *    'type': 'vector',
+  *    'url': '<url of vector source>'
+  *  }
+  *
+  * or it may be a string referring to the id of an already added source as in
+  *
+  * 'source': '<id of source>'
+  *
   * To enable catching of click events on a line, when a click handler is added
   * to a line (using the onMapEvent() method above), the Annotations plugin is used to 
   * draw an invisible clickable line over the line layer. Sadly, the Annotations
@@ -2012,57 +2240,18 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject( "Non line style passed to addLineLayer()" );
         }
 
-        // we need a source of type geojson.
+        // the source may be of type geojson or it may be the id of a source added by addSource().
 
-        if (( typeof style.source == 'undefined' ) || ( style.source.type != 'geojson' )) {
-          reject( "Only GeoJSON sources are currently supported." );
+        let sourceId = null;
+
+        if ( typeof style.source != 'string' ) {
+          sourceId = style.id + '_source';
+          this.addSource( sourceId, style.source );
+        } else {
+          sourceId = style.source;
         }
 
-        // has a source with this id already been defined? If so, then it is an error (because attempting
-        // to add another source with the same id will crash the app.
-
-        if ( theMap.style.sourceWithIdentifier( style.id )) {
-          reject( "Remove the layer with this id first with 'removeLayer': " + style.id );
-          return;
-        }
-
-        // after hours and hours of trial and error, I finally stumbled upon how to set things
-        // up so that MGLPolylineFeature.polylineWithCoordinatesCount works.
-        //
-        // Allocating an NSArray and passing it in would cause the app to crash.
-        // Creating a javascript array of CLLocationCoodinate2D entries would cause random
-        // lines to be drawn on the map.
-        //
-        // However, allocating a raw C buffer and accessing it through a reference cast to CLLocationCoordinate2D
-        // works (to my shock and horror).
-
-        let coordinates = style.source.data.geometry.coordinates;
-
-        let buffer = malloc( coordinates.length * 2 * interop.sizeof(interop.types.double) );
-        let clCoordsArray = new interop.Reference( CLLocationCoordinate2D, buffer );
-
-        // We need to convert our coordinate array into an array of CLLocationCoodinate2D elements
-        // which are in lat/lng order and not lng/lat
-
-        for ( let i = 0; i < coordinates.length; i++ ) {
-
-          let newCoord : CLLocationCoordinate2D = CLLocationCoordinate2DMake( coordinates[i][1], coordinates[i][0] );
-
-          clCoordsArray[ i ] = newCoord;
-
-        }
-
-        console.log( "Mapbox:addLineLayer(): after CLLocationCoordinate2D array before creating polyline source from clCoordsArray" );
-
-        let polyline = MGLPolylineFeature.polylineWithCoordinatesCount( new interop.Reference( CLLocationCoordinate2D, clCoordsArray ), coordinates.length );
-
-        const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions( style.id, polyline, null );
-
-        theMap.style.addSource( source );
-
-        console.log( "Mapbox:addLineLayer(): after adding source" );
-
-        const layer = MGLLineStyleLayer.alloc().initWithIdentifierSource( style.id, source);
+        const layer = MGLLineStyleLayer.alloc().initWithIdentifierSource( style.id, theMap.style.sourceWithIdentifier( sourceId ));
 
         // color
 
@@ -2116,14 +2305,11 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         console.log( "Mapbox:addLineLayer(): after adding layer." );
 
-        this.lines.push({
-          type: 'line',
-          id: style.id,
-          layer: layer,
-          clCoordsArray: clCoordsArray,
-          numCoords: coordinates.length,
-          source: source
-        });
+        let lineEntry = this.lines.find( ( entry ) => { return entry.id == sourceId; });
+
+        if ( lineEntry ) {
+          lineEntry.layer = layer;
+        }
 
         console.log( "Mapbox:addLineLayer(): pushed line:", this.lines[ this.lines.length - 1 ] );
 
@@ -2284,54 +2470,29 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject( "Non circle style passed to addCircleLayer()" );
         }
 
-        // we need a source of type geojson.
-
-        if (( typeof style.source == 'undefined' ) || ( style.source.type != 'geojson' )) {
-          reject( "Only GeoJSON sources are currently supported." );
+        if ( typeof style.source != 'undefined' ) {
+          reject( "Missing source." );
         }
 
-        console.log( "Mapbox:addCircleLayer(): before addSource with style:", style );
+        // the source may be of type geojson, vector,  or it may be the id of a source added by addSource().
 
-        const geoJSON = `{"type": "FeatureCollection", "features": [ ${JSON.stringify(style.source.data)}]}`;
+        let sourceId = null;
 
-        // this would otherwise crash the app
+        if ( typeof style.source != 'string' ) {
 
-        if ( theMap.style.sourceWithIdentifier( style.id ) ) {
-          reject( "Remove the layer with this id first with 'removeLayer': " + style.id );
-          return;
+          sourceId = style.id + '_source';
+         
+          this.addSource( sourceId, style.source );
+
+        } else {
+
+          sourceId = style.source;
+
         }
-
-        console.log( "Mapbox:addCircleLayer(): after checking for existing style" );
-
-        const geoDataStr = NSString.stringWithString( geoJSON );
-
-        console.log( "Mapbox:addCircleLayer(): after string" );
-
-        const geoData = geoDataStr.dataUsingEncoding( NSUTF8StringEncoding );
-
-        console.log( "Mapbox:addCircleLayer(): after encoding" );
-
-        const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
-
-        console.log( "Mapbox:addCircleLayer(): before alloc" );
-
-        const geo = NSData.alloc().initWithBase64EncodedStringOptions( geoDataBase64Enc, null );
-
-        console.log( "Mapbox:addCircleLayer(): before shape with style.id '" + style.id + "'" );
-
-        const shape = MGLShape.shapeWithDataEncodingError( geo, NSUTF8StringEncoding );
-
-        console.log( "Mapbox:addCircleLayer(): after shape before second alloc with style id '" + style.id + "' and shape '" + shape + "'");
-        
-        const source = MGLShapeSource.alloc().initWithIdentifierShapeOptions( style.id, shape, null );
-
-        console.log( "Mapbox:addCircleLayer(): before addSource" );
-
-        theMap.style.addSource( source );
 
         console.log( "Mapbox:addCircleLayer(): after adding source" );
 
-        const layer = MGLCircleStyleLayer.alloc().initWithIdentifierSource( style.id, source );
+        const layer = MGLCircleStyleLayer.alloc().initWithIdentifierSource( style.id, theMap.style.sourceWithIdentifier( sourceId ) );
 
         // color
 
@@ -2429,13 +2590,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         theMap.style.addLayer(layer);
 
-        this.circles.push({
-          type: 'circle',
-          id: style.id,
-          center: style.source.data.geometry.coordinates,
-          radius: style[ 'circle-radius' ],
-          layer: layer
-        });
+        let circleEntry = this.circles.find( ( entry ) => { return entry.id == sourceId; });
+
+        if ( circleEntry ) {
+          circleEntry.radius = style[ 'circle-radius' ],
+          circleEntry.layer = layer;
+        }
 
         resolve();
 
