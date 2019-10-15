@@ -59,8 +59,7 @@ registerElement( "Mapbox", () => require("nativescript-mapbox").MapboxView);
 *
 * where lat/lng are the default coordinates where to center the map if no location is available.
 *
-* @todo FIXME:The implementation is complicated by the fact that on Android when the app is paused
-* or one navigates away from the page it intermittently crashes. 
+* @todo under iOS the <ContentView> tag is apparently required. If it is not present the map does not display.
 */
 
 @Component({
@@ -69,6 +68,7 @@ registerElement( "Mapbox", () => require("nativescript-mapbox").MapboxView);
   template: `
 
     <StackLayout height="100%" width="100%" *ngIf="shown">
+      <ContentView height="100%" width="100%">
         <Mapbox
           accessToken="{{access_token}}"
           mapStyle="{{style}}"
@@ -90,6 +90,7 @@ registerElement( "Mapbox", () => require("nativescript-mapbox").MapboxView);
          (locationPermissionGranted)="onLocationPermissionGranted($event)"
          (locationPermissionDenied)="onLocationPermissionDenied($event)">
         </Mapbox>
+      </ContentView>
     </StackLayout>
 
   `,
@@ -208,7 +209,7 @@ export class MapComponent implements OnInit, OnDestroy {
     });
 
     // I thought that maybe the intermittent crash on navigation was due to a race condition so I added this
-    // method which is raised from app.component.html when navigating away from the map page. The idea is
+    // method which is raised from app.component.ts when navigating away from the map page. The idea is
     // to completely hide and destroy the map object before initiating the navigation. This is probably 
     // overkill as the bug I was trying to work around is not due to a race condition. (See link above)
 
@@ -307,6 +308,8 @@ export class MapComponent implements OnInit, OnDestroy {
   */
 
   async onPause() {
+
+    console.log( "MapComponent::onPause()" );
     this.shown = false;
   }
 
@@ -317,6 +320,7 @@ export class MapComponent implements OnInit, OnDestroy {
   */
 
   onExit() {
+    console.log( "MapComponent::onExit()" );
     this.shown = false;
   }
 
@@ -327,6 +331,7 @@ export class MapComponent implements OnInit, OnDestroy {
   */
 
   onResume() {
+    console.log( "MapComponent::onResume()" );
     this.shown = true;
   }
 
@@ -340,7 +345,7 @@ export class MapComponent implements OnInit, OnDestroy {
     return this.readyPromise;
   }
 
-  // ---------------------------------------------------------------
+  // --------------------------------------------------------------
 
   /**
   * declare that we are ready
