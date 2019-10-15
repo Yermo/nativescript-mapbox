@@ -115,7 +115,7 @@ const _getTrackingMode = (input: UserLocationCameraMode): MGLUserTrackingMode =>
 
 };
 
-/*************** XML definition START ****************/
+// ------------------------------------------------------------------------
 
 /**
 * Map View Class instantiated from XML
@@ -129,16 +129,97 @@ export class MapboxView extends MapboxViewBase {
   private nativeMapView: MGLMapView;
   private delegate: MGLMapViewDelegate;
 
+  private settings: any = null;
+
+  // ------------------------------------------------------
+
+  /**
+  * programmatically include settings
+  */
+
+  setConfig( settings : any ) {
+    this.settings = settings;
+  }
+
+  // ------------------------------------------------------
+
   getNativeMapView(): any {
     return this.nativeMapView;
   }
 
+  // ---------------------------------------------------------
+
   public createNativeView(): Object {
     let v = super.createNativeView();
+
     setTimeout(() => {
       this.initMap();
     }, 0);
+
     return v;
+  }
+
+  // -------------------------------------------------------
+
+  /**
+  * init the native view.
+  */
+
+  public initNativeView(): void {
+
+    console.log( "MapboxView::initNativeView(): top" );
+
+    (<any>this.nativeView).owner = this;
+    super.initNativeView();
+
+    console.log( "MapboxView::initNativeView(): after super.initNativeView()" );
+
+    // wait for the view to be fully loaded before initializing the map
+
+    this.on( 'loaded', () => {
+      console.log( "MapboxView::initNativeView(): on - loaded" );
+      this.initMap();
+    });
+
+    this.on( 'unloaded', () => {
+
+      console.log( "MapboxView::initNativeView(): on - unloaded" );
+
+      if ( typeof this.settings.onMapDestroyed != 'undefined' ) {
+        console.log( "MapboxView::initNativeView(). on unloaded Calling onMapDestroyed" );
+        this.settings.onMapDestroyed();
+      }
+
+    });
+
+  }
+
+  // -------------------------------------------------------
+
+  /**
+  * when the view is destroyed.
+  *
+  * This is called by the framework when the view is destroyed (made not visible).
+  *
+  * However, it does not seem to be called when the page is unloaded.
+  *
+  * @link https://docs.nativescript.org/plugins/ui-plugin-custom
+  */
+
+  async disposeNativeView(): Promise<void> {
+
+    console.log( "MapboxView::disposeNativeView(): top" );
+
+    (<any>this.nativeView).owner = null;
+
+    await this.mapbox.destroy();
+
+    console.log( "MapboxView::disposeNativeView(): after mapbox.destroy()" );
+
+    super.disposeNativeView();
+
+    console.log( "MapboxView::disposeNativeView(): bottom" );
+
   }
 
   // ---------------------------------------------------
@@ -162,11 +243,15 @@ export class MapboxView extends MapboxViewBase {
   */
 
   initMap(): void {
+
     if (!this.nativeMapView && this.config.accessToken) {
+
       this.mapbox = new Mapbox();
       let settings = Mapbox.merge(this.config, Mapbox.defaults);
 
       console.log( "MapboxView::initMap(): to with config:", this.config );
+
+      // called in a setTimeout call at the bottom.
 
       let drawMap = () => {
 
@@ -190,7 +275,9 @@ export class MapboxView extends MapboxViewBase {
             map: this,
             ios: this.nativeMapView
           });
+
           // no permission required, but to align with Android we fire the event anyway
+
           this.notify({
             eventName: MapboxViewBase.locationPermissionGrantedEvent,
             object: this,
@@ -199,10 +286,10 @@ export class MapboxView extends MapboxViewBase {
           });
         });
 
-        _setMapboxMapOptions(this.nativeMapView, settings);
+        _setMapboxMapOptions( this.nativeMapView, settings );
         _markers = [];
 
-        this.nativeView.addSubview(this.nativeMapView);
+        this.nativeView.addSubview( this.nativeMapView );
 
         // this.notify will notify an event listener specified
         // in the XML, in this case (onMoveBegin)="..."
@@ -221,9 +308,14 @@ export class MapboxView extends MapboxViewBase {
         }, this.nativeMapView );
 
       };
-      setTimeout(drawMap, settings.delay ? settings.delay : 0);
+
+      // draw the map after a timeout
+
+      setTimeout( drawMap, settings.delay ? settings.delay : 0 );
+
     }
-  }
+
+  } // end of initMap()
 
   // ----------------------------------
 
@@ -236,7 +328,7 @@ export class MapboxView extends MapboxViewBase {
 
 }
 
-/*************** XML definition END ****************/
+// -----------------------------------------------------------------------------------------------------------------------
 
 /**
 * a custom user location marker 
@@ -676,12 +768,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         // alert("directions: " + directions);
 
         // if no accessToken was set the app may crash
+
         if (settings.accessToken === undefined) {
           reject("Please set the 'accessToken' parameter");
           return;
         }
 
         // if already added, make sure it's removed first
+
         if (_mapView) {
           _mapView.removeFromSuperview();
         }
@@ -697,8 +791,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             styleURL = _getMapStyle(settings.style);
 
         MGLAccountManager.accessToken = settings.accessToken;
-        _mapbox.mapView = MGLMapView.alloc().initWithFrameStyleURL(mapFrame, styleURL);
-        _setMapboxMapOptions(_mapbox.mapView, settings);
+        _mapbox.mapView = MGLMapView.alloc().initWithFrameStyleURL( mapFrame, styleURL );
+        _setMapboxMapOptions( _mapbox.mapView, settings );
 
         _mapbox.mapView.delegate = _delegate = MGLMapViewDelegateImpl.new().initWithCallback(
             (mapView: MGLMapView) => {
@@ -709,7 +803,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         );
 
         _markers = [];
-        _addMarkers(settings.markers);
+        _addMarkers( settings.markers );
 
         // wrapping in a little timeout since the map area tends to flash black a bit initially
 
