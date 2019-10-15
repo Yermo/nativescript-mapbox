@@ -185,10 +185,12 @@ export class MapboxView extends MapboxViewBase {
 
       console.log( "MapboxView::initNativeView(): on - unloaded" );
 
-      if ( typeof this.settings.onMapDestroyed != 'undefined' ) {
-        console.log( "MapboxView::initNativeView(). on unloaded Calling onMapDestroyed" );
-        this.settings.onMapDestroyed();
-      }
+      this.notify({
+        eventName: MapboxViewBase.mapDestroyedEvent,
+        object: this,
+        map: this,
+        ios: this.nativeMapView
+      });
 
     });
 
@@ -244,22 +246,22 @@ export class MapboxView extends MapboxViewBase {
 
   initMap(): void {
 
-    if (!this.nativeMapView && this.config.accessToken) {
+    if ( !this.nativeMapView && this.config.accessToken ) {
 
       this.mapbox = new Mapbox();
-      let settings = Mapbox.merge(this.config, Mapbox.defaults);
+      this.settings = Mapbox.merge( this.config, Mapbox.defaults );
 
-      console.log( "MapboxView::initMap(): to with config:", this.config );
+      console.log( "MapboxView::initMap(): to with config:", this.settings );
 
       // called in a setTimeout call at the bottom.
 
       let drawMap = () => {
 
-        MGLAccountManager.accessToken = settings.accessToken;
+        MGLAccountManager.accessToken = this.settings.accessToken;
 
         this.nativeMapView = MGLMapView.alloc().initWithFrameStyleURL(
           CGRectMake(0, 0, this.nativeView.frame.size.width, this.nativeView.frame.size.height), 
-          _getMapStyle(settings.style)
+          _getMapStyle( this.settings.style )
         );
 
         // this delegate class is defined later in this file and is where, in Obj-C land, 
@@ -286,7 +288,7 @@ export class MapboxView extends MapboxViewBase {
           });
         });
 
-        _setMapboxMapOptions( this.nativeMapView, settings );
+        _setMapboxMapOptions( this.nativeMapView, this.settings );
         _markers = [];
 
         this.nativeView.addSubview( this.nativeMapView );
@@ -311,7 +313,7 @@ export class MapboxView extends MapboxViewBase {
 
       // draw the map after a timeout
 
-      setTimeout( drawMap, settings.delay ? settings.delay : 0 );
+      setTimeout( drawMap, this.settings.delay ? this.settings.delay : 0 );
 
     }
 
