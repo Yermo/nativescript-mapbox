@@ -52,13 +52,13 @@ export class HelloWorldModel extends Observable {
     const button : Button = args.object;
     const page : Page = button.page;
 
-    const StackLayout = page.getViewById( 'mapContainer' );
+    const ContentViewTag = page.getViewById( 'mapContainer' );
 
     const settings = {
 
-      // NOTE: passing in the container (i.e. StackLayout) here.
+      // NOTE: passing in the container (i.e. ContentView) here.
 
-      container: StackLayout,
+      container: ContentViewTag,
       accessToken: ACCESS_TOKEN,
       style: MapStyle.LIGHT,
       margins: {
@@ -100,7 +100,7 @@ export class HelloWorldModel extends Observable {
 
     // Bind some event handlers onto our newly created map view. 
 
-    mapView.on( 'mapReady', ( args ) => {
+    mapView.on( 'mapReady', ( args : any ) => {
 
       console.log( "main-view-model: onMapReady fired." );
 
@@ -138,7 +138,7 @@ export class HelloWorldModel extends Observable {
 
     console.log( "main-view-model:: doShow(): adding MapboxView to container." );
 
-    StackLayout.addChild( mapView );
+    ContentViewTag.loadView( mapView );
 
   }
 
