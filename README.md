@@ -533,6 +533,42 @@ The map will continuously move along with the last known location.
   });
 ```
 
+### addSource
+
+https://docs.mapbox.com/mapbox-gl-js/api/#map#addsource 
+
+Adds a vector to GeoJSON source to the map.
+
+```js
+  mapbox.addSource( id, {
+    type: 'vector',
+    url: 'url to source'
+  } );
+```
+
+-or-
+
+```js
+  mapbox.addSource( id, {
+    'type': 'geojson',
+    'data': {
+      "type": "Feature",
+        "geometry": {
+        "type": "LineString",
+          "coordinates": [ [ lng, lat ], [ lng, lat ], ..... ]
+        }
+      }
+    }
+  );
+```
+### removeSource
+
+Remove a source by id
+
+```js
+  mapbox.removeSource( id );
+```
+
 ### addLayer
 NOTE: For version 5 the API for addLayer() has changed and is now a subset of the web-gl-js API.
 
@@ -600,6 +636,10 @@ To add a circle:
     } 
   });
 ```
+
+Source may be a geojson or vector source description or may be 
+the id of a source added using addSource()
+
 ### removeLayer
 Remove a layer added with addLayer() by id.
 
