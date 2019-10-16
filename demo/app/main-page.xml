@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" actionBarHidden="true" loaded="pageLoaded">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" actionBarHidden="true" navigatingTo="onNavigatingTo" loaded="pageLoaded">
   <TabView>
     <TabView.items>
 
@@ -26,7 +26,6 @@
         </TabViewItem.view>
       </TabViewItem>
 
-<!--
       <TabViewItem title="By XML">
         <TabViewItem.view>
           <GridLayout columns="*, *" rows="110, *, 160" horizontalAlignment="stretch">
@@ -101,7 +100,6 @@
           </GridLayout>
         </TabViewItem.view>
       </TabViewItem>
--->
 
       <TabViewItem title="By Code">
         <TabViewItem.view>
@@ -150,7 +148,7 @@
             <Button row="10" col="2" colSpan="2"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" class="button button-permissions" />
 
             <StackLayout row="11" col="0" colSpan="4">
-              <ContentView id="mapContainer" width="100%" height="100%" />
+              <ContentView id="mapContainer" />
             </StackLayout>
           </GridLayout>
         </TabViewItem.view>

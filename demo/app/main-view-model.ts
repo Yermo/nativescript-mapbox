@@ -7,6 +7,7 @@ import { Frame, topmost } from "tns-core-modules/ui/frame";
 import { Button } from "tns-core-modules/ui/button";
 import { Page } from "tns-core-modules/ui/page";
 import { Label } from "tns-core-modules/ui/label";
+import { ContentView } from "tns-core-modules/ui/content-view";
 
 import * as platform from "tns-core-modules/platform";
 import { MapboxView, Mapbox, MapStyle, OfflineRegion, LatLng, Viewport, DownloadProgress, MapboxMarker } from "nativescript-mapbox";
@@ -52,13 +53,13 @@ export class HelloWorldModel extends Observable {
     const button : Button = args.object;
     const page : Page = button.page;
 
-    const ContentViewTag = page.getViewById( 'mapContainer' );
+    const contentView : ContentView = <ContentView>page.getViewById( 'mapContainer' );
 
     const settings = {
 
-      // NOTE: passing in the container (i.e. ContentView) here.
+      // NOTE: passing in the container here.
 
-      container: ContentViewTag,
+      container: contentView,
       accessToken: ACCESS_TOKEN,
       style: MapStyle.LIGHT,
       margins: {
@@ -138,7 +139,7 @@ export class HelloWorldModel extends Observable {
 
     console.log( "main-view-model:: doShow(): adding MapboxView to container." );
 
-    ContentViewTag.loadView( mapView );
+    contentView.content = mapView;
 
   }
 

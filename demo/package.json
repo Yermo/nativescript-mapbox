@@ -1,18 +1,18 @@
 {
   "nativescript": {
     "id": "org.nativescript.mapbox",
-    "tns-android": {
-      "version": "6.0.0"
-    },
     "tns-ios": {
       "version": "6.0.1"
+    },
+    "tns-android": {
+      "version": "6.1.2"
     }
   },
   "dependencies": {
     "nativescript-mapbox": "file:../publish/dist/package",
     "nativescript-theme-core": "^1.0.4",
     "nativescript-unit-test-runner": "0.7.0",
-    "tns-core-modules": "6.0.1"
+    "tns-core-modules": "^6.1.1"
   },
   "devDependencies": {
     "awesome-typescript-loader": "~3.1.3",
