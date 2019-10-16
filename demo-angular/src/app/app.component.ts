@@ -77,63 +77,6 @@ export class AppComponent implements OnInit {
 
     onNavItemTap(navItemRoute: string): void {
 
-        console.log( "AppComponent:onNavItemTap(): routing to '" + navItemRoute + "'" );
-
-	// I am leaving this here for posterity. It was a red herring trying to track down an intermittent
-	// crash bug on Android. I originally thought it might be due to a race condition.
-	//
-	// While it's probably not necessary, I still like the idea of waiting until the map is completely destroyed before navigating.
-	//
-	// The intermittent crash on navigation under Android turns out to be a markingMode:"none" bug in
-	// tns-core-modules (as of 6.1.1) and has been a long standing bug.
-	//
-	// Historical:
-	// 
-        // In an attempt to work around the intermittent NativeScript/Mapbox/Plugin/DunnoWhatsCausingit?? crash
-        // the map.component listens to the destroyMap event. It hides the container
-        // of the Mapbox tag which in turns causes the MapboxView.disposeNativeView() method to be called 
-        // in the plugin which then calls destroy() that calls into the Native Android SDK onDestroy method.
-        //
-        // Once the Mapbox onDestroy method returns, the onMapDestroyed() callback specified here is called.
-        // In this way we can be sure the map is completely dead before proceeding. 
-
-        if ( navItemRoute == '/test-crash' ) {
-
-          // The idea here is we want to wait until we've gotten confirmation that the map component
-          // has been destroyed.
-
-          console.log( "AppComponent::onNavItemTap() publishing destroyMap event." );
-
-          this.eventsService.publish( 'destroyMap', { 
-            mapId : 'mainMap', 
-
-            // see components/map.component.ts. Once the map is destroyed it calls this method.
-
-            onMapDestroyed: () => {
-
-              console.log( "AppComponent::onNavItem() - onMapDestroyed callback" );
-
-              setTimeout( () => {
-                this.routerExtensions.navigate([navItemRoute], {
-                  transition: {
-                    name: "fade"
-                  }
-                });
-
-                const sideDrawer = <RadSideDrawer>app.getRootView();
-                sideDrawer.closeDrawer();
-
-                console.log( "AppComponent::onNavItemTap(): after onMapDestroyed event '" + navItemRoute + "' ---- '" + this.debugService.incrementCounter( navItemRoute ) );
-
-              }, 100 );
-
-            }
-          });
-
-          return;
-
-        }
-
         console.log( "AppComponent::onNavItemTap(): '" + navItemRoute + "' ---- '" + this.debugService.incrementCounter( navItemRoute ) );
 
         this.routerExtensions.navigate([navItemRoute], {

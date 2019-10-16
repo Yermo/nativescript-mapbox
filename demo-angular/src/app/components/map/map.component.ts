@@ -67,7 +67,7 @@ registerElement( "Mapbox", () => require("nativescript-mapbox").MapboxView);
   moduleId: module.id,
   template: `
 
-    <StackLayout height="100%" width="100%" *ngIf="shown">
+    <StackLayout height="100%" width="100%">
       <ContentView height="100%" width="100%">
         <Mapbox
           accessToken="{{access_token}}"
@@ -208,33 +208,6 @@ export class MapComponent implements OnInit, OnDestroy {
       this.onResume();
     });
 
-    // I thought that maybe the intermittent crash on navigation was due to a race condition so I added this
-    // method which is raised from app.component.ts when navigating away from the map page. The idea is
-    // to completely hide and destroy the map object before initiating the navigation. This is probably 
-    // overkill as the bug I was trying to work around is not due to a race condition. (See link above)
-
-    this.events.subscribe( 'destroyMap', async ( data ) => {
-
-      console.log( "MapComponent::registerEventHandlers(): got destroyMap event for component '" + this.id + "' for map '" + data.mapId + "'" );
-
-      if ( this.id == data.mapId ) {
-
-        console.log( "MapComponent::registerEventHandlers(): got destroyMap event ------------------------ " + this.debugService.incrementCounter( 'mapView' ) );
-
-        await this.saveMapState();
-
-        this.shown = false;
-
-        // FIXME: ugly hack. See onMapDestroyed() in app.component.ts
-
-        this.afterMapDestroyed = data.onMapDestroyed;
-
-        this.events.unsubscribe( 'destroyMap' );
-
-      }
-      
-    });
-
   }
 
   // -------------------------------------------------------------
@@ -363,24 +336,6 @@ export class MapComponent implements OnInit, OnDestroy {
 
   }
 
-  // -------------------------------------------------------------------------------
-
-  /**
-  * when the map is destroyed
-  *
-  * @see app.component.ts
-  */
-
-  onMapDestroyed(): void {
-
-    // If we are just toggling the map from one of the other test pages, we may not have an afterMapDestroyed event. 
-
-    if ( this.afterMapDestroyed ) {
-      this.afterMapDestroyed();
-    }
-
-  }
-
   // -------------------------------------------------
 
   /**
@@ -388,7 +343,7 @@ export class MapComponent implements OnInit, OnDestroy {
   *
   * @link https://nativescripting.com/posts/force-component-destroy-by-using-page-life-cycle
   *
-  * @todo when laterally navigating to a page the components are constructed, but when navigating away, ngOnDestroy is not automatically called. I do not understand why.
+  * @todo when laterally navigating to a page the components are constructed, but when navigating away, ngOnDestroy is not automatically called. I do not understand why, hence the HostListener here.
   */
 
   @HostListener('unloaded')
@@ -399,6 +354,14 @@ export class MapComponent implements OnInit, OnDestroy {
     // this prevents memory leaks.
 
     this.unRegisterEventHandlers();
+
+    // Using the Rad Side Drawer, every time we navigate to this page new components
+    // will be constructed .. which will generate a new map because of the way the plugin
+    // is set up. To do it in the "correct NativeScript" way, I imagine we would somehow
+    // cache the map object and on init pull it back out again to reuse it. But for the moment,
+    // creating and destroying it each time works reliably.
+
+    this.mapboxView.destroy();
 
   }
 
