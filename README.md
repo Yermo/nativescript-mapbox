@@ -68,6 +68,8 @@ Your access_token can then be set in the top level mapbox_config.ts file.
 
 The style can be set to one of the Mapbox style names or it can be the URL of your own hosted tile server.
 
+> NOTE: As of this writing, the NativeScript demo only works with a mapbox token. The demo-angular will work with either a self hosted tile server or a mapbox token.
+
 ## Installation
 This version of the plugin is still in development and not yet available via NPM.
 
