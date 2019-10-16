@@ -251,67 +251,95 @@ Check out the usage details on the functions below.
 Add a container to your view XML where you want to programmatically add the map. Give it an id. 
 
 ```
-<StackLayout id="mapContainer">
+<ContentView id="mapContainer" />
 ```
 
 ### show
-```js
-  var mapbox = require("nativescript-mapbox");
-  var platform = require("platform");
-  var isIOS = platform.device.os === platform.platformNames.ios;
+```ts
 
-  // get a reference to the container where to place the map.
+    const contentView : ContentView = <ContentView>page.getViewById( 'mapContainer' );
 
-  const StackLayout = page.getViewById( 'mapContainer' );
+    const settings = {
 
-  mapbox.show({
-    // NOTE: passing in the container (i.e. StackLayout) here.
+      // NOTE: passing in the container here.
 
-    container: StackLayout,
-
-    accessToken: 'YOUR_API_ACCESS_TOKEN', // see 'Prerequisites' above
-    style: mapbox.MapStyle.TRAFFIC_DAY, // see the mapbox.MapStyle enum for other options, default mapbox.MapStyle.STREETS
-    margins: {
-      left: 40, // default 0
-      right: 40, // default 0
-      top: 450, // default 0
-      bottom: isIOS ? 50: 0 // default 0, this shows how to override the style for iOS
-    },
-    center: { // optional without a default
-      lat: 52.3702160,
-      lng: 4.8951680
-    },
-    zoomLevel: 9.25, // 0-20, default 0
-    showUserLocation: true, // default false - requires location permissions on Android which you can remove from AndroidManifest.xml if you don't need them
-    hideAttribution: false, // default true, Mapbox requires `false` if you're on a free plan
-    hideLogo: false, // default false, Mapbox requires this default if you're on a free plan
-    hideCompass: false, // default false
-    disableRotation: false, // default false
-    disableScroll: false, // default false
-    disableZoom: false, // default false
-    markers: [ // optional without a default
-      {
-        id: 1, // can be user in 'removeMarkers()'
-        lat: 52.3732160, // mandatory
-        lng: 4.8941680, // mandatory
-        title: 'Nice location', // recommended to pass in
-        subtitle: 'Really really nice location', // one line is available on iOS, multiple on Android
-        icon: 'res://cool_marker', // use either this preferred way (to grab a density-independent marker from app resources), or:
-        // icon: 'http(s)://my-remote-image', // an image from the interwebs (see the note at the bottom of this readme), or:
-        iconPath: 'res/markers/green_pin_marker.png', // anywhere in your app folder
-        selected: true, // makes the callout show immediately when the marker is added (note: only 1 marker can be selected at a time)
-        onTap: function(marker) { console.log("This marker was tapped"); },
-        onCalloutTap: function(marker) { console.log("The callout of this marker was tapped"); }
-      }
-    ]
-  }).then(
-      function(showResult) {
-        console.log("Mapbox show done for " + (showResult.ios ? "iOS" : "Android") + ", native object received: " + (showResult.ios ? showResult.ios : showResult.android));
+      container: contentView,
+      accessToken: ACCESS_TOKEN,
+      style: MapStyle.LIGHT,
+      margins: {
+        left: 18,
+        right: 18,
+        top: isIOS ? 390 : 454,
+        bottom: isIOS ? 50 : 8
       },
-      function(error) {
-        console.log("mapbox show error: " + error);
-      }
-  )
+      center: {
+        lat: 52.3702160,
+        lng: 4.8951680
+      },
+      zoomLevel: 9, // 0 (most of the world) to 20, default 0
+      showUserLocation: true, // default false
+      hideAttribution: true, // default false
+      hideLogo: true, // default false
+      hideCompass: false, // default false
+      disableRotation: false, // default false
+      disableScroll: false, // default false
+      disableZoom: false, // default false
+      disableTilt: false, // default false
+      markers: [
+        {
+          id: 1,
+          lat: 52.3732160,
+          lng: 4.8941680,
+          title: 'Nice location',
+          subtitle: 'Really really nice location',
+          iconPath: 'res/markers/green_pin_marker.png',
+          onTap: () => console.log("'Nice location' marker tapped"),
+          onCalloutTap: () => console.log("'Nice location' marker callout tapped")
+        }
+      ]
+    };
+
+    console.log( "main-view-model:: doShow(): creating new MapboxView." );
+
+    const mapView = new MapboxView();
+
+    // Bind some event handlers onto our newly created map view. 
+
+    mapView.on( 'mapReady', ( args : any ) => {
+
+      console.log( "main-view-model: onMapReady fired." );
+
+      // this is an instance of class MapboxView
+
+      this.mapboxView = args.map;
+
+      // get a reference to the Mapbox API shim object so we can directly call its methods.
+
+      this.mapbox = this.mapboxView.getMapboxApi();
+
+      this.mapbox.setOnMapClickListener( point => {
+        console.log(`>> Map clicked: ${JSON.stringify(point)}`);
+        return true;
+      });
+
+      this.mapbox.setOnMapLongClickListener( point => {
+        console.log(`>> Map longpressed: ${JSON.stringify(point)}`);
+        return true;
+      });
+
+      this.mapbox.setOnScrollListener((point: LatLng) => {
+        // console.log(`>> Map scrolled`);
+      });
+
+      this.mapbox.setOnFlingListener(() => {
+        console.log(`>> Map flinged"`);
+      }).catch( err => console.log(err) );
+
+    });
+
+    mapView.setConfig( settings );
+    contentView.content = mapView;
+  
 ```
 
 ### hide
