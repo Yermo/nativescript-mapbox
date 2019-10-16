@@ -75,11 +75,18 @@ export namespace BundleKludge {
 
 export class MapboxView extends MapboxViewBase {
 
+  // reference to the map view inside the frame.
+
   private nativeMapView: any; // com.mapbox.mapboxsdk.maps.MapView
 
   private settings: any = null;
 
   private gcFixIndex : number;
+
+  // whether or not the view has already been initialized. 
+  // see initNativeView()
+
+  private initialized : boolean = false;
 
   constructor() {
     super();
@@ -184,6 +191,24 @@ export class MapboxView extends MapboxViewBase {
 
   // -------------------------------------------------------
 
+  /**
+  * Creates the native view.
+  *
+  * This method is supposed to create the native view. NativeScript caches
+  * and re-uses views to save on memory and increase performance. Unfortunately,
+  * the inner details of exactly how this is done is challenging to tease apart.
+  *
+  * The problem is that in order to create the Mapbox view we need the access token from 
+  * the XML, but in the case of a pure NativeScript app with property binding 
+  * (see the demo), the properties don't seem to be available until the page is loaded.
+  *
+  * As a workaround, I wait until the page is loaded to configure the map. See initNativeView.
+  *
+  * It seems to me there should be a better way.
+  *
+  * @link https://docs.nativescript.org/core-concepts/properties#views-lifecycle-and-recycling
+  */
+ 
   public createNativeView(): Object {
 
     console.log( "MapboxView:createNativeView(): top" );
@@ -200,7 +225,24 @@ export class MapboxView extends MapboxViewBase {
   // -------------------------------------------------------
 
   /**
-  * init the native view.
+  * initializes the native view.
+  *
+  * In NativeScript, views are cached so they can be reused. This method is 
+  * supposed to setup listeners and handlers in the NativeView.
+  *
+  * What I don't understand here is when XML property (attribute) binding
+  * is supposed to happen. In order to create the map we need the access token.
+  * In the NativeScript demo, the access token is passed in via a property that
+  * is bound on page load. 
+  *
+  * Unfortunately, initNativeView seems to get called before page load. So here,
+  * as a workaround the feels ugly, I wait to create the map until the page is loaded.
+  *
+  * The problem with this, however, is that as the user navigates through the
+  * app page loaded and unloaded events will get fired, so to avoid clobbering
+  * ourselves, we need to keep track of whether or not we've been initialized. 
+  *
+  * It seems to me that there should be a way to get at the  data binding at this point. 
   */
 
   public initNativeView(): void {
@@ -210,25 +252,21 @@ export class MapboxView extends MapboxViewBase {
     (<any>this.nativeView).owner = this;
     super.initNativeView();
 
-    console.log( "MapboxView::initNativeView(): after super.initNativeView()" );
-
-    // wait for the view to be fully loaded before initializing the map
-
     this.on( 'loaded', () => {
       console.log( "MapboxView::initNativeView(): on - loaded" );
-      this.initMap();
-    });
 
-    this.on( 'unloaded', () => {
-
-      console.log( "MapboxView::initNativeView(): on - unloaded" );
-
-      if ( typeof this.settings.onMapDestroyed != 'undefined' ) {
-        console.log( "MapboxView::initNativeView(). on unloaded Calling onMapDestroyed" );
-        this.settings.onMapDestroyed();
+      if ( ! this.initialized ) {
+        this.initMap();
+        this.initialized = true;
       }
 
     });
+
+    this.on( 'unloaded', () => {
+      console.log( "MapboxView::initNativeView(): on - unloaded" );
+    });
+
+    console.log( "MapboxView::initNativeView(): bottom" );
 
   }
 
@@ -237,9 +275,9 @@ export class MapboxView extends MapboxViewBase {
   /**
   * when the view is destroyed.
   *
-  * This is called by the framework when the view is destroyed (made not visible).
-  *
-  * However, it does not seem to be called when the page is unloaded.
+  * This is called by the framework when the view is actually destroyed.
+  * NativeScript, by design, tries to cache native views because
+  * creating native views is expensive.
   *
   * @link https://docs.nativescript.org/plugins/ui-plugin-custom
   */
@@ -267,17 +305,17 @@ export class MapboxView extends MapboxViewBase {
   /**
   * initialize the map
   *
-  * This is called when the map native view is created in createNativeView() above (which is called by the XML
-  * initialization code). It creates the native mapView instance and also a new mapbox API class instance. 
+  * This method creates a new mapbox API instance and, through the show() method of the Mapbox API,
+  * creates a Mapbox native map view.
   *
   * @see show()
   *
   * @link https://docs.nativescript.org/core-concepts/events
   */
 
-  initMap(): void {
+  private initMap(): void {
 
-    console.log( "MapboxView:initMap(): top - accessToken is '" + this.config.accessToken + "'" );
+    console.log( "MapboxView:initMap(): top - accessToken is '" + this.config.accessToken + "'", this.config );
 
     if ( ! this.nativeMapView && ( this.config.accessToken || this.settings.accessToken )) {
 
@@ -322,18 +360,6 @@ export class MapboxView extends MapboxViewBase {
 
           this.notify({
             eventName: MapboxViewBase.mapReadyEvent,
-            object: this,
-            map: this,
-            android: this.nativeMapView
-          });
-
-        },
-        onMapDestroyed: ( map ) => {
-
-          console.log( "MapboxView::initMap(): onDestroy event" );
-
-          this.notify({
-            eventName: MapboxViewBase.mapDestroyedEvent,
             object: this,
             map: this,
             android: this.nativeMapView
