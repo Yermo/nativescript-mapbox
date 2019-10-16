@@ -185,7 +185,6 @@ All currently supported options for your XML based map are (__don't__ use other 
 |`disableScroll`|false|Don't allow the user to move the center of the map (one finger drag)
 |`disableTilt`|false|Don't allow the user to tilt the map (two finger drag up or down)
 |`mapReady`|-|The name of a callback function you can declare to interact with the map after it has been drawn
-|`mapDestroyed`|-|The name of a function to be called when the map is destroyed.
 |`moveBeginEvent`|-|The name of a function to be called when the map is moved.
 |`locationPermissionGranted`|-|The name of a callback function you can declare to get notified when the user granted location permissions
 |`locationPermissionDenied`|-|The name of a callback function you can declare to get notified when the user denied location permissions (will never fire on iOS because there's nothing to deny)
