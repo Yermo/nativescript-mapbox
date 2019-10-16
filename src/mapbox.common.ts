@@ -1143,7 +1143,6 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
   // looks for static members to find events on controls.
 
   public static mapReadyEvent: string = "mapReady";
-  public static mapDestroyedEvent: string = "mapDestroyed";
   public static scrollEvent: string = "scrollEvent";
   public static moveBeginEvent: string = "moveBeginEvent";
 
