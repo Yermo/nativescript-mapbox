@@ -131,6 +131,8 @@ export class MapboxView extends MapboxViewBase {
 
   private settings: any = null;
 
+  private initialized : boolean = false;
+
   // ------------------------------------------------------
 
   /**
@@ -151,10 +153,6 @@ export class MapboxView extends MapboxViewBase {
 
   public createNativeView(): Object {
     let v = super.createNativeView();
-
-    setTimeout(() => {
-      this.initMap();
-    }, 0);
 
     return v;
   }
@@ -178,19 +176,16 @@ export class MapboxView extends MapboxViewBase {
 
     this.on( 'loaded', () => {
       console.log( "MapboxView::initNativeView(): on - loaded" );
-      this.initMap();
+
+      if ( ! this.initialized ) {
+        this.initMap();
+        this.initialized = true;
+      }
     });
 
     this.on( 'unloaded', () => {
 
       console.log( "MapboxView::initNativeView(): on - unloaded" );
-
-      this.notify({
-        eventName: MapboxViewBase.mapDestroyedEvent,
-        object: this,
-        map: this,
-        ios: this.nativeMapView
-      });
 
     });
 
