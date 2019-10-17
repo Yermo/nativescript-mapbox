@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" actionBarHidden="true" navigatingTo="onNavigatingTo" loaded="pageLoaded">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:map="nativescript-mapbox" actionBarHidden="true" loaded="pageLoaded">
   <TabView>
     <TabView.items>
 
@@ -148,7 +148,7 @@
             <Button row="10" col="2" colSpan="2"  text="ask permission" tap="{{ doRequestFineLocationPermission }}" class="button button-permissions" />
 
             <StackLayout row="11" col="0" colSpan="4">
-              <ContentView id="mapContainer" />
+              <ContentView with="100%" height="100%" id="mapContainer" />
             </StackLayout>
           </GridLayout>
         </TabViewItem.view>

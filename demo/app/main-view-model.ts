@@ -27,10 +27,7 @@ export class HelloWorldModel extends Observable {
 
   constructor() {
     super();
-
-    console.log( "HelloWorldModel::constructor(): before new Mapbox()" );
-
-    this.mapbox = new Mapbox();
+    console.log( "HelloWorldModel::constructor()" );
   }
 
   // --------------------------------------------------------------------
@@ -57,10 +54,11 @@ export class HelloWorldModel extends Observable {
 
     const settings = {
 
+      accessToken: ACCESS_TOKEN,
+
       // NOTE: passing in the container here.
 
       container: contentView,
-      accessToken: ACCESS_TOKEN,
       style: MapStyle.LIGHT,
       margins: {
         left: 18,
@@ -99,6 +97,8 @@ export class HelloWorldModel extends Observable {
 
     const mapView = new MapboxView();
 
+    mapView.setConfig( settings );
+
     // Bind some event handlers onto our newly created map view. 
 
     mapView.on( 'mapReady', ( args : any ) => {
@@ -132,10 +132,6 @@ export class HelloWorldModel extends Observable {
       }).catch( err => console.log(err) );
 
     });
-
-    console.log( "main-view-model:: doShow(): setting MapboxView config." );
-
-    mapView.setConfig( settings );
 
     console.log( "main-view-model:: doShow(): adding MapboxView to container." );
 
