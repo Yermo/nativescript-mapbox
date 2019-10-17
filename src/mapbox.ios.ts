@@ -126,12 +126,17 @@ const _getTrackingMode = (input: UserLocationCameraMode): MGLUserTrackingMode =>
 
 export class MapboxView extends MapboxViewBase {
 
-  private nativeMapView: MGLMapView;
-  private delegate: MGLMapViewDelegate;
+  private nativeMapView: MGLMapView = null;
+  private delegate: MGLMapViewDelegate = null;
 
   private settings: any = null;
 
   private initialized : boolean = false;
+
+  // see initMap. Count of how many times we've 
+  // tried to init the map.
+
+  private initCountHack : number = 50;
 
   // ------------------------------------------------------
 
@@ -140,6 +145,9 @@ export class MapboxView extends MapboxViewBase {
   */
 
   setConfig( settings : any ) {
+
+    console.log( "MapboxView::setConfig(): settings:", settings );
+
     this.settings = settings;
   }
 
@@ -152,8 +160,10 @@ export class MapboxView extends MapboxViewBase {
   // ---------------------------------------------------------
 
   public createNativeView(): Object {
-    let v = super.createNativeView();
 
+    console.log( "MapboxView::createNativeView(): top" );
+
+    let v = super.createNativeView();
     return v;
   }
 
@@ -161,6 +171,16 @@ export class MapboxView extends MapboxViewBase {
 
   /**
   * init the native view.
+  *
+  * FIXME: It appears that the order of events is different between iOS and Android.
+  * In the demo under Android, the main-page event handler is called first then the one
+  * in the plugin. Under iOS it's the reverse. 
+  *
+  * The symptom is that any properties that reference a binding aren't available 
+  * at this time this method is called. For example {{access_token}}. 
+  *
+  * I'm sure there is something I do not understand about how this is supposed to work
+  * and that the handstands below are not necessary. 
   */
 
   public initNativeView(): void {
@@ -178,9 +198,15 @@ export class MapboxView extends MapboxViewBase {
       console.log( "MapboxView::initNativeView(): on - loaded" );
 
       if ( ! this.initialized ) {
+
+        console.log( "MapboxView::initNativeView(): initializing map" );
+
         this.initMap();
         this.initialized = true;
+      } else {
+        console.log( "MapboxView::initNativeView(): map already initialized." );
       }
+
     });
 
     this.on( 'unloaded', () => {
@@ -237,16 +263,53 @@ export class MapboxView extends MapboxViewBase {
   * initialize the map
   *
   * @see MGLMapViewDelegateImpl
+  *
+  * @todo FIXME: figure out why the accessToken property (which is using a binding in the demo XML) isn't set before we arrive here.
   */
 
   initMap(): void {
 
-    if ( !this.nativeMapView && this.config.accessToken ) {
+    console.log( "MapboxView::initMap() top with settings:", this.settings );
+
+    // FIXME: HACK: if we are arriving here because of an XML parse the property evaluations may not have
+    // happened yet. This needs to be redone, but for the moment we'll assume the accessToken is done 
+    // via a property eval (since it really shouldn't be hard coded in XML).
+    //
+    // settings will only be set here if we are programmatically showing a map.
+
+    if ( ! this.settings && ! this.config.accessToken ) {
+
+      console.log( "MapboxView::initMap() no access token. Race condition on XML property evaluation?" );
+
+      // If the user didn't specify an accessToken we don't want to loop forever
+
+      if ( this.initCountHack > 50 ) {
+        return;
+      }
+
+      // FIXME: super ugly.
+
+      setTimeout( () => {
+        this.initMap();
+      }, 50 );
+
+      this.initCountHack++;
+
+      return;
+
+    }
+
+    if ( ! this.settings ) {
+      this.settings = Mapbox.merge( this.config, Mapbox.defaults );
+    } else {
+      this.settings = Mapbox.merge( this.settings, Mapbox.defaults );
+    }
+
+    if ( ! this.nativeMapView ) {
 
       this.mapbox = new Mapbox();
-      this.settings = Mapbox.merge( this.config, Mapbox.defaults );
 
-      console.log( "MapboxView::initMap(): to with config:", this.settings );
+      console.log( "MapboxView::initMap(): after new Mapbox()" );
 
       // called in a setTimeout call at the bottom.
 
