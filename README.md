@@ -603,6 +603,31 @@ Remove a layer by `id`.
   mapbox.removeLayer("terrain-data");
 ```
 
+### addGeoJsonClustered
+Adds a new clustered source with provided name and following layers:
+
+- **unclustered-points**
+- **cluster-0, cluster-1**... on Android and **clusters** on iOS
+- **count**
+
+```typescript
+  import { AddGeoJsonClusteredOptions } from "nativescript-mapbox";
+
+  const geoJsonClusteredOptions: AddGeoJsonClusteredOptions = {
+    name: "earthquakes", // A unique identifier (Mandatory)
+    data: "https://www.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson", // A GeoJson string or URL (Mandatory)
+    clusterMaxZoom: 13,
+    clusterRadius: 40,
+    /**
+     * Cluster thresholds with colors.
+     */
+    clusters: [{ points: 0, color: "#00ff00" }, { points: 100, color: "#ff0000" }], // Cluster thresholds with colors (NOTE: For now on iOS we just show the first color for all clusters).
+    useIcon: false // If true, the map uses "icon" property inside GeoJson to show unclustered points. If false the points would be shown as some circles like clusters.
+  };
+
+  mapbox.addGeoJsonClustered(geoJsonClusteredOptions);
+```
+
 ### setOnMapClickListener
 Add a listener to retrieve lat and lng of where the user taps the map (not a marker).
 
