@@ -1466,7 +1466,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         theMap.mapboxMap.addSource(
             new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(options.name,
-                new java.net.URL(options.data),
+                options.data.startsWith('http') ? new java.net.URL(options.data) : options.data,
                 new com.mapbox.mapboxsdk.style.sources.GeoJsonOptions()
                     .withCluster(true)
                     .withClusterMaxZoom(options.clusterMaxZoom || 13)
@@ -1486,13 +1486,21 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           layers.push([0, new Color("blue").android]);
         }
 
-        const unclustered = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("unclustered-points", options.name);
-        unclustered.setProperties([
-          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(new Color("red").android),
-          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(16.0)),
-          com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
-        ]);
-        console.log(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster")); // TODO remove leftover debug log?
+        let unclustered;
+        if (options.useIcon) {
+          unclustered = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("unclustered-points", options.name);
+          unclustered.setProperties([
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage('{icon}'),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap(new java.lang.Boolean(true)),
+          ]);
+        } else {
+          unclustered = new com.mapbox.mapboxsdk.style.layers.CircleLayer("unclustered-points", options.name);
+          unclustered.setProperties([
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleColor(new Color("red").android),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleRadius(new java.lang.Float(16.0)),
+            com.mapbox.mapboxsdk.style.layers.PropertyFactory.circleBlur(new java.lang.Float(0.2))
+          ]);
+        }
         unclustered.setFilter(com.mapbox.mapboxsdk.style.expressions.Expression.neq(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"), true));
         theMap.mapboxMap.addLayer(unclustered);
 
@@ -1511,11 +1519,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
           circles.setFilter(
               i === 0 ?
-                  com.mapbox.mapboxsdk.style.expressions.Expression.gte(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i][0]))) :
-                  com.mapbox.mapboxsdk.style.expressions.Expression.all([
-                    com.mapbox.mapboxsdk.style.expressions.Expression.gte(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i][0]))),
-                    com.mapbox.mapboxsdk.style.expressions.Expression.lt(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i - 1][0])))
-                  ])
+                com.mapbox.mapboxsdk.style.expressions.Expression.all([
+                  com.mapbox.mapboxsdk.style.expressions.Expression.has("point_count"),
+                  com.mapbox.mapboxsdk.style.expressions.Expression.gte(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i][0])))
+                ]) :
+                com.mapbox.mapboxsdk.style.expressions.Expression.all([
+                  com.mapbox.mapboxsdk.style.expressions.Expression.has("point_count"),
+                  com.mapbox.mapboxsdk.style.expressions.Expression.gte(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i][0]))),
+                  com.mapbox.mapboxsdk.style.expressions.Expression.lt(pointCount, com.mapbox.mapboxsdk.style.expressions.Expression.literal(java.lang.Integer.valueOf(layers[i - 1][0])))
+                ])
           );
 
           theMap.mapboxMap.addLayer(circles); // , "building");
@@ -1524,11 +1536,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         // Add the count labels (note that this doesn't show.. #sad)
         const count = new com.mapbox.mapboxsdk.style.layers.SymbolLayer("count", options.name);
         count.setProperties([
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField(com.mapbox.mapboxsdk.style.expressions.Expression.get("point_count")),
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(12.0)),
-              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android)
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField(
+                com.mapbox.mapboxsdk.style.expressions.Expression.toString(com.mapbox.mapboxsdk.style.expressions.Expression.get("point_count"))
+              ),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize(new java.lang.Float(14.0)),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android),
+              com.mapbox.mapboxsdk.style.layers.PropertyFactory.textAllowOverlap(new java.lang.Boolean(true)),
             ]
         );
+        count.setFilter(com.mapbox.mapboxsdk.style.expressions.Expression.eq(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"), true));
         theMap.mapboxMap.addLayer(count);
 
         resolve();

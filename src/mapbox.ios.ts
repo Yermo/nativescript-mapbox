@@ -1033,7 +1033,82 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   }
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions, nativeMap?): Promise<any> {
-    throw new Error('Method not implemented.');
+    return new Promise((resolve, reject) => {
+      try {
+        const theMap = nativeMap || _mapbox;
+
+        let newSource;
+        const sourceOptions = {
+          "MGLShapeSourceOptionClustered": true,
+          "MGLShapeSourceOptionClusterRadius": options.clusterRadius || 40,
+          "MGLShapeSourceOptionClusterMaxZoom": options.clusterMaxZoom || 13
+        } as any;
+
+        if (options.data.startsWith('http')) {
+          newSource = MGLShapeSource.alloc().initWithIdentifierURLOptions(
+            options.name,
+            NSURL.URLWithString(options.data),
+            sourceOptions
+          );
+        } else {
+          const geo = _geoJsonToGeoData(options.data);
+          newSource = MGLShapeSource.alloc().initWithIdentifierShapeOptions(
+            options.name,
+            MGLShape.shapeWithDataEncodingError(geo, NSUTF8StringEncoding),
+            sourceOptions
+          );
+        }
+        theMap.style.addSource(newSource);
+
+        const layers = {};
+        if (options.clusters) {
+          for (let i = 0; i < options.clusters.length; i++) {
+            // TODO also allow Color object
+            layers[options.clusters[i].points] = new Color(options.clusters[i].color).ios;
+          }
+        } else {
+          layers[150] = new Color("red").ios;
+          layers[20] = new Color("green").ios;
+          layers[0] = new Color("blue").ios;
+        }
+
+        let unclustered;
+        if (options.useIcon) {
+          unclustered = MGLSymbolStyleLayer.alloc().initWithIdentifierSource("unclustered-points", newSource);
+          unclustered.iconImageName = NSExpression.expressionForConstantValue('{icon}');
+          unclustered.iconAllowsOverlap = NSExpression.expressionForConstantValue(true);
+        } else {
+          unclustered = MGLCircleStyleLayer.alloc().initWithIdentifierSource("unclustered-points", newSource);
+          unclustered.circleColor = NSExpression.expressionForConstantValue(new Color('red').ios);
+          unclustered.circleRadius = NSExpression.expressionForConstantValue(16.0);
+          unclustered.circleBlur = NSExpression.expressionForConstantValue(0.2);
+        }
+        unclustered.predicate = NSPredicate.predicateWithFormatArgumentArray("cluster != YES", null);
+        theMap.style.addLayer(unclustered);
+
+        const circles = MGLCircleStyleLayer.alloc().initWithIdentifierSource("clusters", newSource);
+        // TODO: For some reason the next line is not working right now. so for now just show a constant color for clusters in iOS.
+        // circles.circleColor = NSExpression.expressionWithFormatArgumentArray("mgl_step:from:stops:(point_count, %@, %@)", [new Color("#6600CC").ios, clusters]);
+        circles.circleColor = NSExpression.expressionForConstantValue(layers[Object.keys(layers)[0]]);
+        circles.circleRadius = NSExpression.expressionForConstantValue(22.0);
+        circles.circleBlur = NSExpression.expressionForConstantValue(0.2);
+        circles.predicate = NSPredicate.predicateWithFormatArgumentArray("cluster == YES", null);
+        theMap.style.addLayer(circles);
+
+        const count = MGLSymbolStyleLayer.alloc().initWithIdentifierSource("count", newSource);
+        count.text = NSExpression.expressionWithFormatArgumentArray("CAST(point_count, 'NSString')", null);
+        count.textFontSize = NSExpression.expressionForConstantValue(14.0);
+        count.textColor = NSExpression.expressionForConstantValue(new Color("white").ios);
+        count.textAllowsOverlap = NSExpression.expressionForConstantValue(true);
+        count.predicate = NSPredicate.predicateWithFormatArgumentArray("cluster == YES", null);
+        theMap.style.addLayer(count);
+
+        resolve();
+      } catch (ex) {
+        console.log("Error in mapbox.addGeoJsonClustered: " + ex);
+        reject(ex);
+      }
+    });
   }
 
   addSource(options: AddSourceOptions, nativeMap?): Promise<any> {
@@ -1336,6 +1411,13 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
       };
     });
   });
+};
+
+const _geoJsonToGeoData = (geoJson: string) => {
+  const geoDataStr = NSString.stringWithString(geoJson);
+  const geoData = geoDataStr.dataUsingEncoding(NSUTF8StringEncoding);
+  const geoDataBase64Enc = geoData.base64EncodedStringWithOptions(0);
+  return NSData.alloc().initWithBase64EncodedStringOptions(geoDataBase64Enc, null);
 };
 
 /**

@@ -190,12 +190,20 @@ export interface AddGeoJsonClusteredOptions {
    */
   name: string;
   /**
-   * URL, like: "https://www.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson"
+   * GeoJson string or URL, like: "https://www.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson"
    */
   data: string;
   clusterMaxZoom?: number;
   clusterRadius?: number;
+  /**
+   * Cluster thresholds with colors.
+   */
   clusters?: Array<MapboxCluster>;
+  /**
+   * If true, the map uses "icon" property inside GeoJson to show unclustered points.
+   * If false the points would be shown as some circles like clusters.
+   */
+  useIcon?: boolean;
 }
 
 export interface AddSourceOptions {
