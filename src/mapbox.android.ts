@@ -2529,9 +2529,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             animated = options.animated === undefined || options.animated,
             durationMs = animated ? 1000 : 0;
 
-        this._mapboxMapInstance.easeCamera(
-            com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bounds, padding),
-            durationMs);
+        if ( animated ) {
+          this._mapboxMapInstance.easeCamera(
+              com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bounds, padding),
+              durationMs);
+        } else {
+          this._mapboxMapInstance.moveCamera(com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newLatLngBounds(bounds, padding));
+        }
 
         setTimeout(() => {
           resolve();
