@@ -1,0 +1,59 @@
+{
+  "nativescript": {
+    "id": "com.flyingbricksoftware.MapboxAngularDemo",
+    "tns-ios": {
+      "version": "6.1.0"
+    },
+    "tns-android": {
+      "version": "6.1.2"
+    }
+  },
+  "description": "NativeScript Mapbox Plugin Angular Demo",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": "<fill-your-repository-here>",
+  "scripts": {
+    "lint": "tslint \"src/**/*.ts\"",
+    "e2e": "node ./node_modules/nativescript-dev-appium/check-dev-deps.js &&  tsc -p e2e  &&  mocha --opts ./e2e/config/mocha.opts ",
+    "e2e-watch": "tsc -p e2e --watch"
+  },
+  "dependencies": {
+    "@angular/animations": "~8.2.0",
+    "@angular/common": "~8.2.0",
+    "@angular/compiler": "~8.2.0",
+    "@angular/core": "~8.2.0",
+    "@angular/forms": "~8.2.0",
+    "@angular/platform-browser": "~8.2.0",
+    "@angular/platform-browser-dynamic": "~8.2.0",
+    "@angular/router": "~8.2.0",
+    "nativescript-advanced-permissions": "^1.2.0",
+    "nativescript-mapbox": "file:../publish/dist/package",
+    "nativescript-angular": "~8.2.0",
+    "nativescript-theme-core": "~1.0.6",
+    "nativescript-ui-sidedrawer": "~7.0.0",
+    "reflect-metadata": "~0.1.12",
+    "rxjs": "^6.4.0",
+    "rxjs-compat": "^6.5.3",
+    "tns-core-modules": "~6.1.0",
+    "zone.js": "~0.9.1"
+  },
+  "devDependencies": {
+    "@angular/compiler-cli": "~8.2.0",
+    "@ngtools/webpack": "~8.2.0",
+    "@types/chai": "~4.1.7",
+    "@types/mocha": "~5.2.5",
+    "@types/node": "~10.12.18",
+    "chai": "~4.1.2",
+    "codelyzer": "~4.5.0",
+    "mocha": "~5.2.0",
+    "mocha-junit-reporter": "~1.18.0",
+    "mocha-multi": "~1.0.1",
+    "mochawesome": "~3.1.2",
+    "nativescript-dev-appium": "^6.1.2",
+    "nativescript-dev-webpack": "~1.2.0",
+    "node-sass": "^4.7.1",
+    "tslint": "~5.19.0",
+    "typescript": "~3.5.3"
+  },
+  "gitHead": "12284faf57b80a564bca5377e12c149c89d282c3",
+  "readme": "NativeScript Application"
+}

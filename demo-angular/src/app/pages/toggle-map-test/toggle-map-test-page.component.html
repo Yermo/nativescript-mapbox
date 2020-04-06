@@ -1,0 +1,40 @@
+<ActionBar class="action-bar">
+    <!-- 
+    Use the NavigationButton as a side-drawer button in Android
+    because ActionItems are shown on the right side of the ActionBar
+    -->
+    <NavigationButton ios:visibility="collapsed" icon="res://menu" (tap)="onDrawerButtonTap()" automationText="Side Drawer Button"></NavigationButton>
+    <!-- 
+    Use the ActionItem for IOS with position set to left. Using the
+    NavigationButton as a side-drawer button in iOS is not possible,
+    because its function is to always navigate back in the application.
+    -->
+    <ActionItem icon="res://navigation/menu" android:visibility="collapsed" (tap)="onDrawerButtonTap()"
+        ios.position="left">
+    </ActionItem>
+    <Label automationText="homeDistanceLabel" class="action-bar-title" text="Map Toggle Test"></Label>
+</ActionBar>
+
+<GridLayout class="page page-content">
+
+    <StackLayout>
+      <StackLayout orientation="horizontal">
+        <Button class="btn btn-primary btn-rounded-lg" (tap)="toggleMap($event)" text="Toggle Map"></Button>
+      </StackLayout>
+
+      <map id="toggleTest"
+        [style]="settings.mapbox_style" *ngIf="shown"
+        [access_token]="settings.mapbox_access_token"
+
+        [fallbackLatitude]="39.007846" 
+        [fallbackLongitude]="-76.947041">
+
+<!--
+        <line [coordinates]="coordinates" *ngIf="coordinates"></line>
+        <geolocation-button position="bottom-left"></geolocation-button>
+-->
+
+      </map>
+    </StackLayout>
+
+</GridLayout>

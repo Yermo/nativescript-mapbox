@@ -1,6 +1,6 @@
 {
   "name": "nativescript-mapbox",
-  "version": "4.4.1",
+  "version": "5.0.0-alpha.1",
   "description": "Native Maps, by Mapbox.",
   "main": "mapbox",
   "typings": "index.d.ts",
@@ -18,6 +18,7 @@
   },
   "scripts": {
     "build": "npm i && tsc --skipLibCheck",
+    "build.dist": "npm run build && cd ../publish && ./pack.sh && ./unpack.sh",
     "demo.ios": "npm run build && cd ../demo && tns run ios --syncAllFiles",
     "demo.android": "npm run build && cd ../demo && tns run android",
     "demo.android.build": "npm run build && cd ../demo && tns build android --log debug",
@@ -34,7 +35,10 @@
     "ci.tslint": "npm i && tslint '**/*.ts' --config ../tslint.json --exclude '**/node_modules/**'",
     "prepublishOnly": "npm run build",
     "development.setup": "npm run setup && npm link && cd ../demo && npm link nativescript-mapbox && cd ../src",
-    "generate.typings.ios": "cd ../demo && TNS_DEBUG_METADATA_PATH=\"$(pwd)/metadata\" tns build ios && TNS_TYPESCRIPT_DECLARATIONS_PATH=\"$(pwd)/typings\" tns build ios && echo 'Now look for your library typings in demo/typings!'"
+    "generate.typings.ios": "cd ../demo && TNS_DEBUG_METADATA_PATH=\"$(pwd)/metadata\" tns build ios && TNS_TYPESCRIPT_DECLARATIONS_PATH=\"$(pwd)/typings\" tns build ios && echo 'Now look for your library typings in demo/typings!'",
+    "demo-angular.reset": "cd ../demo-angular && npx rimraf -- hooks node_modules platforms package-lock.json",
+    "plugin.prepare": "npm run build && cd ../demo-angular && tns plugin remove nativescript-mapbox && tns plugin add ../src",
+    "clean": "npm run demo-angular.reset && npx rimraf -- node_modules package-lock.json && npm i"
   },
   "repository": {
     "type": "git",
@@ -63,5 +67,8 @@
     "tns-platform-declarations": "~5.3.1",
     "tslint": "^5.14.0",
     "typescript": "~3.3.4000"
+  },
+  "dependencies": {
+    "nativescript-advanced-permissions": "^1.2.0"
   }
 }
