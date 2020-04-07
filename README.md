@@ -1,21 +1,3 @@
-# This is a Fork of Nativescript-Mapbox
-
-This is fork of the [NativeScript Mapbox plugin by EddyVerbruggen](https://github.com/EddyVerbruggen/nativescript-mapbox).
-
-This forks adds:
-
-- significant code reorganization and comments.
-- support for the Mapbox Native Android SDK v 8.4.0 and iOS v 5.1.0
-- addLayer() and removeLayer() methods mirroring the methods from mapbox-gl-js supporting lines and circles 
-  with various styling options including stops and dash arrays.
-- click handlers for layers on Android (incomplete on iOS)
-- updating of line layers with new points to animate them 
-- customized UserLocation marker
-- "markingMode":"none" support under Android.
-- an angular demo in ./demo-angular
-
-Most of the remaining documentation comes for the upstream fork. 
-
 <a href="https://www.mapbox.com">
   <img src="/screenshots/mapbox_logo.png" width="400"/>
 </a>
@@ -70,6 +52,13 @@ The style can be set to one of the Mapbox style names or it can be the URL of yo
 
 > NOTE: As of this writing, the NativeScript demo only works with a mapbox token. The demo-angular will work with either a self hosted tile server or a mapbox token.
 
+## Breaking Changes
+
+This version includes breaking API changes. 
+
+The intent moving forward is to mirror, to the maximum extent practical, the Mapbox GL JS API to enable
+sharing of mapping code between browser based and native applications. 
+
 ## Installation
 This version of the plugin is still in development and not yet available via NPM.
 
@@ -100,8 +89,6 @@ If you get an error related to `TelemetryService` then please check it's there.
 ### Demo app (XML + TypeScript)
 If you want a quickstart, see the demo in this repository.
 It shows you how to draw a map in XML and JS with almost all possible options.
-
-> Not all features are working as of this writing, notably user location.
 
 ### Demo app (Angular)
 There is also the beginnings of an Angular demo in demo-angular in this repository.

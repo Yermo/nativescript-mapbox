@@ -4,6 +4,16 @@
 
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
+## 5.0.0-alpha.2 
+
+**Implemented enchancements:**
+
+- bumped Mapbox Android SDK to 9.0.0
+- fixed merge with upstream
+
+**Fixed Bugs**
+
+- iOS demo works once again.
 
 ## 5.0.0-alpha.1 
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/5.0.0-alpha.1...4.4.0)
