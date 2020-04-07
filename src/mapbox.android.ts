@@ -1,3 +1,6 @@
+/// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
+/// <reference path="./platforms/ios/Mapbox.d.ts" />
+
 /**
 * Android Implementation 
 *
@@ -12,8 +15,15 @@ import { Color } from "tns-core-modules/color";
 import * as http from "tns-core-modules/http";
 
 import {
+  hasLocationPermissions,
+  requestLocationPermissions,
+  isLocationEnabled
+} from 'nativescript-advanced-permissions/location';
+
+import {
   AddExtrusionOptions,
   AddGeoJsonClusteredOptions,
+  AddLayerOptions,
   AddPolygonOptions,
   AddPolylineOptions,
   AddSourceOptions,
@@ -100,9 +110,23 @@ export class MapboxView extends MapboxViewBase {
 
   /**
   * programmatically include settings
+  *
+  * @todo 
   */
 
   setConfig( settings : any ) {
+
+    // zoom level is not applied unless center is set
+
+    if (settings.zoomLevel && !settings.center) {
+
+      // Eiffel tower, Paris
+      settings.center = {
+        lat: 48.858093,
+        lng: 2.294694
+      };
+    }
+
     this.settings = settings;
   }
   
@@ -207,6 +231,8 @@ export class MapboxView extends MapboxViewBase {
   * It seems to me there should be a better way.
   *
   * @link https://docs.nativescript.org/core-concepts/properties#views-lifecycle-and-recycling
+  *
+  * @todo check this.
   */
  
   public createNativeView(): Object {
@@ -216,6 +242,93 @@ export class MapboxView extends MapboxViewBase {
     let nativeView = new android.widget.FrameLayout( this._context );
 
     this.gcFix( 'android.widget.FrameLayout', nativeView );
+
+/*
+
+    theMap.mapboxMap.setOnInfoWindowClickListener(
+      new com.mapbox.mapboxsdk.maps.MapboxMap.OnInfoWindowClickListener({
+        onInfoWindowClick: (marker) => {
+          let cachedMarker = _getClickedMarkerDetails(marker);
+          if (cachedMarker && cachedMarker.onCalloutTap) {
+            cachedMarker.onCalloutTap(cachedMarker);
+          }
+          return true;
+        }
+      })
+    );
+
+    const iconFactory = com.mapbox.mapboxsdk.annotations.IconFactory.getInstance(application.android.context);
+
+    // if any markers need to be downloaded from the web they need to be available synchronously, so fetch them first before looping
+
+    _downloadMarkerImages(markers).then( updatedMarkers => {
+      for (let m in updatedMarkers) {
+        let marker: any = updatedMarkers[m];
+        _markers.push(marker);
+        let markerOptions = new com.mapbox.mapboxsdk.annotations.MarkerOptions();
+        markerOptions.setTitle(marker.title);
+        markerOptions.setSnippet(marker.subtitle);
+        markerOptions.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(parseFloat(marker.lat), parseFloat(marker.lng)));
+
+        if (marker.icon) {
+          // for markers from url see UrlMarker in https://github.com/mapbox/mapbox-gl-native/issues/5370
+          if (marker.icon.startsWith("res://")) {
+            let resourceName = marker.icon.substring(6);
+            let res = utils.ad.getApplicationContext().getResources();
+            let identifier = res.getIdentifier(resourceName, "drawable", utils.ad.getApplication().getPackageName());
+            if (identifier === 0) {
+              console.log(`No icon found for this device density for icon ' ${marker.icon}'. Falling back to the default icon.`);
+            } else {
+              markerOptions.setIcon(iconFactory.fromResource(identifier));
+            }
+          } else if (marker.icon.startsWith("http")) {
+            if (marker.iconDownloaded !== null) {
+              markerOptions.setIcon(iconFactory.fromBitmap(marker.iconDownloaded));
+            }
+          } else {
+            console.log("Please use res://resourceName, http(s)://imageUrl or iconPath to use a local path");
+          }
+
+          marker.update = (newSettings: MapboxMarker) => {
+            for (let m in _markers) {
+              let _marker: MapboxMarker = _markers[m];
+              if (marker.id === _marker.id) {
+
+                if (newSettings.onTap !== undefined) {
+                  _marker.onTap = newSettings.onTap;
+                }
+
+                if (newSettings.onCalloutTap !== undefined) {
+                  _marker.onCalloutTap = newSettings.onCalloutTap;
+                }
+
+                if (newSettings.title !== undefined) {
+                  _marker.title = newSettings.title;
+                  _marker.android.setTitle(newSettings.title);
+                }
+
+                if (newSettings.subtitle !== undefined) {
+                  _marker.subtitle = newSettings.title;
+                  _marker.android.setSnippet(newSettings.subtitle);
+                }
+
+                if (newSettings.lat && newSettings.lng) {
+                  _marker.lat = newSettings.lat;
+                  _marker.lng = newSettings.lng;
+                  _marker.android.setPosition(new com.mapbox.mapboxsdk.geometry.LatLng(parseFloat(<any>newSettings.lat), parseFloat(<any>newSettings.lng)));
+                }
+
+                if (newSettings.selected) {
+                  theMap.mapboxMap.selectMarker(_marker.android);
+                }
+              }
+            }
+          };
+        }
+      } // end of for loop
+    }); // end of _downloadMarkerImages()
+
+*/
 
     console.log( "MapboxView:createNativeView(): bottom" );
 
@@ -311,6 +424,8 @@ export class MapboxView extends MapboxViewBase {
   * @see show()
   *
   * @link https://docs.nativescript.org/core-concepts/events
+  *
+  * @todo FIXME: this.nativeMapView is unused and never actually set to anything.
   */
 
   private initMap(): void {
@@ -440,6 +555,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // the user location component
 
   private _locationComponent : any = false;
+
+  /**
+  * the permissionsManager
+  *
+  * @link https://docs.mapbox.com/android/core/overview/#permissionsmanager
+  */
+
+  private _permissionsManager : any = false
 
   // access token
 
@@ -645,6 +768,22 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   gcClear() {
     global[ 'Mapbox' ] = {};
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  /**
+  * not used
+  */
+
+  setMapboxViewInstance( mapboxViewInstance : any ) : void {
+  }
+
+  /**
+  * not used
+  */
+
+  setMapboxMapInstance( mapboxMapInstance : any ) : void {
   }
 
   // ---------------------------------------------------------------------------------
@@ -1500,38 +1639,59 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // ----------------------------------------------------------------------------------
 
+  /**
+  * Request fine locaion permission
+  *
+  * @link https://docs.mapbox.com/android/core/overview/#permissionsmanager
+  */
+
   requestFineLocationPermission(): Promise<any> {
+
     return new Promise((resolve, reject) => {
-      if ( this._fineLocationPermissionGranted() ) {
+
+      console.log( "Mapbox::requestFineLocationPermission()" );
+
+      if ( hasLocationPermissions() ) {
         resolve();
         return;
       }
 
-      // grab the permission dialog result
-      const permissionCallback = (args: any) => {
-        if (args.requestCode !== ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE) {
-          return;
-        }
-        for (let i = 0; i < args.permissions.length; i++) {
-          if (args.grantResults[i] === android.content.pm.PackageManager.PERMISSION_DENIED) {
-            reject("Permission denied");
-            return;
-          }
-        }
-        application.android.off(application.AndroidApplication.activityRequestPermissionsEvent, permissionCallback);
-        resolve();
+      if ( ! isLocationEnabled ) {
+        console.error( "Location Services are not turned on" );
+        reject( "Location services are not turned on." );
+        return;
       };
 
-      application.android.on(application.AndroidApplication.activityRequestPermissionsEvent, permissionCallback);
+      // it seems the hasPermission return value here is always true under Android.
 
-      // invoke the permission dialog
-      android.support.v4.app.ActivityCompat.requestPermissions(
-          application.android.foregroundActivity,
-          [android.Manifest.permission.ACCESS_FINE_LOCATION],
-          ACCESS_FINE_LOCATION_PERMISSION_REQUEST_CODE);
+      requestLocationPermissions( true, "We use this permission to show you your current location." ).then( ( hasPermission ) => {
+
+        console.log( "Mapbox::requestFineLocationPermission(): hasPermission is:", hasPermission );
+
+        if ( hasLocationPermissions() ) {
+
+          console.log( "Mapbox::requestFineLocationPermission(): permission granted." );
+          resolve( true );
+          return; 
+        } else {
+          console.error( "Location Permission not granted.");
+          reject( "Location Permission Not granted" );
+          return;
+        };
+
+      });
+
     });
   }
 
+  // -------------------------------------------------------------------------
+
+  onRequestPermissionsResults( requestCode, permissions, grantResults ) {
+    console.log( "Mapbox::onRequestPermissionsResult()" );
+
+    this._permissionsManager.onRequestPermissionsResult( requestCode, permissions, grantResults );
+
+  }
 
   // -------------------------------------------------------------------------
 
@@ -1976,13 +2136,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   /**
   * get users current location
   *
-  * @deprecated
+  * @link https://docs.mapbox.com/android/api/map-sdk/9.0.0/com/mapbox/mapboxsdk/location/LocationComponent.html#getLastKnownLocation--
   */
 
   getUserLocation(): Promise<UserLocation> {
     return new Promise((resolve, reject) => {
       try {
-        const loc = null;
+
+        const loc = this._locationComponent ? this._locationComponent.getLastKnownLocation() : null;
+
         if (loc === null) {
           reject("Location not available");
         } else {
@@ -2225,7 +2387,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           reject("No map has been loaded");
           return;
         }
-
 
         this.onMapClickListener = new com.mapbox.mapboxsdk.maps.MapboxMap.OnMapClickListener({
           onMapClick: point => {
@@ -2776,8 +2937,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       }
     });
   }
-
-  // -------------------------------------------------------------------------------------
 
   /**
   * add a geojson or vector source
@@ -3574,7 +3733,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
 
-        this._mapboxMapInstance.addSource(
+        this._mapboxMapInstance.getStyle().addSource(
             new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(options.name,
                 new java.net.URL(options.data),
                 new com.mapbox.mapboxsdk.style.sources.GeoJsonOptions()
@@ -3604,7 +3763,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         ]);
         console.log(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"));
         unclustered.setFilter(com.mapbox.mapboxsdk.style.expressions.Expression.neq(com.mapbox.mapboxsdk.style.expressions.Expression.get("cluster"), true));
-        this._mapboxMapInstance.addLayer(unclustered); // , "building");
+        this._mapboxMapInstance.getStyle().addLayer(unclustered); // , "building");
 
         for (let i = 0; i < layers.length; i++) {
           // Add some nice circles
@@ -3628,7 +3787,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                   ])
           );
 
-          this._mapboxMapInstance.addLayer(circles); // , "building");
+          this._mapboxMapInstance.getStyle().addLayer(circles); // , "building");
         }
 
         // Add the count labels (note that this doesn't show.. #sad)
@@ -3639,7 +3798,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
               com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor(new Color("white").android)
             ]
         );
-        this._mapboxMapInstance.addLayer(count);
+        this._mapboxMapInstance.getStyle().addLayer(count);
 
         resolve();
       } catch (ex) {
@@ -3653,11 +3812,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   /**
   * constantly center the map on the users location.
-  *
-  * @deprecated
   */
 
   trackUser( options: TrackUserOptions, nativeMap? ): Promise<void> {
+
+    console.log( "Mapbox::trackUser(): top" );
+
     return new Promise((resolve, reject) => {
       try {
 
@@ -3666,7 +3826,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        console.log( "Mapbox::trackUser(): deprecated" );
+        this.requestFineLocationPermission().then( () => {
+          this.showUserLocationMarker({
+            useDefaultLocationEngine: true
+          });
+
+        }).catch(err => { 
+          console.error( "Location permission denied. error:", err );
+        });
 
         resolve();
       } catch (ex) {
@@ -3845,13 +4012,11 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   _fineLocationPermissionGranted() {
     let hasPermission = android.os.Build.VERSION.SDK_INT < 23; // Android M. (6.0)
-    if (!hasPermission) {
-      hasPermission = android.content.pm.PackageManager.PERMISSION_GRANTED ===
 
-        android.support.v4.app.ActivityCompat.checkSelfPermission(application.android.foregroundActivity, android.Manifest.permission.ACCESS_FINE_LOCATION);
- 
-//      android.support.v4.content.ContextCompat.checkSelfPermission(application.android.foregroundActivity, android.Manifest.permission.ACCESS_FINE_LOCATION);
+    if (!hasPermission) {
+      hasPermission = com.mapbox.android.core.permissions.PermissionsManager.areLocationPermissionsGranted( application.android.context );
     }
+
     return hasPermission;
   }
 
@@ -3957,7 +4122,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         this._locationComponent.activateLocationComponent( locationComponentActivationOptions );
         this._locationComponent.setLocationComponentEnabled( true );
 
-        let cameraMode = 'TRACKING';
+        let cameraMode = this._stringToCameraMode( 'TRACKING' );
 
         if ( typeof options.cameraMode != 'undefined' ) {
           cameraMode = this._stringToCameraMode( options.cameraMode );

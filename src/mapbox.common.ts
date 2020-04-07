@@ -1,6 +1,6 @@
-import { Property, booleanConverter } from "tns-core-modules/ui/core/view";
 import { Color } from "tns-core-modules/color/color";
 import { ContentView } from "tns-core-modules/ui/content-view";
+import { booleanConverter, Property } from "tns-core-modules/ui/core/view";
 
 // ------------------------------------------------------------
 
@@ -114,7 +114,7 @@ export interface MapboxMarker extends LatLng {
   /**
    * Prefix with 'res://' and load a file from the resources folder.
    * Details on how 'res://' is used can be found here: https://docs.nativescript.org/ui/images#load-images-from-resource
-   * Example: "res://iconfile"
+   * Example: "res://icon.file"
    */
   icon?: string;
   /**
@@ -195,6 +195,11 @@ export interface SetViewportOptions {
    * Default true.
    */
   animated?: boolean;
+
+  /**
+   * Optional padding.
+   */
+  padding?: number;
 }
 
 // ------------------------------------------------------------
@@ -228,6 +233,43 @@ export interface AddGeoJsonClusteredOptions {
   clusterRadius?: number;
   clusters?: Array<MapboxCluster>;
 }
+
+export interface AddLayerOptions {
+  id: string;
+  source: string;
+  sourceLayer: string;
+  type: string;
+
+  /**
+   * 'circle' paint properties
+   */
+  circleColor?: string | Color;
+  circleOpacity?: number;
+  circleRadius?: number;
+  circleStrokeColor?: string | Color;
+  circleStrokeWidth?: number;
+
+  /**
+   * 'fill' paint properties
+   */
+  fillColor?: string | Color;
+  fillOpacity?: number;
+
+  /**
+   * 'line' layout properties
+   */
+  lineCap?: string;
+  lineJoin?: string;
+
+  /**
+   * 'line' paint properties
+   */
+  lineColor?: string | Color;
+  lineOpacity?: number;
+  lineWidth?: number;
+}
+
+export type UserTrackingMode = "NONE" | "FOLLOW" | "FOLLOW_WITH_HEADING" | "FOLLOW_WITH_COURSE";
 
 // -------------------------------------------------------------
 
@@ -452,6 +494,10 @@ export interface MapboxCommonApi {
 
 export interface MapboxApi {
 
+  setMapboxViewInstance( mapboxNativeViewInstance : any ) : void;
+
+  setMapboxMapInstance( mapboxNativeMapInstance : any ) : void;
+
   initEventHandlerShim( settings: any, mapboxNativeViewInstance : any ) : void;
 
   onMapEvent( eventName, id, callback, nativeMapView? ) : void;
@@ -566,6 +612,14 @@ export interface MapboxApi {
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions): Promise<any>;
 
+  // addSource(options: AddSourceOptions): Promise<any>;
+
+  removeSource(id: string, nativeMap?: any): Promise<any>;
+
+  addLayer(options: AddLayerOptions): Promise<any>;
+
+  removeLayer(id: string, nativeMap?: any): Promise<any>;
+
   // addExtrusion(options: AddExtrusionOptions): Promise<any>;
 
 }
@@ -582,7 +636,7 @@ export abstract class MapboxCommon implements MapboxCommonApi {
       top: 0,
       bottom: 0
     },
-    zoomLevel: 0, // 0 (a big part of the world) to 20 (streetlevel)
+    zoomLevel: 0, // 0 (a big part of the world) to 20 (street level)
     showUserLocation: false, // true requires adding `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription` in the .plist
     hideLogo: false, // required for the 'starter' plan
     hideAttribution: true,

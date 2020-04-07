@@ -12,7 +12,7 @@ dependencies {
 
     implementation "com.mapbox.mapboxsdk:mapbox-sdk-geojson:4.8.0"
 
-    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:8.4.0'){
+    implementation ('com.mapbox.mapboxsdk:mapbox-android-sdk:9.0.0'){
         transitive=false
     }
 

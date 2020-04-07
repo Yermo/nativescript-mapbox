@@ -2103,6 +2103,8 @@ declare class MGLPointFeature extends MGLPointAnnotation implements MGLFeature {
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	attributeForKey(key: string): any;
+
 	geoJSONDictionary(): NSDictionary<string, any>;
 
 	isEqual(object: any): boolean;

@@ -1,12 +1,12 @@
 {
-  "name": "tns-template-hello-world-ts",
+  "name": "nativescript-mapbox-demo",
   "main": "app.js",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "author": {
     "name": "Telerik",
     "email": "support@telerik.com"
   },
-  "description": "Nativescript hello-world-ts project template",
+  "description": "nativescript-mapbox Demo Application",
   "license": "Apache-2.0",
   "keywords": [
     "telerik",
@@ -19,32 +19,18 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/NativeScript/template-hello-world-ts.git"
+    "url": "git@github.com:EddyVerbruggen/nativescript-mapbox.git"
   },
   "bugs": {
-    "url": "https://github.com/NativeScript/template-hello-world-ts/issues"
+    "url": "https://github.com/EddyVerbruggen/nativescript-mapbox/issues"
   },
-  "homepage": "https://github.com/NativeScript/template-hello-world-ts",
+  "homepage": "https://github.com/EddyVerbruggen/nativescript-mapbox",
   "android": {
-    "v8Flags": "--expose_gc"
+    "v8Flags": "--expose_gc",
+    "markingMode": "none"
   },
   "devDependencies": {
     "nativescript-dev-typescript": "^0.3.0"
-  },
-  "_id": "tns-template-hello-world-ts@1.6.0",
-  "_shasum": "a567c2b9a56024818c06596dab9629d155c5b8a8",
-  "_resolved": "https://registry.npmjs.org/tns-template-hello-world-ts/-/tns-template-hello-world-ts-1.6.0.tgz",
-  "_from": "tns-template-hello-world-ts@latest",
-  "scripts": {},
-  "_npmVersion": "2.14.7",
-  "_nodeVersion": "4.2.2",
-  "_npmUser": {
-    "name": "enchev",
-    "email": "vladimir.enchev@gmail.com"
-  },
-  "dist": {
-    "shasum": "a567c2b9a56024818c06596dab9629d155c5b8a8",
-    "tarball": "http://registry.npmjs.org/tns-template-hello-world-ts/-/tns-template-hello-world-ts-1.6.0.tgz"
   },
   "maintainers": [
     {
@@ -95,11 +81,5 @@
       "name": "valio.stoychev",
       "email": "valio.stoychev@gmail.com"
     }
-  ],
-  "_npmOperationalInternal": {
-    "host": "packages-5-east.internal.npmjs.com",
-    "tmp": "tmp/tns-template-hello-world-ts-1.6.0.tgz_1455717516189_0.6427943941671401"
-  },
-  "directories": {},
-  "readme": "ERROR: No README data found!"
+  ]
 }

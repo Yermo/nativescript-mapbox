@@ -9,6 +9,7 @@
     }
   },
   "dependencies": {
+    "nativescript-advanced-permissions": "^1.2.0",
     "nativescript-mapbox": "file:../publish/dist/package",
     "nativescript-theme-core": "^1.0.4",
     "nativescript-unit-test-runner": "0.7.0",
@@ -44,6 +45,6 @@
   },
   "scripts": {
     "build.plugin": "cd ../src && npm run build",
-    "ci.tslint": "npm i && tslint --config '../tslint.json' 'app/**/*.ts' --exclude '**/node_modules/**'"
+    "ci.tslint": "npm i && tslint --config ../tslint.json 'app/**/*.ts' --exclude '**/node_modules/**'"
   }
 }

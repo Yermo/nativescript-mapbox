@@ -3,30 +3,32 @@ matrix:
     - stage: "Lint"
       language: node_js
       os: linux
-      node_js: "6"
+      node_js: "8"
       script: cd src && npm run ci.tslint && cd ../demo && npm run ci.tslint
     - stage: "WebPack, Build and Test"
       os: osx
       env:
         - WebPack="iOS"
-      osx_image: xcode9.2
+      osx_image: xcode9.4
       language: node_js
-      node_js: "6"
+      node_js: "8"
       jdk: oraclejdk8
       before_install:
         - gem install cocoapods
+        - pod setup
         - pod repo update
+        - pip install six
       script: cd demo && npm run build.plugin && npm i && tns build ios --bundle --env.uglify
     - language: android
       os: linux
       env:
         - WebPack="Android"
       jdk: oraclejdk8
-      before_install: nvm install 6.10.3
+      before_install: nvm install 8
       script: cd demo && npm run build.plugin && npm i && tns build android --bundle --env.uglify --env.snapshot
     - language: android
       env:
-        - BuildAndroid="26"
+        - BuildAndroid="28"
       os: linux
       jdk: oraclejdk8
       before_install: nvm install stable
@@ -35,14 +37,16 @@ matrix:
     - os: osx
       env:
         - BuildiOS="11"
-        - Xcode="9.2"
-      osx_image: xcode9.2
+        - Xcode="9.4"
+      osx_image: xcode9.4
       language: node_js
-      node_js: "6"
+      node_js: "8"
       jdk: oraclejdk8
       before_install:
         - gem install cocoapods
+        - pod setup
         - pod repo update
+        - pip install six
       script:
         - cd src && npm run build && cd ../demo && tns build ios
     - os: linux
@@ -51,30 +55,34 @@ matrix:
       sudo: required
       jdk: oraclejdk8
       before_script:
-        - echo no | android create avd --force -n test -t android-21 -b armeabi-v7a
+        - echo no | android create avd --force -n test -t android-24 -b armeabi-v7a
         - emulator -avd test -no-audio -no-window &
         - android-wait-for-emulator
       before_install:
-        - nvm install 6
-      script: cd src && npm run test.android
+        - nvm install 8
+      script: cd src && npm run build && npm run test.android
     - os: osx
       language: node_js
-      node_js: "6"
+      node_js: "8"
       jdk: oraclejdk8
-      osx_image: xcode9.2
-      script: cd src && npm run test.ios
+      osx_image: xcode9.4
+      before_install:
+        - gem install cocoapods
+        - pod setup
+        - pod repo update
+        - pip install six
+      script: cd src && npm run build && npm run test.ios
 
 android:
   components:
     - tools
-    - platform-tools
-    - build-tools-26.0.1
-    - android-26
-    - android-23
+    - build-tools-28.0.3
+    - android-28
+    - android-24
     - extra-android-m2repository
-    - sys-img-armeabi-v7a-android-21
+    - sys-img-armeabi-v7a-android-24
 
 install:
-    - echo no | npm install -g nativescript
-    - tns usage-reporting disable
-    - tns error-reporting disable
+  - echo no | npm install -g nativescript
+  - tns usage-reporting disable
+  - tns error-reporting disable

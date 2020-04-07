@@ -172,7 +172,7 @@ All currently supported options for your XML based map are (__don't__ use other 
 |---|---|---
 |`accesstoken`|-|see 'Prerequisites' above
 |`delay`|0|A delay in milliseconds - you can set this to have better control over when Mapbox is invoked so it won't clash with other computations your app may need to perform.
-|`mapStyle`|streets|streets, light, dark, satellite_streets, satellite, traffic_day, traffic_night, an URL starting with mapbox:// or pointing to a custom JSON definition (http://, https://, or local relative to nativescript app path ~/) 
+|`mapStyle`|streets|streets, light, dark, satellite_streets, satellite, traffic_day, traffic_night, an URL starting with mapbox:// or pointing to a custom JSON definition (http://, https://, or local relative to nativescript app path ~/)
 |`latitude `|-|Set the center of the map by passing this in
 |`longitude`|-|.. and this as well
 |`zoomLevel`|0|0-20
@@ -785,6 +785,47 @@ or remove specific polyline id's (which you specified previously).
   mapbox.removePolylines([1, 2]);
 ```
 
+### addSource
+Add a source that can be used by `addLayer`. Note only `vector` type is currently supported.
+
+```js
+  mapbox.addSource(
+    id: "terrain-source", // required
+    type: "vector", // supported types: vector
+    url: "mapbox://mapbox.mapbox-terrain-v2"
+  );
+```
+
+### removeSource
+Remove a source by `id`.
+
+```js
+  mapbox.removeSource("terrain-source");
+```
+
+### addLayer
+Add a layer from a source to the map. Note only `circle`, `fill` and `line` types are currently supported.
+
+```js
+  mapbox.addLayer(
+    id: "terrain-data",  // required
+    source: "terrain-source",  // id of source
+    sourceLayer: "contour",  // id of layer from source
+    type: "line", // supported types: circle, fill, line
+    lineJoin: "round",
+    lineCap: "round",
+    lineColor: "#ff69b4",
+    lineWidth: 1,
+  );
+```
+
+### removeLayer
+Remove a layer by `id`.
+
+```js
+  mapbox.removeLayer("terrain-data");
+```
+
 ### setOnMapClickListener
 Add a listener to retrieve lat and lng of where the user taps the map (not a marker).
 
@@ -822,7 +863,7 @@ This example downloads the region 'Amsterdam' on zoom levels 9, 10 and 11 for ma
 
 ```js
   mapbox.downloadOfflineRegion(
-    {      
+    {
       accessToken: accessToken, // required for Android in case no map has been shown yet
       name: "Amsterdam", // this name can be used to delete the region later
       style: mapbox.MapStyle.OUTDOORS,

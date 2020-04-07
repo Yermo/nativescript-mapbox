@@ -224,7 +224,7 @@ export class HelloWorldModel extends Observable {
         selected: true,
         onTap: (marker: MapboxMarker) => console.log(`UPDATED Marker tapped with title: ${marker.title}`),
         onCalloutTap: (marker: MapboxMarker) => alert(`UPDATED Marker callout tapped with title: ${marker.title}`)
-      })
+      });
     }, 8000);
 
     this.mapbox.addMarkers([
@@ -431,6 +431,67 @@ export class HelloWorldModel extends Observable {
     );
   }
 
+// ===================================================================================
+/**
+* 
+* @todo INTEGRATE THIS 
+*
+  public doAddLayerAndSource(): void {
+    this.mapbox.addSource(
+        {
+          id: "terrain-source",
+          type: "vector",
+          url: "mapbox://mapbox.mapbox-terrain-v2"
+        }
+    ).then(
+      () => {
+          this.mapbox.addLayer(
+            {
+              id: "terrain-data",
+              source: "terrain-source",
+              sourceLayer: "contour",
+              type: "line",
+              lineJoin: "round",
+              lineCap: "round",
+              lineColor: "#ff69b4",
+              lineWidth: 1,
+            }
+          ).then(
+            () => {
+              console.log("Mapbox doAddLayerAndSource done");
+            },
+            (error: string) => {
+              console.log("mapbox doAddLayerAndSource error: " + error);
+            }
+          );
+        },
+        (error: string) => {
+          console.log("mapbox doAddLayerAndSource error: " + error);
+        }
+    );
+  }
+
+  public doRemoveLayerAndSource(): void {
+    this.mapbox.removeLayer("terrain-data").then(
+      () => {
+          this.mapbox.removeSource("terrain-source").then(
+            () => {
+              console.log("Mapbox doRemoveLayerAndSource done");
+            },
+            (error: string) => {
+              console.log("mapbox doAddSource error: " + error);
+            }
+          );
+        },
+        (error: string) => {
+          console.log("mapbox doAddSource error: " + error);
+        }
+    );
+  }
+
+*/
+// ===============================================================
+
   // -------------------------------------------------------------------------------
 
   public doListOfflineRegions(): void {
@@ -522,7 +583,7 @@ export class HelloWorldModel extends Observable {
     this.mapbox.trackUser({
       mode: "TRACKING_GPS",
       animated: true
-    }).then(() => console.log("Following"));
+    }).then(() => console.log("Following User"));
   }
 
   // -------------------------------------------------------------------------------
