@@ -424,6 +424,8 @@ export class MapboxView extends MapboxViewBase {
   * @see show()
   *
   * @link https://docs.nativescript.org/core-concepts/events
+  *
+  * @todo FIXME: this.nativeMapView is unused and never actually set to anything.
   */
 
   private initMap(): void {
@@ -766,6 +768,22 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   gcClear() {
     global[ 'Mapbox' ] = {};
+  }
+
+  // ---------------------------------------------------------------------------------
+
+  /**
+  * not used
+  */
+
+  setMapboxViewInstance( mapboxViewInstance : any ) : void {
+  }
+
+  /**
+  * not used
+  */
+
+  setMapboxMapInstance( mapboxMapInstance : any ) : void {
   }
 
   // ---------------------------------------------------------------------------------

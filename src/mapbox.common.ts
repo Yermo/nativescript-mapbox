@@ -494,6 +494,10 @@ export interface MapboxCommonApi {
 
 export interface MapboxApi {
 
+  setMapboxViewInstance( mapboxNativeViewInstance : any ) : void;
+
+  setMapboxMapInstance( mapboxNativeMapInstance : any ) : void;
+
   initEventHandlerShim( settings: any, mapboxNativeViewInstance : any ) : void;
 
   onMapEvent( eventName, id, callback, nativeMapView? ) : void;

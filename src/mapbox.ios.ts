@@ -46,9 +46,12 @@ export { MapStyle };
 
 let _markers = [];
 let _markerIconDownloadCache = [];
-let _mapView: MGLMapView;
-let _mapbox: any = {};
-let _delegate: any;
+
+// let _mapView: MGLMapView;
+
+// let _mapbox: any = {};
+
+// let _delegate: any;
 
 const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
   mapView.logoView.hidden = settings.hideLogo;
@@ -180,7 +183,7 @@ export class MapboxView extends MapboxViewBase {
   * in the plugin. Under iOS it's the reverse. 
   *
   * The symptom is that any properties that reference a binding aren't available 
-  * at this time this method is called. For example {{access_token}}. 
+  * at the time this method is called. For example {{access_token}}. 
   *
   * I'm sure there is something I do not understand about how this is supposed to work
   * and that the handstands below are not necessary. 
@@ -331,6 +334,11 @@ export class MapboxView extends MapboxViewBase {
         this.nativeMapView.delegate = this.delegate = MGLMapViewDelegateImpl.new().initWithCallback( () => {
 
           console.log( "MapboxView:initMap(): MLMapViewDeleteImpl onMapReady callback" );
+
+          // FIXME: on the Android side the view is created in Mapbox::show(). On the iOS side it's created
+          // here in MapboxView, however the mapbox api still needs a reference to it.
+
+          this.mapbox.setMapboxViewInstance( this.nativeMapView );
 
           this.notify({
             eventName: MapboxViewBase.mapReadyEvent,
@@ -703,6 +711,11 @@ export class CustomUserLocationAnnotationView extends MGLUserLocationAnnotationV
 
 export class Mapbox extends MapboxCommon implements MapboxApi {
 
+  // reference to the native mapbox API
+
+  private _mapboxMapInstance: any;
+  private _mapboxViewInstance: any;
+
   // list of circle layers
 
   private circles: any = [];
@@ -718,6 +731,30 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // user location marker render mode
 
   private userLocationRenderMode : string;
+
+  // --------------------------------------------------------------------
+
+  /**
+  * set the mapboxMapInstance 
+  *
+  * @see MapboxView::initMap()
+  */
+
+  setMapboxMapInstance( mapboxMapInstance : any ) {
+    this._mapboxMapInstance = mapboxMapInstance;
+  }
+
+  // --------------------------------------------------------------------
+
+  /**
+  * set the mapboxViewInstance
+  *
+  * @see MapboxView::initMap();
+  */
+
+  setMapboxViewInstance( mapboxViewInstance : any ) {
+    this._mapboxViewInstance = mapboxViewInstance;
+  }
 
   // --------------------------------------------------------------------
 
@@ -819,9 +856,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   /**
   * create an display the map
+  *
+  * @todo FIXME: This method is not called. See MapboxView::initMap().
   */
 
   show( options: ShowOptions ): Promise<any> {
+
+    console.log( "Mapbox::show(): top with options:", options );
 
     return new Promise( (resolve, reject) => {
       try {
@@ -839,8 +880,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         // if already added, make sure it's removed first
 
-        if (_mapView) {
-          _mapView.removeFromSuperview();
+        if ( this._mapboxViewInstance) {
+          this._mapboxViewInstance.removeFromSuperview();
         }
 
         const view = utils.ios.getter( UIApplication, UIApplication.sharedApplication ).keyWindow.rootViewController.view,
@@ -854,10 +895,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             styleURL = _getMapStyle(settings.style);
 
         MGLAccountManager.accessToken = settings.accessToken;
-        _mapbox.mapView = MGLMapView.alloc().initWithFrameStyleURL( mapFrame, styleURL );
-        _setMapboxMapOptions( _mapbox.mapView, settings );
+        this._mapboxViewInstance = MGLMapView.alloc().initWithFrameStyleURL( mapFrame, styleURL );
+        _setMapboxMapOptions( this._mapboxViewInstance, settings );
 
-        _mapbox.mapView.delegate = _delegate = MGLMapViewDelegateImpl.new().initWithCallback(
+        this._mapboxViewInstance.delegate = MGLMapViewDelegateImpl.new().initWithCallback(
             (mapView: MGLMapView) => {
               resolve({
                 ios: mapView
@@ -871,7 +912,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         // wrapping in a little timeout since the map area tends to flash black a bit initially
 
         setTimeout(() => {
-          view.addSubview( _mapbox.mapView );
+          view.addSubview( this._mapboxViewInstance );
         }, 500);
 
       } catch (ex) {
@@ -884,8 +925,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   hide(): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        if (_mapbox.mapView) {
-          _mapbox.mapView.removeFromSuperview();
+        if ( this._mapboxViewInstance ) {
+          this._mapboxViewInstance.removeFromSuperview();
         }
         resolve();
       } catch (ex) {
@@ -898,9 +939,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   unhide(): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        if (_mapbox.mapView) {
+        if ( this._mapboxViewInstance ) {
           let view = utils.ios.getter(UIApplication, UIApplication.sharedApplication).keyWindow.rootViewController.view;
-          view.addSubview(_mapbox.mapView);
+          view.addSubview( this._mapboxViewInstance);
           resolve();
         } else {
           reject("No map found");
@@ -914,11 +955,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   destroy(nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+      const theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
       if (theMap) {
         theMap.removeFromSuperview();
         theMap.delegate = null;
-        _mapbox = {};
       }
       resolve();
     });
@@ -999,7 +1039,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setMapStyle(style: string | MapStyle, nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        const theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         // the style takes some time to load so we have to set a callback
         // to wait for the style to finish loading
@@ -1027,7 +1067,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   addMarkers(markers: MapboxMarker[], nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        const theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         _addMarkers(markers, theMap);
         resolve();
       } catch (ex) {
@@ -1040,7 +1080,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   removeMarkers(ids?: any, nativeMap?: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const theMap = nativeMap || _mapbox.mapView;
+        const theMap = nativeMap || this._mapboxViewInstance;
         let markersToRemove: Array<MGLAnnotation> = [];
         _markers.forEach(marker => {
           if (!ids || (marker.id && ids.indexOf(marker.id) > -1)) {
@@ -1069,7 +1109,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setCenter(options: SetCenterOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         let animated = options.animated === undefined || options.animated;
         let coordinate = CLLocationCoordinate2DMake(options.lat, options.lng);
         theMap.setCenterCoordinateAnimated(coordinate, animated);
@@ -1084,7 +1124,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   getCenter(nativeMap?): Promise<LatLng> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         let coordinate = theMap.centerCoordinate;
         resolve({
           lat: coordinate.latitude,
@@ -1100,7 +1140,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setZoomLevel(options: SetZoomLevelOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         let animated = options.animated === undefined || options.animated;
         let level = options.level;
         if (level >= 0 && level <= 20) {
@@ -1119,7 +1159,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   getZoomLevel(nativeMap?): Promise<number> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         resolve(theMap.zoomLevel);
       } catch (ex) {
         console.log("Error in mapbox.getZoomLevel: " + ex);
@@ -1131,7 +1171,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setTilt(options: SetTiltOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         let cam = theMap.camera;
 
@@ -1157,7 +1197,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   getTilt(nativeMap?): Promise<number> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         resolve(theMap.camera.pitch);
       } catch (ex) {
         console.log("Error in mapbox.getTilt: " + ex);
@@ -1169,7 +1209,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   getUserLocation(nativeMap?): Promise<UserLocation> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         const loc: MGLUserLocation = theMap.userLocation;
         if (loc === null) {
           reject("Location not available");
@@ -1277,7 +1317,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
 
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
     
         // userLocation marker.
 
@@ -1354,7 +1394,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
 
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         
         console.log( "Mapbox::changeUserLocationMarkerMode(): changing renderMode to '" + renderModeString + "' cameraMode '" + cameraModeString + "'" );
 
@@ -1384,7 +1424,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
     return new Promise((resolve, reject) => {
       try {
-        const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        const theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         const point = options.point;
         if (point === undefined) {
           reject("Please set the 'point' parameter");
@@ -1427,7 +1467,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   addPolygon(options: AddPolygonOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
-      const theMap = nativeMap || _mapbox.mapView;
+      const theMap = nativeMap || this._mapboxViewInstance;
       const points = options.points;
 
       if (points === undefined) {
@@ -1494,7 +1534,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   addPolyline(options: AddPolylineOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
-      const theMap: MGLMapView = nativeMap || _mapbox.mapView;
+      const theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
       const points = options.points;
       if (points === undefined) {
         reject("Please set the 'points' parameter");
@@ -1552,7 +1592,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   private removePolys(polyType: string, ids?: Array<any>, nativeMap?: any): Promise<any> {
     return new Promise((resolve) => {
-      let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+      let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
       ids.forEach(id => this.removePolyById(theMap, polyType + id));
       resolve();
     });
@@ -1569,7 +1609,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   animateCamera(options: AnimateCameraOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         let target = options.target;
         if (target === undefined) {
@@ -1620,7 +1660,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -1652,7 +1692,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setOnMapLongClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -1684,7 +1724,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setOnScrollListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -1721,7 +1761,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setOnMoveBeginListener(listener: (data?: LatLng) => void, nativeMap?: any): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -1775,7 +1815,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   getViewport(nativeMap?): Promise<Viewport> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -1803,7 +1843,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   setViewport(options: SetViewportOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -1994,7 +2034,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   addExtrusion(options: AddExtrusionOptions, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -2024,7 +2064,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         const { url, type } = options;
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         let source;
 
         if (!theMap) {
@@ -2186,7 +2226,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   removeSource(id: string, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -2287,7 +2327,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
 
-        const theMap: MGLMapView = nativeMapViewInstance || _mapbox.mapView;
+        const theMap: MGLMapView = nativeMapViewInstance || this._mapboxViewInstance;
 
         console.log( "Mapbox::removeLayer(): attempting to remove layer '" + id + "'" );
 
@@ -2394,7 +2434,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       try {
 
-        const theMap: MGLMapView = nativeMapViewInstance || _mapbox.mapView;
+        const theMap: MGLMapView = nativeMapViewInstance || this._mapboxViewInstance;
 
         if ( style.type != 'line' ) {
           reject( "Non line style passed to addLineLayer()" );
@@ -2624,7 +2664,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       try {
 
-        const theMap: MGLMapView = nativeMapViewInstance || _mapbox.mapView;
+        const theMap: MGLMapView = nativeMapViewInstance || this._mapboxViewInstance;
 
         if ( style.type != 'circle' ) {
           reject( "Non circle style passed to addCircleLayer()" );
@@ -2782,7 +2822,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         const { id, source, sourceLayer, type } = options;
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         let layer;
 
         if (!theMap) {
@@ -2863,7 +2903,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   removeLayer(id: string, nativeMap?): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -2889,7 +2929,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   trackUser(options: TrackUserOptions, nativeMap?): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+        let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
         if (!theMap) {
           reject("No map has been loaded");
@@ -2964,7 +3004,7 @@ const _addMarkers = (markers: MapboxMarker[], nativeMap?) => {
     console.log("markers must be passed as an Array: [{title: 'foo'}]");
     return;
   }
-  let theMap: MGLMapView = nativeMap || _mapbox.mapView;
+  let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
 
   _downloadMarkerImages(markers).then((updatedMarkers: Array<MapboxMarker>) => {
     updatedMarkers.forEach(marker => {
