@@ -4,6 +4,30 @@
 
 [iOS SDK](https://github.com/mapbox/mapbox-gl-native/blob/master/platform/ios/CHANGELOG.md)
 
+## 5.0.0-alpha.2 
+
+**Implemented enchancements:**
+
+- bumped Mapbox Android SDK to 9.0.0
+- fixed merge with upstream
+
+**Fixed Bugs**
+
+- iOS demo works once again.
+
+## 5.0.0-alpha.1 
+[Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/5.0.0-alpha.1...4.4.0)
+
+**Implemented enchancements:**
+
+- bumped Mapbox iOS SDK version to 5.1.1 and Android SDK's to 8.4.0
+- added methods: addLayer()/removeLayer()/addLinePoint()/addSource()/removeSource()
+- support for rendering GeoJSON lines and circles
+- support for adding click handlers to lines and circles.
+
+**Fixed Bugs**
+
+- this hopefully fixes the Android crash bug.
 
 ## [4.4.0](https://github.com/EddyVerbruggen/nativescript-mapbox/tree/4.4.0) (2018-10-15)
 [Full Changelog](https://github.com/EddyVerbruggen/nativescript-mapbox/compare/4.3.1...4.4.0)

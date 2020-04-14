@@ -1,0 +1,35 @@
+.map-wrapper {
+  border-radius: 20;
+  border-color: white;
+  border-width: 1;
+}
+
+.bottom-right {
+  horizontal-align: right;
+  vertical-align: bottom;
+  border-radius: 2;
+  margin: 2 0 0 2;
+  padding: 2 2;
+}
+
+.bottom-left {
+  horizontal-align: left;
+  vertical-align: bottom;
+  border-radius: 2;
+  margin: 2 0 0 2;
+  padding: 2 2;
+}
+
+.location {
+  font-size: 50;
+  font-weight: 800;
+  width: 70;
+  height: 70;
+  text-align: center;
+}
+
+.circle .mdi {
+  margin-top: 5;
+}
+
+

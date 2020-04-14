@@ -19,3 +19,7 @@ demo/platforms
 node_modules
 demo/hooks/
 publish/package/
+ngdemo/lib
+ngdemo/platoforms
+ngdemo/node_modules
+ngdemo/hooks
