@@ -551,7 +551,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   private _mapboxMapInstance: any;
   private _mapboxViewInstance: any;
-
+  private _activity: string;
   // the user location component
 
   private _locationComponent : any = false;
@@ -621,6 +621,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
     this.eventCallbacks[ 'click' ] = [];
 
+    this._activity = application.android.foregroundActivity;
+
     // When we receive events from Android we need to inform the API.
     //
     // start
@@ -629,7 +631,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       console.log( "Mapbox::constructor: activityStartedEvent Event: " + args.eventName + ", Activity: " + args.activity);
 
-      if ( this._mapboxViewInstance ) {
+      if ( this._mapboxViewInstance && this._activity === args.activity) {
 
         console.log( "Mapbox::constructor(): calling onStart()" );
 
@@ -644,7 +646,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       console.log( "Mapbox::constructor:: activityPausedEvent Event: " + args.eventName + ", Activity: " + args.activity);
 
-      if ( this._mapboxViewInstance ) {
+      if ( this._mapboxViewInstance && this._activity === args.activity) {
 
         console.log( "Mapbox::constructor(): calling onPause()" );
 
@@ -659,7 +661,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       console.log( "Mapbox::constructor: activityResumedEvent Event: " + args.eventName + ", Activity: " + args.activity);
 
-      if ( this._mapboxViewInstance ) {
+      if ( this._mapboxViewInstance && this._activity === args.activity) {
 
         console.log( "Mapbox::constructor(): calling onResume() - destroyed flag is:", this._mapboxViewInstance.isDestroyed() );
 
@@ -674,7 +676,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       console.log( "Mapbox::constructor: activityStoppedEvent Event: " + args.eventName + ", Activity: " + args.activity);
 
-      if ( this._mapboxViewInstance ) {
+      if ( this._mapboxViewInstance && this._activity === args.activity) {
 
         console.log( "Mapbox::constructor(): calling onStop()" );
 
@@ -689,25 +691,26 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       console.log( "Mapbox::constructor: activityDestroyedEvent Event: " + args.eventName + ", Activity: " + args.activity);
 
-      if ( this.lineManager ) {
-        this.lineManager.onDestroy();
+      if ( this._activity === args.activity) {
+        if ( this.lineManager ) {
+          this.lineManager.onDestroy();
+        }
+
+        if ( this.circleManager ) {
+          this.circleManager.onDestroy();
+        }
+
+        if ( this.symbolManager ) {
+          this.symbolManager.onDestroy();
+        }
+
+        if ( this._mapboxViewInstance ) {
+
+          console.log( "Mapbox::constructor(): calling onDestroy()" );
+
+          this._mapboxViewInstance.onDestroy();
+        }
       }
-
-      if ( this.circleManager ) {
-        this.circleManager.onDestroy();
-      }
-
-      if ( this.symbolManager ) {
-        this.symbolManager.onDestroy();
-      }
-
-      if ( this._mapboxViewInstance ) {
-
-        console.log( "Mapbox::constructor(): calling onDestroy()" );
-
-        this._mapboxViewInstance.onDestroy();
-      }
-
     });
 
     // savestate
@@ -716,7 +719,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
       console.log( "Mapbox::constructor: saveActivityStateEvent Event: " + args.eventName + ", Activity: " + args.activity + ", Bundle: " + args.bundle);
 
-      if ( this._mapboxViewInstance ) {
+      if ( this._mapboxViewInstance && this._activity === args.activity) {
 
         console.log( "Mapbox::constructor(): saving instance state" );
 
@@ -2716,7 +2719,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const styleURL = this._getMapStyle( options.style );
 
         const bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
-            .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.north, options.bounds.east))
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.north,
+              options.bounds.east)
             .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.south, options.bounds.west))
             .build();
 
