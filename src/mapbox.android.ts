@@ -2720,9 +2720,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
         const bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
             .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.north,
-              options.bounds.east)
+              options.bounds.east))
             .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.south, options.bounds.west))
-            .build());
+            .build();
 
         const retinaFactor = utils.layout.getDisplayDensity();
 
