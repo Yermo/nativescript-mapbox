@@ -551,7 +551,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   private _mapboxMapInstance: any;
   private _mapboxViewInstance: any;
+
+  // keep track of the activity the map was created in so other spawned
+  // activities don't cause unwanted side effects. See Android Activity Events below.
+
   private _activity: string;
+
   // the user location component
 
   private _locationComponent : any = false;
