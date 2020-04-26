@@ -2719,8 +2719,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         const styleURL = this._getMapStyle( options.style );
 
         const bounds = new com.mapbox.mapboxsdk.geometry.LatLngBounds.Builder()
-            .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.north,
-              options.bounds.east))
+            .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.north, options.bounds.east))
             .include(new com.mapbox.mapboxsdk.geometry.LatLng(options.bounds.south, options.bounds.west))
             .build();
 
