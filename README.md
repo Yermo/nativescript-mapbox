@@ -2,24 +2,6 @@
   <img src="/screenshots/mapbox_logo.png" width="400"/>
 </a>
 
-# To run the Angular demo
-
-```
-cd src
-npm run build.dist
-cd ../demo-angular
-tns run <platform>
-```
-
-# To run the plain Nativescript demo
-
-```
-cd src
-npm run build.dist
-cd ../demo
-tns run <platform>
-```
-
 # NativeScript Mapbox plugin
 
 [![NPM version][npm-image]][npm-url]
@@ -42,7 +24,7 @@ Awesome native OpenGL-powered maps - by Mapbox
 > https://github.com/NativeScript/NativeScript/issues/7954
 > https://github.com/NativeScript/NativeScript/issues/7867
 
-## Prerequisites
+## Before you begin - Prerequisites
 You either need your own tile server such as the one provided by [openmaptiles.org](https://openmaptiles.org) or a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
 Once you've registered go to your Account > Apps > New token. The 'Default Secret Token' is what you'll need.
 
@@ -51,6 +33,29 @@ Your access_token can then be set in the top level mapbox_config.ts file.
 The style can be set to one of the Mapbox style names or it can be the URL of your own hosted tile server.
 
 > NOTE: As of this writing, the NativeScript demo only works with a mapbox token. The demo-angular will work with either a self hosted tile server or a mapbox token.
+
+# To run the Angular demo
+
+```
+cd src
+npm run build.release
+cd ../demo-angular
+tns run <platform>
+```
+
+# To run the plain Nativescript demo
+
+```
+cd src
+npm run build.release
+cd ../demo
+tns run <platform>
+```
+
+# Debug Build
+
+To come up to speed on the plugin, I added extensive trace messages.
+These can be turned on by replacing 'npm run build.release' with 'npm run build.debug' in the commands above.
 
 ## Breaking Changes
 
