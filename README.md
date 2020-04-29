@@ -28,6 +28,8 @@ Awesome native OpenGL-powered maps - by Mapbox
 You either need your own tile server such as the one provided by [openmaptiles.org](https://openmaptiles.org) or a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
 Once you've registered go to your Account > Apps > New token. The 'Default Secret Token' is what you'll need.
 
+You will also need to set up your development environment. Please refer to the [NativeScript documentation](https://docs.nativescript.org/start/quick-setup).
+
 # Installation
 
 ```
@@ -40,7 +42,7 @@ Two demo applications are available in the repository.
 
 To run them, you'll need to clone the github repository and build the plugin. See below.
 
-You will also need an access toaken. Your access_token can then be set in the top level mapbox_config.ts file.
+You will also need an access token. Your access_token can then be set in the top level mapbox_config.ts file.
 
 The style can be set to one of the Mapbox style names or it can be the URL of your own hosted tile server.
 
