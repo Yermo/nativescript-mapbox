@@ -28,13 +28,25 @@ Awesome native OpenGL-powered maps - by Mapbox
 You either need your own tile server such as the one provided by [openmaptiles.org](https://openmaptiles.org) or a Mapbox API access token (they have a 🆓 Starter plan!), so [sign up with Mapbox](https://www.mapbox.com/signup/).
 Once you've registered go to your Account > Apps > New token. The 'Default Secret Token' is what you'll need.
 
-Your access_token can then be set in the top level mapbox_config.ts file.
+# Installation
+
+```
+$ npm install --save nativescript-mapbox 
+```
+
+# DEMOS
+
+Two demo applications are available in the repository. 
+
+To run them, you'll need to clone the github repository and build the plugin. See below.
+
+You will also need an access toaken. Your access_token can then be set in the top level mapbox_config.ts file.
 
 The style can be set to one of the Mapbox style names or it can be the URL of your own hosted tile server.
 
 > NOTE: As of this writing, the NativeScript demo only works with a mapbox token. The demo-angular will work with either a self hosted tile server or a mapbox token.
 
-# To run the Angular demo
+## To run the Angular demo
 
 ```
 cd src
@@ -43,7 +55,7 @@ cd ../demo-angular
 tns run <platform>
 ```
 
-# To run the plain Nativescript demo
+## To run the plain Nativescript demo
 
 ```
 cd src
@@ -52,7 +64,7 @@ cd ../demo
 tns run <platform>
 ```
 
-# Debug Build
+## Debug Build
 
 To come up to speed on the plugin, I added extensive trace messages.
 These can be turned on by replacing 'npm run build.release' with 'npm run build.debug' in the commands above.
@@ -64,19 +76,7 @@ This version includes breaking API changes.
 The intent moving forward is to mirror, to the maximum extent practical, the Mapbox GL JS API to enable
 sharing of mapping code between browser based and native applications. 
 
-## Installation
-This version of the plugin is still in development and not yet available via NPM.
-
-To add the plugin to our own project first 
-```
-cd src
-npm run build.dist
-```
-then in your package.json file in the dependencies section add:
-
-```
-  "nativescript-mapbox": "file:/path/to/nativescript-mapbox/publish/dist/package"
-```
+## Issues
 
 If you get an error during iOS build related to Podspec versions, probably the easiest fix is:
 `tns platform remove ios` and `tns platform add ios`.
