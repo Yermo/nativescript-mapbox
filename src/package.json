@@ -55,14 +55,14 @@
     "Mapbox"
   ],
   "author": {
-    "name": "Eddy Verbruggen",
-    "email": "eddyverbruggen@gmail.com"
+    "name": "Yermo Lamers",
+    "email": "yml@yml.com",
+    "url": "https://miles-by-motorcycle.com/flyingbricksoftware/about"
   },
   "contributors": [
     {
-      "name": "Yermo Lamers",
-      "email": "yml@yml.com",
-      "url": "https://miles-by-motorcycle.com/flyingbricksoftware/about"
+      "name": "Eddy Verbruggen - Original Author",
+      "email": "eddyverbruggen@gmail.com"
     }
   ],
   "license": "MIT",
