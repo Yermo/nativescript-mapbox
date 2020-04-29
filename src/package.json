@@ -1,7 +1,7 @@
 {
   "name": "nativescript-mapbox",
-  "version": "5.0.0-alpha.1",
-  "description": "Native Maps, by Mapbox.",
+  "version": "5.0.0",
+  "description": "A Nativescript plugin for Mapbox Native Maps.",
   "main": "mapbox",
   "typings": "index.d.ts",
   "nativescript": {
@@ -18,7 +18,8 @@
   },
   "scripts": {
     "build": "npm i && tsc --skipLibCheck",
-    "build.dist": "npm run build && cd ../publish && ./pack.sh && ./unpack.sh",
+    "build.debug": "npm run build && cd ../publish && ./pack.sh -d && ./unpack.sh",
+    "build.release": "npm run build && cd ../publish && ./pack.sh && ./unpack.sh",
     "demo.ios": "npm run build && cd ../demo && tns run ios --syncAllFiles",
     "demo.android": "npm run build && cd ../demo && tns run android",
     "demo.android.build": "npm run build && cd ../demo && tns build android --log debug",
@@ -37,12 +38,13 @@
     "development.setup": "npm run setup && npm link && cd ../demo && npm link nativescript-mapbox && cd ../src",
     "generate.typings.ios": "cd ../demo && TNS_DEBUG_METADATA_PATH=\"$(pwd)/metadata\" tns build ios && TNS_TYPESCRIPT_DECLARATIONS_PATH=\"$(pwd)/typings\" tns build ios && echo 'Now look for your library typings in demo/typings!'",
     "demo-angular.reset": "cd ../demo-angular && npx rimraf -- hooks node_modules platforms package-lock.json",
+    "demo.reset": "cd ../demo && npx rimraf -- hooks node_modules platforms package-lock.json",
     "plugin.prepare": "npm run build && cd ../demo-angular && tns plugin remove nativescript-mapbox && tns plugin add ../src",
-    "clean": "npm run demo-angular.reset && npx rimraf -- node_modules package-lock.json && npm i"
+    "clean": "npm run demo-angular.reset && npm run demo.reset && npx rimraf -- node_modules package-lock.json && npm i"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/eddyverbruggen/nativescript-mapbox.git"
+    "url": "https://github.com/Yermo/nativescript-mapbox.git"
   },
   "keywords": [
     "ecosystem:nativescript",
@@ -56,11 +58,18 @@
     "name": "Eddy Verbruggen",
     "email": "eddyverbruggen@gmail.com"
   },
+  "contributors": [
+    {
+      "name": "Yermo Lamers",
+      "email": "yml@yml.com",
+      "url": "https://miles-by-motorcycle.com/flyingbricksoftware/about"
+    }
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/eddyverbruggen/nativescript-mapbox/issues"
+    "url": "https://github.com/Yermo/nativescript-mapbox/issues"
   },
-  "homepage": "https://github.com/eddyverbruggen/nativescript-mapbox",
+  "homepage": "https://github.com/Yermo/nativescript-mapbox",
   "readmeFilename": "README.md",
   "devDependencies": {
     "tns-core-modules": "~5.3.1",

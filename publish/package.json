@@ -4,6 +4,7 @@
   "description": "Publish helper",
   "devDependencies": {
     "ncp": "^2.0.0",
+    "remove-console-logs": "^0.1.0",
     "rimraf": "^2.5.0"
   }
 }
