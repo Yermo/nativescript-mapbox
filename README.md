@@ -33,7 +33,7 @@ You will also need to set up your development environment. Please refer to the [
 # Installation
 
 ```
-$ npm install --save nativescript-mapbox 
+$ tns plugin install nativescript-mapbox
 ```
 
 # DEMOS
