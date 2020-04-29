@@ -19,7 +19,7 @@
   "scripts": {
     "build": "npm i && tsc --skipLibCheck",
     "build.debug": "npm run build && cd ../publish && ./pack.sh -d && ./unpack.sh",
-    "build.release": "npm run build && cd ../publish && ./pack.sh",
+    "build.release": "npm run build && cd ../publish && ./pack.sh && ./unpack.sh",
     "demo.ios": "npm run build && cd ../demo && tns run ios --syncAllFiles",
     "demo.android": "npm run build && cd ../demo && tns run android",
     "demo.android.build": "npm run build && cd ../demo && tns build android --log debug",
