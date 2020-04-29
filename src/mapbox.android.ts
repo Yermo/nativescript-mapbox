@@ -2959,15 +2959,21 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         const { url, type } = options;
-        const theMap = nativeMap;
+        let theMap = nativeMap;
         let source;
 
-        if (!theMap) {
-          reject("No map has been loaded");
-          return;
+        if ( ! theMap ) {
+
+          if ( !this._mapboxMapInstance ) {
+            reject("No map has been loaded");
+            return;
+          }
+
+          theMap = this._mapboxMapInstance;
+
         }
 
-        if ( theMap.mapboxMap.getSource(id) ) {
+        if ( theMap.getStyle().getSource(id) ) {
           reject("Source exists: " + id);
           return;
         }
@@ -2990,14 +2996,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
             // com.mapbox.mapboxsdk.maps.Style
 
-            let geoJsonSource = new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
+            source = new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
               id,
               feature
             );
 
-            this._mapboxMapInstance.getStyle().addSource( geoJsonSource );
-
-            this.gcFix( 'com.mapbox.mapboxsdk.style.sources.GeoJsonSource', geoJsonSource );
+            this.gcFix( 'com.mapbox.mapboxsdk.style.sources.GeoJsonSource', source );
 
             // To support handling click events on lines and circles, we keep the underlying 
             // feature.
@@ -3039,7 +3043,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        theMap.mapboxMap.addSource(source);
+        theMap.getStyle().addSource( source );
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.addSource: " + ex);

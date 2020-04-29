@@ -270,6 +270,8 @@ export class MapComponent implements OnInit, OnDestroy {
 
     console.log( "MapComponent:onMapReady(): after declareReady()" );
 
+    this.addTestCircle();
+
   } // end of onMapReady()
 
   // --------------------------------------
