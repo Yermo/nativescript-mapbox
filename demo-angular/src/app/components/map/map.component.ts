@@ -270,6 +270,10 @@ export class MapComponent implements OnInit, OnDestroy {
 
     console.log( "MapComponent:onMapReady(): after declareReady()" );
 
+    this.addTestCircle();
+    this.addTestFeatureCollection();
+    this.addTestLine();
+
   } // end of onMapReady()
 
   // --------------------------------------
@@ -541,13 +545,11 @@ export class MapComponent implements OnInit, OnDestroy {
         }
       }, 
       "paint": {
-        "circle-radius": {
-          "stops": [
-            [0, 0],
-            [20, pixels ]
-          ],
-          "base": 2
-        },
+        'circle-radius': [
+					"interpolate", ["exponential", 2], ["zoom"],
+					0, 0,
+					20, pixels
+				],
         'circle-opacity': 0.05,
         'circle-color': '#ed6498',
         'circle-stroke-width': 2,
@@ -561,9 +563,9 @@ export class MapComponent implements OnInit, OnDestroy {
       console.error("MapComponent:addTestCircle(): addTestCircle threw an error:", error );
     });
 
-    this.mapboxView.onMapEvent( 'click', 'testCircle', ( point ) => {
+    this.mapboxView.onMapEvent( 'click', 'testCircle', ( features ) => {
 
-      console.log( "MapComponent:addTestCircle(): circle clicked" );
+      console.log( "MapComponent:addTestCircle(): circle clicked", features);
 
       // mandatory
 
@@ -571,6 +573,163 @@ export class MapComponent implements OnInit, OnDestroy {
 
     });
 
+  }
+
+  addTestFeatureCollection() {
+    const locations = [
+      [ -76.947041, 39.007846 ],
+      [ -76.947041, 38.997846 ],
+      [ -76.947041, 38.987846 ],
+      [ -76.947041, 38.977846 ],
+      [ -76.947041, 38.967846 ],
+      [ -76.947041, 38.957846 ],
+      [ -76.947041, 38.947846 ],
+      [ -76.947041, 38.937846 ],
+      [ -76.947041, 38.927846 ],
+      [ -76.947041, 38.917846 ]
+    ]
+
+    const source: any = {
+			'type': 'geojson',
+			'data': {
+				'type': 'FeatureCollection',
+				'features': locations.map((location, i) => ({
+					'type': 'Feature',
+					'geometry': {
+						'type': 'Point',
+						'coordinates': location
+					},
+					'properties': {
+						'status': i < 4 ? 'todo' : 'done'
+					}
+				}))
+			}
+    }
+    
+    this.mapboxView.addSource('collection', source);
+    
+		this.mapboxView.addLayer({
+			'id': 'collection',
+			'type': 'circle',
+			'source': 'collection',
+			'paint': {
+				// make circles larger as the user zooms from z12 to z22
+				'circle-radius': [
+					"interpolate", ["exponential", 1], ["zoom"],
+					// zoom is 12 (or less) -> circle radius will be 5px
+					12, 5,
+					// zoom is 22 (or greater) -> circle radius will be 18px
+					22, 18
+				],
+				'circle-color': [
+					'match',
+					['get', 'status'],
+					'todo',
+					'#238E6B', // green
+					'done',
+					'#2A5A8B', // blue
+					'#333' // default
+				]
+			}
+		}).catch((error) => {
+			console.error('MapComponent:onMapReady(): addLayer threw an error:', error);
+    });
+    
+    this.mapboxView.onMapEvent('click', 'collection', (features) => {
+
+			console.log('MapComponent:addTestLine(): collection clicked', features);
+
+			// mandatory
+
+			return true;
+
+		});
+  }
+
+  addTestLine() {
+    const lineFeature = {
+			"type": "FeatureCollection",
+			"features": [{
+				"type": "Feature",
+				"geometry": {
+					"type": "LineString",
+					"coordinates": [
+						[-76.947041, 39.007846],
+						[12.5, 41.9]
+					]
+				},
+				"properties": {
+					"line-color": "white",
+					"line-width": "8",
+					"is-draggable": false
+				}
+			}]
+		}
+
+    // Track near the Golden Gate Bridge
+		const lineFeature2 = {
+			'type': 'Feature',
+			'properties': {},
+			'geometry': {
+				'type': 'LineString',
+				'coordinates': [
+					[-122.48369693756104, 37.83381888486939],
+					[-122.48348236083984, 37.83317489144141],
+					[-122.48339653015138, 37.83270036637107],
+					[-122.48356819152832, 37.832056363179625],
+					[-122.48404026031496, 37.83114119107971],
+					[-122.48404026031496, 37.83049717427869],
+					[-122.48348236083984, 37.829920943955045],
+					[-122.48356819152832, 37.82954808664175],
+					[-122.48507022857666, 37.82944639795659],
+					[-122.48610019683838, 37.82880236636284],
+					[-122.48695850372314, 37.82931081282506],
+					[-122.48700141906738, 37.83080223556934],
+					[-122.48751640319824, 37.83168351665737],
+					[-122.48803138732912, 37.832158048267786],
+					[-122.48888969421387, 37.83297152392784],
+					[-122.48987674713133, 37.83263257682617],
+					[-122.49043464660643, 37.832937629287755],
+					[-122.49125003814696, 37.832429207817725],
+					[-122.49163627624512, 37.832564787218985],
+					[-122.49223709106445, 37.83337825839438],
+					[-122.49378204345702, 37.83368330777276]
+				]
+			}
+		}
+
+
+		this.mapboxView.addSource('route', {
+      'type': 'geojson',
+      'url': undefined,
+			'data': lineFeature
+    });
+    
+		this.mapboxView.addLayer({
+			'id': 'route',
+			'type': 'line',
+			'source': 'route',
+			'layout': {
+				'line-join': 'round',
+				'line-cap': 'round'
+			},
+			'paint': {
+				'line-color': '#888',
+				'line-width': 8
+			}
+		}).catch((error) => {
+			console.error('MapComponent:onMapReady(): addLayer threw an error:', error);
+		});
+
+		this.mapboxView.onMapEvent('click', 'route', (features) => {
+
+			console.log('MapComponent:addTestLine(): line clicked', features);
+
+			// mandatory
+
+			return true;
+
+		});
   }
 
 } // end of mapComponent

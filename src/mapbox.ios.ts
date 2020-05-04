@@ -1421,14 +1421,12 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // --------------------------------------------------------------
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Promise<Array<Feature>> {
-    return new Promise((resolve, reject) => {
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?): Array<Feature> {
       try {
         const theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
         const point = options.point;
         if (point === undefined) {
-          reject("Please set the 'point' parameter");
-          return;
+          throw new Error("Please set the 'point' parameter");
         }
 
         const {x, y} = theMap.convertCoordinateToPointToView({latitude: point.lat, longitude: point.lng}, theMap);
@@ -1457,12 +1455,11 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           });
         }
 
-        resolve(result);
+        return result;
       } catch (ex) {
         console.log("Error in mapbox.queryRenderedFeatures: " + ex);
-        reject(ex);
+        return undefined;
       }
-    });
   }
 
   addPolygon(options: AddPolygonOptions, nativeMap?): Promise<any> {

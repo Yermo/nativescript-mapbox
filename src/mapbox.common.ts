@@ -568,7 +568,7 @@ export interface MapboxApi {
 
   addLinePoint( id : string, point, nativeMapView? : any ): Promise<any>;
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<Array<Feature>>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Array<Feature>;
 
   addPolygon(options: AddPolygonOptions, nativeMap?: any): Promise<any>;
 
@@ -580,7 +580,7 @@ export interface MapboxApi {
 
   animateCamera(options: AnimateCameraOptions, nativeMap?: any): Promise<any>;
 
-  setOnMapClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any>;
+  setOnMapClickListener(listener: (data: LatLng) => boolean, nativeMap?): Promise<any>;
 
   setOnMapLongClickListener(listener: (data: LatLng) => void, nativeMap?): Promise<any>;
 
@@ -697,9 +697,9 @@ export interface MapboxViewApi {
 
   removeMarkers(options?: any): Promise<any>;
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Array<Feature>;
 
-  setOnMapClickListener(listener: (data: LatLng) => void): Promise<any>;
+  setOnMapClickListener(listener: (data: LatLng) => boolean): Promise<any>;
 
   setOnMapLongClickListener(listener: (data: LatLng) => void): Promise<any>;
 
@@ -755,7 +755,7 @@ export interface MapboxViewApi {
 
   addLinePoint( id : string, point ): Promise<any>;
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Array<Feature>;
 
   addPolygon(options: AddPolygonOptions): Promise<any>;
 
@@ -841,7 +841,7 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   // -----------------------------------------------------------------
 
-  setOnMapClickListener(listener: (data: LatLng) => void): Promise<any> {
+  setOnMapClickListener(listener: (data: LatLng) => boolean): Promise<any> {
     return this.mapbox.setOnMapClickListener(listener, this.getNativeMapView());
   }
 
@@ -1007,7 +1007,7 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   // -----------------------------------------------------------------
 
-  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>> {
+  queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Array<Feature> {
     return this.mapbox.queryRenderedFeatures(options, this.getNativeMapView());
   }
 
