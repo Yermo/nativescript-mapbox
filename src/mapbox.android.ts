@@ -600,6 +600,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   private _polylines = [];
   private _polygons = [];
 
+  private lineSources = {};
+
   // registered callbacks.
 
   private eventCallbacks: any[] = [];
@@ -1134,8 +1136,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
       this._mapboxViewInstance.removeOnDidFinishLoadingMapListener(this.onDidFinishLoadingMapListener);
     }
 
-    if ( this.onDidFinishLoadingStyleListener ) { 
-      this._mapboxViewInstance.removeOnDidFinishLoadingStyleListener( this.onDidFinishLoadingStyleListener );
+    if (this.onDidFinishLoadingStyleListener) {
+      this._mapboxViewInstance.removeOnDidFinishLoadingStyleListener(this.onDidFinishLoadingStyleListener);
     }
 
     if (this.onDidFailLoadingMapListener) {
@@ -1513,39 +1515,39 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
 
-        const mapStyle = this._getMapStyle( style );
+        const mapStyle = this._getMapStyle(style);
 
-        console.log( "Mapbox::setMapStyle(): with style:", style );
+        console.log("Mapbox::setMapStyle(): with style:", style);
 
         // callback for when the style is successfully loaded.
 
         this.onDidFinishLoadingStyleListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener({
-          onDidFinishLoadingStyle : style => {
-            console.log( "Mapbox:setMapStyle(): style loaded" );
+          onDidFinishLoadingStyle: style => {
+            console.log("Mapbox:setMapStyle(): style loaded");
 
-            resolve( style );
+            resolve(style);
 
           }
         });
 
-        this._mapboxViewInstance.addOnDidFinishLoadingStyleListener( this.onDidFinishLoadingStyleListener );
+        this._mapboxViewInstance.addOnDidFinishLoadingStyleListener(this.onDidFinishLoadingStyleListener);
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener', this.onDidFinishLoadingStyleListener );
+        this.gcFix('com.mapbox.mapboxsdk.maps.MapView.OnDidFinishLoadingStyleListener', this.onDidFinishLoadingStyleListener);
 
         // callback if loading the style fails.
 
         this.onDidFailLoadingMapListener = new com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener({
-          onDidFailLoadingMap : error => {
-            console.log( "Mapbox:setMapStyle(): style failed" );
-            reject( error );
+          onDidFailLoadingMap: error => {
+            console.log("Mapbox:setMapStyle(): style failed");
+            reject(error);
           }
         });
 
-        console.log( "Mapbox::setMapStyle(): before onDidFailLoadingMapListener" );
+        console.log("Mapbox::setMapStyle(): before onDidFailLoadingMapListener");
 
-        this._mapboxViewInstance.addOnDidFailLoadingMapListener( this.onDidFailLoadingMapListener );
+        this._mapboxViewInstance.addOnDidFailLoadingMapListener(this.onDidFailLoadingMapListener);
 
-        this.gcFix( 'com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener', this.onDidFailLoadingMapListener );
+        this.gcFix('com.mapbox.mapboxsdk.maps.MapView.OnDidFailLoadingMapListener', this.onDidFailLoadingMapListener);
 
 
         console.log("Mapbox::setMapStyle(): with style:", style);
@@ -2759,6 +2761,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
             switch (options.data.type) {
               case 'Feature':
                 geojsonData = com.mapbox.geojson.Feature.fromJson(geojsonString);
+                this.lineSources[id] = geojsonString;
                 console.log("Mapbox:addSource(): adding feature");
                 break;
               case 'FeatureCollection':
@@ -2816,6 +2819,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           theMap = this._mapboxMapInstance;
 
         }
+
+        this.lineSources[id] = undefined;
 
         theMap.getStyle().removeSource(id);
 
@@ -3151,8 +3156,9 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   * Add a point to a line
   *
   * This method appends a point to a line and is useful for drawing a users track.
+  * Note: Only supported for sources that contain a single feature
   *
-  * @param {id} id - id of line to add a point to.
+  * @param {id} id - id of the source of the line to add a point to.
   * @param {array} lnglat - [lng,lat] to append to the line.
   *
   * @link https://github.com/mapbox/mapbox-gl-native/issues/13983
@@ -3163,62 +3169,53 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   */
 
   public addLinePoint(id: string, lnglat, nativeMapView?): Promise<any> {
-
     return new Promise((resolve, reject) => {
-      // try {
-      resolve();
+      try {
+        //   // This only works for GeoJSON features.
+        //   //
+        //   // The original thought was to query the source to get the points that make up the line
+        //   // and then add a point to it. Unfortunately, it seems that the points in the source
+        //   // are modified and do not match the original set of points that make up the map. I kept
+        //   // adding a LineString and after querying it it would be returned as a MultiLineString
+        //   // with more points. 
+        //   //
+        //   // As a result of this, we keep the original feature in the lines list and use that
+        //   // as the data source for the line. As each point is added, we append it to the 
+        //   // feature and reset the json source for the displayed line. 
 
-      //   // This only works for GeoJSON features.
-      //   //
-      //   // The original thought was to query the source to get the points that make up the line
-      //   // and then add a point to it. Unfortunately, it seems that the points in the source
-      //   // are modified and do not match the original set of points that make up the map. I kept
-      //   // adding a LineString and after querying it it would be returned as a MultiLineString
-      //   // with more points. 
-      //   //
-      //   // As a result of this, we keep the original feature in the lines list and use that
-      //   // as the data source for the line. As each point is added, we append it to the 
-      //   // feature and reset the json source for the displayed line. 
+        //   let lineEntry = this.lines.find((entry) => { return entry.id == id; });
+        // const lineLayer = this._mapboxMapInstance.getStyle().getLayer(id);
+        const lineSource = JSON.parse(this.lineSources[id] || 'null');
+        if (!lineSource) {
+          reject("No such line source '" + id + "'");
+          return;
+        }
 
-      //   let lineEntry = this.lines.find((entry) => { return entry.id == id; });
+        const geometry = lineSource.geometry;
 
-      //   if (!lineEntry) {
-      //     reject("No such line layer '" + id + "'");
-      //     return;
-      //   }
+        if (!geometry) {
+          reject("No geometry found in the line source");
+          return;
+        }
 
-      //   let geometry = lineEntry.feature.geometry();
+        console.log("Mapbox:addLinePoint(): adding point:", lnglat);
 
-      //   let coordinates = geometry.coordinates();
+        geometry.coordinates.push(lnglat);
 
-      //   console.log("Mapbox:addLinePoint(): adding point:", lnglat);
+        const geojsonData = com.mapbox.geojson.Feature.fromJson(JSON.stringify(lineSource));
+        
+        this._mapboxMapInstance.getStyle().getSource(id).setGeoJson(geojsonData)
 
-      //   // see https://docs.oracle.com/javase/8/docs/api/java/util/List.html
+        this.lineSources[id] = JSON.stringify(lineSource);
 
-      //   let newPoint = com.mapbox.geojson.Point.fromLngLat(lnglat[0], lnglat[1]);
+        console.log("Mapbox:addLinePoint(): after updating lineSource feature");
 
-      //   console.log("Mapbox:addLinePoint(): newPoint is:", newPoint);
+        resolve();
 
-      //   geometry.coordinates().add(newPoint);
-
-      //   // sadly it appears we have to recreate the feature. The old feature should get 
-      //   // culled by garbage collection.
-
-      //   lineEntry.feature = com.mapbox.geojson.Feature.fromGeometry(geometry);
-
-      //   // now reset the source
-
-      //   let lineSource = this._mapboxMapInstance.getStyle().getSource(id + '_source');
-
-      //   lineSource.setGeoJson(lineEntry.feature);
-
-      //   console.log("Mapbox:addLinePoint(): after updating lineSource feature");
-
-      //   resolve();
-      // } catch (ex) {
-      //   console.log("Mapbox:addLinePoint() Error : " + ex);
-      //   reject(ex);
-      // }
+      } catch (ex) {
+        console.log("Mapbox:addLinePoint() Error : " + ex);
+        reject(ex);
+      }
     });
 
   } // end of addLinePoint()
