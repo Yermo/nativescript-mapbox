@@ -785,6 +785,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   */
 
   setMapboxViewInstance( mapboxViewInstance : any ) : void {
+    this._mapboxViewInstance = mapboxViewInstance;
   }
 
   /**
@@ -792,6 +793,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   */
 
   setMapboxMapInstance( mapboxMapInstance : any ) : void {
+    this._mapboxMapInstance = mapboxMapInstance;
   }
 
   // ---------------------------------------------------------------------------------
@@ -1132,6 +1134,17 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   }
 
+
+  setMinZoomLevel(minZoom: number) : void {
+    this._mapboxMapInstance.setMinZoomPreference(minZoom);
+  }
+
+
+  setMaxZoomLevel(maxZoom: number) : void {
+    this._mapboxMapInstance.setMaxZoomPreference(maxZoom);
+  }
+
+
   // ----------------------------------------------------------------------------------
 
   /**
@@ -1202,6 +1215,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     }
 
   }
+
+
 
   // ------------------------------------------------
   // Life Cycle Hooks

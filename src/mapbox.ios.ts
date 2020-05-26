@@ -964,6 +964,18 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+
+
+  setMinZoomLevel(minZoom: number) : void {
+    this._mapboxViewInstance.minimumZoomLevel = minZoom;
+  }
+
+
+  setMaxZoomLevel(maxZoom: number) : void {
+    this._mapboxViewInstance.maximumZoomLevel = maxZoom;
+  }
+
+
   // ----------------------------------------
   // Life Cycle Hooks - Required on Android
   // ----------------------------------------

@@ -512,6 +512,10 @@ export interface MapboxApi {
 
   destroy(nativeMap?: any): Promise<any>;
 
+  setMinZoomLevel(minZoom: number): void;
+
+  setMaxZoomLevel(maxZoom: number): void;
+
   // life cycle hooks, required on Android to avoid crashes.
 
   onStart( nativeMap?: any): Promise<any>;
@@ -729,6 +733,10 @@ export interface MapboxViewApi {
 
   setZoomLevel(options: SetZoomLevelOptions): Promise<any>;
 
+  setMinZoomLevel(minZoom: number): void;
+
+  setMaxZoomLevel(maxZoom: number): void;
+
   getTilt(): Promise<number>;
 
   setTilt(options: SetTiltOptions): Promise<any>;
@@ -928,6 +936,18 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
   setZoomLevel(options: SetZoomLevelOptions): Promise<any> {
     return this.mapbox.setZoomLevel(options, this.getNativeMapView());
   }
+
+  // -----------------------------------------------------------------
+
+  setMinZoomLevel(minZoom: number): void {
+    return this.mapbox.setMinZoomLevel(minZoom);
+  };
+
+  // -----------------------------------------------------------------
+
+  setMaxZoomLevel(maxZoom: number): void {
+    return this.mapbox.setMaxZoomLevel(maxZoom);
+  };
 
   // -----------------------------------------------------------------
 
