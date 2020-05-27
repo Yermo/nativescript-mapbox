@@ -512,10 +512,6 @@ export interface MapboxApi {
 
   destroy(nativeMap?: any): Promise<any>;
 
-  setMinZoomLevel(minZoom: number): void;
-
-  setMaxZoomLevel(maxZoom: number): void;
-
   // life cycle hooks, required on Android to avoid crashes.
 
   onStart( nativeMap?: any): Promise<any>;
@@ -545,6 +541,14 @@ export interface MapboxApi {
   setZoomLevel(options: SetZoomLevelOptions, nativeMap?: any): Promise<any>;
 
   getZoomLevel(nativeMap?: any): Promise<number>;
+
+  setMinZoomLevel(minZoom: number): void;
+
+  getMinZoomLevel(): number;
+
+  setMaxZoomLevel(maxZoom: number): void;
+
+  getMaxZoomLevel(): number;
 
   setTilt(options: SetTiltOptions, nativeMap?: any): Promise<any>;
 
@@ -735,7 +739,11 @@ export interface MapboxViewApi {
 
   setMinZoomLevel(minZoom: number): void;
 
+  getMinZoomLevel(): number;
+
   setMaxZoomLevel(maxZoom: number): void;
+
+  getMaxZoomLevel(): number;
 
   getTilt(): Promise<number>;
 
@@ -945,8 +953,20 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   // -----------------------------------------------------------------
 
+  getMinZoomLevel(): number {
+    return this.mapbox.getMinZoomLevel();
+  };
+
+  // -----------------------------------------------------------------
+
   setMaxZoomLevel(maxZoom: number): void {
     return this.mapbox.setMaxZoomLevel(maxZoom);
+  };
+
+  // -----------------------------------------------------------------
+
+  getMaxZoomLevel(): number {
+    return this.mapbox.getMaxZoomLevel();
   };
 
   // -----------------------------------------------------------------
@@ -1127,6 +1147,12 @@ mapReadyProperty.register( MapboxViewCommonBase );
 export const zoomLevelProperty = new Property<MapboxViewCommonBase, number>({name: "zoomLevel"});
 zoomLevelProperty.register(MapboxViewCommonBase);
 
+export const minZoomLevelProperty = new Property<MapboxViewCommonBase, number>({name: "minZoomLevel"});
+minZoomLevelProperty.register(MapboxViewCommonBase);
+
+export const maxZoomLevelProperty = new Property<MapboxViewCommonBase, number>({name: "maxZoomLevel"});
+maxZoomLevelProperty.register(MapboxViewCommonBase);
+
 export const accessTokenProperty = new Property<MapboxViewCommonBase, string>({name: "accessToken"});
 accessTokenProperty.register(MapboxViewCommonBase);
 
@@ -1227,6 +1253,14 @@ export abstract class MapboxViewBase extends MapboxViewCommonBase {
 
   [zoomLevelProperty.setNative](value: number) {
     this.config.zoomLevel = +value;
+  }
+
+  [minZoomLevelProperty.setNative](value: number) {
+    this.config.minZoomLevel = +value;
+  }
+
+  [maxZoomLevelProperty.setNative](value: number) {
+    this.config.maxZoomLevel = +value;
   }
 
   [mapStyleProperty.setNative](value: string) {
