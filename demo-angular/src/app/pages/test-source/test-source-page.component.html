@@ -1,9 +1,10 @@
 <ActionBar class="action-bar">
+
     <!-- 
     Use the NavigationButton as a side-drawer button in Android
     because ActionItems are shown on the right side of the ActionBar
     -->
-    <NavigationButton ios:visibility="collapsed" icon="res://menu" (tap)="onDrawerButtonTap()" automationText="Side Drawer Button"></NavigationButton>
+    <NavigationButton ios:visibility="collapsed" icon="res://menu" (tap)="onDrawerButtonTap()"></NavigationButton>
     <!-- 
     Use the ActionItem for IOS with position set to left. Using the
     NavigationButton as a side-drawer button in iOS is not possible,
@@ -12,7 +13,7 @@
     <ActionItem icon="res://navigation/menu" android:visibility="collapsed" (tap)="onDrawerButtonTap()"
         ios.position="left">
     </ActionItem>
-    <Label automationText="homeDistanceLabel" class="action-bar-title" text="NativeScript Angular Mapbox Demo"></Label>
+    <Label class="action-bar-title" text="Test Page"></Label>
 </ActionBar>
 
 <GridLayout class="page page-content">
@@ -22,7 +23,7 @@
         <ActivityIndicator rowSpan="3" [busy]="true" *ngIf="locationPermission"></ActivityIndicator>
     </StackLayout>
 
-    <map id="mainMap"
+    <map #map
       [style]="settings.mapbox_style"
       [access_token]="settings.mapbox_access_token"
 
@@ -36,4 +37,3 @@
 
     </map>
 
-</GridLayout>

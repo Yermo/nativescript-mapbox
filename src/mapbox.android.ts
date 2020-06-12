@@ -2946,6 +2946,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+  // ---------------------------------------------------------------------------
+
   /**
   * add a geojson or vector source
   *
@@ -2959,15 +2961,15 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     return new Promise((resolve, reject) => {
       try {
         const { url, type } = options;
-        const theMap = nativeMap;
-        let source;
 
-        if (!theMap) {
+        if (!this._mapboxMapInstance ) {
           reject("No map has been loaded");
           return;
         }
 
-        if ( theMap.mapboxMap.getSource(id) ) {
+        let source;
+
+        if ( this._mapboxMapInstance.getStyle().getSource( id ) ) {
           reject("Source exists: " + id);
           return;
         }
@@ -2990,14 +2992,10 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
             // com.mapbox.mapboxsdk.maps.Style
 
-            let geoJsonSource = new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
+            source = new com.mapbox.mapboxsdk.style.sources.GeoJsonSource(
               id,
               feature
             );
-
-            this._mapboxMapInstance.getStyle().addSource( geoJsonSource );
-
-            this.gcFix( 'com.mapbox.mapboxsdk.style.sources.GeoJsonSource', geoJsonSource );
 
             // To support handling click events on lines and circles, we keep the underlying 
             // feature.
@@ -3039,13 +3037,44 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           return;
         }
 
-        theMap.mapboxMap.addSource(source);
+        this._mapboxMapInstance.getStyle().addSource( source );
+
+        this.gcFix( 'com.mapbox.mapboxsdk.style.sources.source', source );
+
         resolve();
       } catch (ex) {
         console.log("Error in mapbox.addSource: " + ex);
         reject(ex);
       }
     });
+  }
+
+  // --------------------------------------------------------------------------
+
+  /**
+  * get a source
+  *
+  * Return the source, if present, with the given id.
+  */
+
+  getSource( id : string, nativeMap?): any {
+
+    let source: any;
+
+    try {
+
+      if (!this._mapboxMapInstance ) {
+        return null;
+      }
+
+      source = this._mapboxMapInstance.getStyle().getSource( id );
+
+    } catch (ex) {
+      console.log("Error in mapbox.getSource: " + ex);
+      return null;
+    }
+
+    return source;
   }
 
   // -------------------------------------------------------------------------------------
@@ -3057,14 +3086,13 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   removeSource( id: string, nativeMap? ): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        const theMap = nativeMap;
 
-        if (!theMap) {
+        if (!this._mapboxMapInstance ) {
           reject("No map has been loaded");
           return;
         }
 
-        theMap.mapboxMap.removeSource(id);
+        this._mapboxMapInstance.getStyle().removeSource(id);
 
         // if we've cached the underlying feature, remove it.
         //

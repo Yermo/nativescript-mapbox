@@ -9,6 +9,7 @@ import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 import { MapComponent } from "./components/map/map.component";
 import { HomePageComponent } from "./pages/home/home-page.component";
+import { TestSourcePageComponent } from "./pages/test-source/test-source-page.component";
 import { TestPageComponent } from "./pages/test/test-page.component";
 import { PlainPageComponent } from "./pages/plain/plain-page.component";
 import { TestNoDestroyPageComponent } from "./pages/test-no-destroy/test-no-destroy-page.component";
@@ -38,6 +39,7 @@ import { DebugService } from "./services/debug.service";
         AppComponent,
         MapComponent,
         HomePageComponent,
+        TestSourcePageComponent,
         TestPageComponent,
         PlainPageComponent,
         TestNoDestroyPageComponent,

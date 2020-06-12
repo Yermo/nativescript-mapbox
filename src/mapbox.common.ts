@@ -274,7 +274,7 @@ export type UserTrackingMode = "NONE" | "FOLLOW" | "FOLLOW_WITH_HEADING" | "FOLL
 // -------------------------------------------------------------
 
 export interface AddSourceOptions {
-  url: string;
+  url?: string;
   type: string;
   data?: any;
 }
@@ -560,6 +560,8 @@ export interface MapboxApi {
 
   addSource( id : string, options: AddSourceOptions, nativeMapView? : any ): Promise<any>;
 
+  getSource(id: string, nativeMap?: any): any;
+
   removeSource(id: string, nativeMap?: any): Promise<any>;
 
   addLayer( style, nativeMapView? : any ): Promise<any>;
@@ -612,7 +614,9 @@ export interface MapboxApi {
 
   addGeoJsonClustered(options: AddGeoJsonClusteredOptions): Promise<any>;
 
-  // addSource(options: AddSourceOptions): Promise<any>;
+  addSource( id: string, options: AddSourceOptions, nativeMap?: any ): Promise<any>;
+
+  getSource( id: string, nativeMap?: any): any;
 
   removeSource(id: string, nativeMap?: any): Promise<any>;
 
@@ -746,6 +750,8 @@ export interface MapboxViewApi {
   forceUserLocationUpdate( location ) : void;
 
   addSource( id: string, options: AddSourceOptions): Promise<any>;
+
+  getSource(id: string, nativeMap?: any): any;
 
   removeSource(id: string, nativeMap?: any): Promise<any>;
 
@@ -981,6 +987,10 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   addSource( id: string, options: AddSourceOptions ): Promise<any> {
     return this.mapbox.addSource( id, options, this.getNativeMapView() );
+  }
+
+  getSource( id: string ): any {
+    return this.mapbox.getSource( id, this.getNativeMapView() );
   }
 
   removeSource(id: string ): Promise<any> {

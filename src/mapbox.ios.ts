@@ -2220,6 +2220,26 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   // -------------------------------------------------------------------------------------
 
   /**
+  * get a source by id
+  */
+
+  getSource(id: string, nativeMap?): any {
+
+    let theMap: MGLMapView = nativeMap || this._mapboxViewInstance;
+
+    if (!theMap) {
+      return null;
+    }
+
+    const source = theMap.style.sourceWithIdentifier(id);
+
+    return source;
+ 
+  }
+
+  // -------------------------------------------------------------------------------------
+
+  /**
   * remove a vector source by id
   */
 

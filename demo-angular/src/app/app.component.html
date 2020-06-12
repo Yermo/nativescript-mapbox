@@ -16,6 +16,11 @@ The NativeScript Angular Mapbox demo is based on the app-drawer template
                     <Label col="1" text="Home" class="p-r-10"></Label>
                 </GridLayout>
 
+                <GridLayout columns="auto, *" automationText="Home" class="sidedrawer-list-item" [class.selected]="isComponentSelected('/test-source')" (tap)="onNavItemTap('/test-source')">
+                    <Label col="0" text="&#xf015;" class="fa"></Label>
+                    <Label col="1" text="Test Source" class="p-r-10"></Label>
+                </GridLayout>
+
                 <GridLayout columns="auto, *" automationText="Test Crash" class="sidedrawer-list-item" [class.selected]="isComponentSelected('/test-crash')" (tap)="onNavItemTap('/test-crash')">
                     <Label col="0" text="&#xf1ea;" class="fa"></Label>
                     <Label col="1" text="Test Destroy Map Crash" class="p-r-10"></Label>
