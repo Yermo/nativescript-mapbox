@@ -432,7 +432,7 @@ export class MapboxView extends MapboxViewBase {
 
     console.log( "MapboxView:initMap(): top - accessToken is '" + this.config.accessToken + "'", this.config );
 
-    if ( ! this.nativeMapView && ( this.config.accessToken || this.settings.accessToken )) {
+    if ( ! this.nativeMapView && ( this.config && this.config.accessToken || this.settings && this.settings.accessToken )) {
 
       this.mapbox = new Mapbox();
 
@@ -830,7 +830,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           //
           // FIXME: Even if using a local server add some string. 
 
-          if ( settings.accessToken === undefined) {
+          if (settings.accessToken === undefined) {
             reject( "Please set the 'accessToken' parameter" );
             return;
           }
