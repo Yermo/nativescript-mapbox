@@ -400,7 +400,7 @@ export class HelloWorldModel extends Observable {
       };
 
       alert(alertOptions).then(() => {
-          this.mapbox.setMinZoomLevel(13);
+          this.mapbox.setMinZoom(13);
       });
   }
 
@@ -414,7 +414,7 @@ export class HelloWorldModel extends Observable {
       };
 
       alert(alertOptions).then(() => {
-          this.mapbox.setMaxZoomLevel(15);
+          this.mapbox.setMaxZoom(15);
       });
   }
 

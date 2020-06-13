@@ -965,11 +965,11 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
 
               if(settings.minZoomLevel) {
-                this.setMinZoomLevel(settings.minZoomLevel);
+                this.setMinZoom(settings.minZoomLevel);
               }
 
               if(settings.maxZoomLevel) {
-                this.setMaxZoomLevel(settings.maxZoomLevel);
+                this.setMaxZoom(settings.maxZoomLevel);
               }
             }
           }); // end of onReady callback.
@@ -2105,25 +2105,25 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   // ----------------------------------------------------------------------------------
 
-  setMinZoomLevel(minZoom: number) : void {
+  setMinZoom(minZoom: number) : void {
     this._mapboxMapInstance.setMinZoomPreference(minZoom);
   }
 
   // ----------------------------------------------------------------------------------
 
-  getMinZoomLevel() : number {
+  getMinZoom() : number {
     return this._mapboxMapInstance.getMinZoomLevel();
   }
 
   // ----------------------------------------------------------------------------------
 
-  setMaxZoomLevel(maxZoom: number) : void {
+  setMaxZoom(maxZoom: number) : void {
     this._mapboxMapInstance.setMaxZoomPreference(maxZoom);
   }
 
   // ----------------------------------------------------------------------------------
 
-  getMaxZoomLevel() : number {
+  getMaxZoom() : number {
     return this._mapboxMapInstance.getMaxZoomLevel();
   }
 

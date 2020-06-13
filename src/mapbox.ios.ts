@@ -1177,19 +1177,19 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
-  setMinZoomLevel(minZoom: number) : void {
+  setMinZoom(minZoom: number) : void {
     this._mapboxViewInstance.minimumZoomLevel = minZoom;
   }
 
-  getMinZoomLevel(): number {
+  getMinZoom(): number {
     return this._mapboxViewInstance.minimumZoomLevel;
   }
 
-  setMaxZoomLevel(maxZoom: number) : void {
+  setMaxZoom(maxZoom: number) : void {
     this._mapboxViewInstance.maximumZoomLevel = maxZoom;
   }
 
-  getMaxZoomLevel(): number {
+  getMaxZoom(): number {
     return this._mapboxViewInstance.maximumZoomLevel;
   }
 

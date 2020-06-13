@@ -542,13 +542,13 @@ export interface MapboxApi {
 
   getZoomLevel(nativeMap?: any): Promise<number>;
 
-  setMinZoomLevel(minZoom: number): void;
+  setMinZoom(minZoom: number): void;
 
-  getMinZoomLevel(): number;
+  getMinZoom(): number;
 
-  setMaxZoomLevel(maxZoom: number): void;
+  setMaxZoom(maxZoom: number): void;
 
-  getMaxZoomLevel(): number;
+  getMaxZoom(): number;
 
   setTilt(options: SetTiltOptions, nativeMap?: any): Promise<any>;
 
@@ -737,13 +737,13 @@ export interface MapboxViewApi {
 
   setZoomLevel(options: SetZoomLevelOptions): Promise<any>;
 
-  setMinZoomLevel(minZoom: number): void;
+  setMinZoom(minZoom: number): void;
 
-  getMinZoomLevel(): number;
+  getMinZoom(): number;
 
-  setMaxZoomLevel(maxZoom: number): void;
+  setMaxZoom(maxZoom: number): void;
 
-  getMaxZoomLevel(): number;
+  getMaxZoom(): number;
 
   getTilt(): Promise<number>;
 
@@ -947,26 +947,26 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   // -----------------------------------------------------------------
 
-  setMinZoomLevel(minZoom: number): void {
-    return this.mapbox.setMinZoomLevel(minZoom);
+  setMinZoom(minZoom: number): void {
+    return this.mapbox.setMinZoom(minZoom);
   };
 
   // -----------------------------------------------------------------
 
-  getMinZoomLevel(): number {
-    return this.mapbox.getMinZoomLevel();
+  getMinZoom(): number {
+    return this.mapbox.getMinZoom();
   };
 
   // -----------------------------------------------------------------
 
-  setMaxZoomLevel(maxZoom: number): void {
-    return this.mapbox.setMaxZoomLevel(maxZoom);
+  setMaxZoom(maxZoom: number): void {
+    return this.mapbox.setMaxZoom(maxZoom);
   };
 
   // -----------------------------------------------------------------
 
-  getMaxZoomLevel(): number {
-    return this.mapbox.getMaxZoomLevel();
+  getMaxZoom(): number {
+    return this.mapbox.getMaxZoom();
   };
 
   // -----------------------------------------------------------------
