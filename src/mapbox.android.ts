@@ -962,15 +962,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                 });
 
               });
-
-
-              if(settings.minZoomLevel) {
-                this.setMinZoom(settings.minZoomLevel);
-              }
-
-              if(settings.maxZoomLevel) {
-                this.setMaxZoom(settings.maxZoomLevel);
-              }
             }
           }); // end of onReady callback.
 
@@ -3979,6 +3970,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           .zoom(settings.zoomLevel)
           .target(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
       mapboxMapOptions.camera(cameraPositionBuilder.build());
+    }
+
+    if(settings.minZoomLevel) {
+      mapboxMapOptions.minZoomPreference(settings.minZoomLevel);
+    }
+
+    if(settings.maxZoomLevel) {
+      mapboxMapOptions.maxZoomPreference(settings.maxZoomLevel);
     }
 
     return mapboxMapOptions;
