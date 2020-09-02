@@ -82,9 +82,7 @@ const _getMapStyle = (input: any): NSURL => {
   if (/^mapbox:\/\/styles/.test(input) || /^http:\/\//.test(input) || /^https:\/\//.test(input)) {
     return NSURL.URLWithString(input);
   } else if (/^~\//.test(input)) {
-    const assetPath = 'file://' + fs.knownFolders.currentApp().path + '/';
-    input = input.replace(/^~\//, assetPath);
-    return NSURL.URLWithString(input);
+    return NSURL.fileURLWithPath(fs.path.join(fs.knownFolders.currentApp().path, input.substring(2)));
   } else if (input === MapStyle.LIGHT || input === MapStyle.LIGHT.toString()) {
     return MGLStyle.lightStyleURL;
   } else if (input === MapStyle.DARK || input === MapStyle.DARK.toString()) {
