@@ -6,16 +6,16 @@
 * @link https://github.com/ionic-team/ionic/blob/master/angular/src/providers/events.ts
 */
 
-import { Injectable } from '@angular/core';
+import { Injectable } from "@angular/core";
 
-export type EventHandler = (...args: any[]) => any;
+export type EventHandler = (...args: Array<any>) => any;
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root"
 })
 export class EventsService {
 
-  private c = new Map<string, EventHandler[]>();
+  private c = new Map<string, Array<EventHandler>>();
 
   // -----------------------------------------------------------------------------------
 
@@ -26,9 +26,9 @@ export class EventsService {
    * @param handler the event handler
    */
 
-  subscribe( topic: string, ...handlers: EventHandler[] ) {
+  subscribe(topic: string, ...handlers: Array<EventHandler>) {
 
-    console.log( "EventsService:subscribe(): subscribing to topic '" + topic + "'" );
+    console.log("EventsService:subscribe(): subscribing to topic '" + topic + "'");
 
     let topics = this.c.get(topic);
     if (!topics) {
@@ -36,7 +36,7 @@ export class EventsService {
     }
     topics.push(...handlers);
 
-    console.log( "EventsService:subscribe(): there are now '" + topics.length + "' subscriptions to '" + topic + "'" );
+    console.log("EventsService:subscribe(): there are now '" + topics.length + "' subscriptions to '" + topic + "'");
 
   }
 
@@ -83,19 +83,19 @@ export class EventsService {
    * @param eventData the data to send as the event
    */
 
-  publish(topic: string, ...args: any[]): any[] | null {
+  publish(topic: string, ...args: Array<any>): Array<any> | null {
 
     const topics = this.c.get(topic);
     if (!topics) {
 
-      console.log( "EventsService:publish(): no subscribers for topic '" + topic + "'" );
+      console.log("EventsService:publish(): no subscribers for topic '" + topic + "'");
 
       return null;
     }
 
-    console.log( "EventsService:publish(): publishing topic '" + topic + "' to '" + topics.length + "' subscribers." );
+    console.log("EventsService:publish(): publishing topic '" + topic + "' to '" + topics.length + "' subscribers.");
 
-    return topics.map(handler => {
+    return topics.map((handler) => {
       try {
         return handler(...args);
       } catch (e) {
@@ -108,4 +108,4 @@ export class EventsService {
 }
 
 // END
-
+

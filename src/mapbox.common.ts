@@ -1,6 +1,6 @@
-import { Color } from "tns-core-modules/color/color";
-import { ContentView } from "tns-core-modules/ui/content-view";
-import { booleanConverter, Property } from "tns-core-modules/ui/core/view";
+import { Color } from "@nativescript/core";
+import { ContentView } from "@nativescript/core";
+import { booleanConverter, Property } from "@nativescript/core";
 
 // ------------------------------------------------------------
 
@@ -281,8 +281,8 @@ export interface AddSourceOptions {
 
 // ------------------------------------------------------------
 
-export type UserLocationCameraMode = 
-  "NONE" | 
+export type UserLocationCameraMode =
+  "NONE" |
   "NONE_COMPASS" |
   "NONE_GPS" |
   "TRACKING" |
@@ -412,7 +412,7 @@ export interface ShowOptions {
   * Android Only
   */
 
-  onLocationPermissionGranted? : any;
+  onLocationPermissionGranted?: any;
 
   /**
   * callback on location permission denied
@@ -420,37 +420,37 @@ export interface ShowOptions {
   * Android Only
   */
 
-  onLocationPermissionDenied? : any;
+  onLocationPermissionDenied?: any;
 
   /**
   * callback on Map Ready
   */
-  
-  onMapReady? : any;
+
+  onMapReady?: any;
 
   /**
   * callback on scroll event
   */
 
-  onScrollEvent? : any;
+  onScrollEvent?: any;
 
   /**
   * callback on move begin event
   */
 
-  onMoveBeginEvent? : any;
+  onMoveBeginEvent?: any;
 
   /**
   * Android context
   */
 
-  context? : any;
+  context?: any;
 
   /**
   * Android parent View
   */
 
-  parentView? : any;
+  parentView?: any;
 
 }
 
@@ -494,15 +494,15 @@ export interface MapboxCommonApi {
 
 export interface MapboxApi {
 
-  setMapboxViewInstance( mapboxNativeViewInstance : any ) : void;
+  setMapboxViewInstance( mapboxNativeViewInstance: any ): void;
 
-  setMapboxMapInstance( mapboxNativeMapInstance : any ) : void;
+  setMapboxMapInstance( mapboxNativeMapInstance: any ): void;
 
-  initEventHandlerShim( settings: any, mapboxNativeViewInstance : any ) : void;
+  initEventHandlerShim( settings: any, mapboxNativeViewInstance: any ): void;
 
-  onMapEvent( eventName, id, callback, nativeMapView? ) : void;
+  onMapEvent( eventName, id, callback, nativeMapView? ): void;
 
-  offMapEvent( eventName, id, nativeMapView? ) : void;
+  offMapEvent( eventName, id, nativeMapView? ): void;
 
   show(options: ShowOptions): Promise<ShowResult>;
 
@@ -548,25 +548,25 @@ export interface MapboxApi {
 
   getUserLocation(nativeMap?: any): Promise<UserLocation>;
 
-  showUserLocationMarker( options: any, nativeMap?: any ) : void;
+  showUserLocationMarker( options: any, nativeMap?: any ): void;
 
-  hideUserLocationMarker( nativeMap?: any ) : void;
+  hideUserLocationMarker( nativeMap?: any ): void;
 
-  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode, nativeMap?: any ) : void;
+  changeUserLocationMarkerMode( renderModeString, cameraModeString: UserLocationCameraMode, nativeMap?: any ): void;
 
-  forceUserLocationUpdate( location: any, nativeMap? : any ) : void;
+  forceUserLocationUpdate( location: any, nativeMap?: any ): void;
 
   trackUser(options: TrackUserOptions, nativeMap?: any): Promise<void>;
 
-  addSource( id : string, options: AddSourceOptions, nativeMapView? : any ): Promise<any>;
+  addSource( id: string, options: AddSourceOptions, nativeMapView?: any ): Promise<any>;
 
   removeSource(id: string, nativeMap?: any): Promise<any>;
 
-  addLayer( style, nativeMapView? : any ): Promise<any>;
+  addLayer( style, nativeMapView?: any ): Promise<any>;
 
-  removeLayer( id : string, nativeMapView? : any ): Promise<any>;
+  removeLayer( id: string, nativeMapView?: any ): Promise<any>;
 
-  addLinePoint( id : string, point, nativeMapView? : any ): Promise<any>;
+  addLinePoint( id: string, point, nativeMapView?: any ): Promise<any>;
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions, nativeMap?: any): Promise<Array<Feature>>;
 
@@ -691,9 +691,9 @@ export interface MapboxViewApi {
 
   addMarkers(markers: MapboxMarker[]): Promise<any>;
 
-  onMapEvent( eventName, id, callback ) : void;
+  onMapEvent( eventName, id, callback ): void;
 
-  offMapEvent( eventName, id ) : void;
+  offMapEvent( eventName, id ): void;
 
   removeMarkers(options?: any): Promise<any>;
 
@@ -741,9 +741,9 @@ export interface MapboxViewApi {
 
   hideUserLocationMarker( options ): void;
 
-  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode ) : void;
+  changeUserLocationMarkerMode( renderModeString, cameraModeString: UserLocationCameraMode ): void;
 
-  forceUserLocationUpdate( location ) : void;
+  forceUserLocationUpdate( location ): void;
 
   addSource( id: string, options: AddSourceOptions): Promise<any>;
 
@@ -751,9 +751,9 @@ export interface MapboxViewApi {
 
   addLayer( style ): Promise<any>;
 
-  removeLayer( id : string ): Promise<any>;
+  removeLayer( id: string ): Promise<any>;
 
-  addLinePoint( id : string, point ): Promise<any>;
+  addLinePoint( id: string, point ): Promise<any>;
 
   queryRenderedFeatures(options: QueryRenderedFeaturesOptions): Promise<Array<Feature>>;
 
@@ -799,7 +799,7 @@ export interface MapboxViewApi {
 
 export abstract class MapboxViewCommonBase extends ContentView implements MapboxViewApi {
 
-  // a reference to a class implementing the Mapbox API shim interface. (see class Mapbox 
+  // a reference to a class implementing the Mapbox API shim interface. (see class Mapbox
   // in the android and ios files.)
 
   protected mapbox: MapboxApi;
@@ -814,7 +814,7 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
   * The base NativeScript ContentView class has on() and off() methods.
   */
 
-  public onMapEvent( eventName, id, callback ) : void {
+  public onMapEvent( eventName, id, callback ): void {
 
     console.log( "MapboxViewCommonBase:on(): top" );
 
@@ -823,7 +823,7 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   // -----------------------------------------------------------------
 
-  public offMapEvent( eventName, id ) : void {
+  public offMapEvent( eventName, id ): void {
     return this.mapbox.offMapEvent( eventName, id, this.getNativeMapView() );
   }
 
@@ -949,25 +949,25 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   // -----------------------------------------------------------------
 
-  showUserLocationMarker( options ) : void {
+  showUserLocationMarker( options ): void {
     this.mapbox.showUserLocationMarker( options, this.getNativeMapView() );
   }
 
   // -----------------------------------------------------------------
 
-  hideUserLocationMarker() : void {
+  hideUserLocationMarker(): void {
     this.mapbox.hideUserLocationMarker( this.getNativeMapView() );
   }
 
   // -----------------------------------------------------------------
 
-  changeUserLocationMarkerMode( renderModeString, cameraModeString : UserLocationCameraMode ) : void {
+  changeUserLocationMarkerMode( renderModeString, cameraModeString: UserLocationCameraMode ): void {
     this.mapbox.changeUserLocationMarkerMode( renderModeString, cameraModeString, this.getNativeMapView()  );
   }
 
   // -----------------------------------------------------------------
 
-  forceUserLocationUpdate( location ) : void {
+  forceUserLocationUpdate( location ): void {
     this.mapbox.forceUserLocationUpdate( location, this.getNativeMapView() );
   }
 
@@ -995,13 +995,13 @@ export abstract class MapboxViewCommonBase extends ContentView implements Mapbox
 
   // -----------------------------------------------------------------
 
-  removeLayer( id : string ): Promise<any> {
+  removeLayer( id: string ): Promise<any> {
     return this.mapbox.removeLayer( id, this.getNativeMapView());
   }
 
   // -----------------------------------------------------------------
 
-  addLinePoint( id : string, point ): Promise<any> {
+  addLinePoint( id: string, point ): Promise<any> {
     return this.mapbox.addLinePoint( id, point, this.getNativeMapView());
   }
 
@@ -1183,7 +1183,7 @@ delayProperty.register(MapboxViewCommonBase);
 /**
 * base class for views created in XML
 *
-* This is the glue that creates a config object based on the XML attributes passed to 
+* This is the glue that creates a config object based on the XML attributes passed to
 * the Mapbox XML tag.
 *
 * @see MapboxView

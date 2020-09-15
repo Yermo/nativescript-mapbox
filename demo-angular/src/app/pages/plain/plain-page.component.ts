@@ -1,8 +1,8 @@
 import { Component, OnInit, OnChanges, OnDestroy } from "@angular/core";
 import { RadSideDrawer } from "nativescript-ui-sidedrawer";
-import { RouterExtensions } from "nativescript-angular/router";
+import { RouterExtensions } from "@nativescript/angular";
 
-import * as app from "tns-core-modules/application";
+import * as app from "@nativescript/core/application";
 
 @Component({
     selector: "plain-page",
@@ -11,21 +11,21 @@ import * as app from "tns-core-modules/application";
 export class PlainPageComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
-    private routerExtensions: RouterExtensions,
+    private routerExtensions: RouterExtensions
   ) {
         // Use the component constructor to inject providers.
   }
 
   ngOnInit(): void {
-    console.log( "PlainPageComponent::ngOnInit()" );
+    console.log("PlainPageComponent::ngOnInit()");
   }
 
   ngOnChanges(): void {
-    console.log( "PlainPageComponent::ngOnChanges()" );
+    console.log("PlainPageComponent::ngOnChanges()");
   }
 
   ngOnDestroy(): void {
-    console.log( "PlainPageComponent::ngOnDestroy()" );
+    console.log("PlainPageComponent::ngOnDestroy()");
   }
 
   onDrawerButtonTap(): void {
@@ -35,7 +35,7 @@ export class PlainPageComponent implements OnInit, OnChanges, OnDestroy {
 
   // -----------------------------------------------------
 
-  public goBack() {
+  goBack() {
     this.routerExtensions.backToPreviousPage();
   }
 

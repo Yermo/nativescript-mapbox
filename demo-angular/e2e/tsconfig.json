@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es6",
+    "module": "esnext",
+    "target": "es2017",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "importHelpers": false,
@@ -11,9 +11,12 @@
       "node"
     ],
     "lib": [
-      "es2015",
-      "dom"
+      "es6",
+      "dom",
+      "es2017"
     ],
-    "baseUrl": "."
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "removeComments": false
   }
 }

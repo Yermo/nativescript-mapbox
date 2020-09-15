@@ -2,7 +2,7 @@
 export class GeoUtils {
 
   /**
-  * Is the current location within the given circle? 
+  * Is the current location within the given circle?
   *
   * @param {number} longitude to check
   * @param {number} latitude to check
@@ -22,9 +22,9 @@ export class GeoUtils {
     let dx = Math.abs( circleLng - lng ) * kx;
     let dy = Math.abs( circleLat - lat ) * ky;
 
-    let distance = Math.sqrt(dx * dx + dy * dy) 
+    let distance = Math.sqrt(dx * dx + dy * dy);
 
-    if ( distance < circleRadius/1000 ) {
+    if ( distance < circleRadius / 1000 ) {
       return true;
     }
 

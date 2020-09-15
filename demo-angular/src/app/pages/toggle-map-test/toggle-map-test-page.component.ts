@@ -4,8 +4,8 @@
 * @author Yermo Lamers, Flying Brick Software, LLC
 */
 
-import { 
-  Component, 
+import {
+  Component,
   OnInit,
   OnDestroy
 } from "@angular/core";
@@ -13,17 +13,17 @@ import {
 // for the side drawer
 
 import { RadSideDrawer } from "nativescript-ui-sidedrawer";
-import * as app from "tns-core-modules/application";
+import * as app from "@nativescript/core/application";
 
-import { RouterExtensions } from "nativescript-angular/router";
+import { RouterExtensions } from "@nativescript/angular";
 
-import { EventsService } from '../../services/events.service';
-import { DebugService } from '../../services/debug.service';
+import { EventsService } from "../../services/events.service";
+import { DebugService } from "../../services/debug.service";
 
 // the Mapbox access token and the Mapbox map style to use are set
 // in the mapbox_config.ts file.
 
-import { SETTINGS } from '../../../../../mapbox_config';
+import { SETTINGS } from "../../../../../mapbox_config";
 
 // ------------------------------------------------------------------------------
 
@@ -40,9 +40,9 @@ import { SETTINGS } from '../../../../../mapbox_config';
 })
 export class ToggleMapTestPageComponent implements OnInit, OnDestroy {
 
-  settings : any = SETTINGS;
+  settings: any = SETTINGS;
 
-  shown : boolean = true;
+  shown: boolean = true;
 
   // -----------------------------------------------------
 
@@ -51,7 +51,7 @@ export class ToggleMapTestPageComponent implements OnInit, OnDestroy {
     private eventsService: EventsService,
     private debugService: DebugService
   ) {
-    console.log( "ToggleMapTestPageComponent:constructor()")
+    console.log("ToggleMapTestPageComponent:constructor()");
   } // end of constructor
 
   // -----------------------------------------------------
@@ -63,10 +63,10 @@ export class ToggleMapTestPageComponent implements OnInit, OnDestroy {
 
   toggleMapDestroy() {
 
-    if ( ! this.shown ) {
-      console.log( "ToggleMapTestPageComponent::toggleMap(): ------ toggle map '" + this.debugService.incrementCounter( 'mapToggleDestroy' ) );
+    if (! this.shown) {
+      console.log("ToggleMapTestPageComponent::toggleMap(): ------ toggle map '" + this.debugService.incrementCounter("mapToggleDestroy"));
 
-      this.eventsService.publish( "destroyMap", { mapId : 'toggleTest' } );
+      this.eventsService.publish("destroyMap", { mapId : "toggleTest" });
 
     }
 
@@ -78,14 +78,13 @@ export class ToggleMapTestPageComponent implements OnInit, OnDestroy {
 
   toggleMap() {
 
-    if ( ! this.shown ) {
-      console.log( "ToggleMapTestPageComponent::toggleMap(): ------ toggle map '" + this.debugService.incrementCounter( 'mapToggle' ) );
+    if (! this.shown) {
+      console.log("ToggleMapTestPageComponent::toggleMap(): ------ toggle map '" + this.debugService.incrementCounter("mapToggle"));
     }
 
     this.shown = ! this.shown;
 
   }
-
 
   // -------------------------------------------------
 
@@ -97,10 +96,9 @@ export class ToggleMapTestPageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
 
-    console.log( "ToggleMapTestPageComponent::ngOnDestroy()" );
+    console.log("ToggleMapTestPageComponent::ngOnDestroy()");
 
   }
-
 
   // -----------------------------------------------------
 

@@ -1,6 +1,6 @@
-import * as observable from "tns-core-modules/data/observable";
-import * as pages from "tns-core-modules/ui/page";
-import { Color } from "tns-core-modules/color";
+import * as observable from "@nativescript/core/data/observable";
+import * as pages from "@nativescript/core/ui/page";
+import { Color } from "@nativescript/core";
 import { HelloWorldModel } from "./main-view-model";
 import { MapboxViewApi, LatLng } from "nativescript-mapbox";
 
@@ -23,7 +23,7 @@ export function pageLoaded(args: observable.EventData) {
   if ( ! page.bindingContext ) {
     page.bindingContext = new HelloWorldModel();
 
-    // propagate the ACCESS_TOKEN to the XML. 
+    // propagate the ACCESS_TOKEN to the XML.
 
     page.bindingContext.set( 'ACCESS_TOKEN', SETTINGS.mapbox_access_token );
   }
@@ -55,10 +55,10 @@ export function onLocationPermissionDenied(args) {
 /**
 * callback when map is ready
 *
-* This is called once the map is ready to use. 
+* This is called once the map is ready to use.
 *
 * NOTE: if this function is not exported, the component-builder will
-* not pick it up and it will never get called. Something changed 
+* not pick it up and it will never get called. Something changed
 * as this used to work without the export. This took basically forever to figure
 * out.
 */

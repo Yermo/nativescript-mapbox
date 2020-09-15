@@ -1,13 +1,4 @@
 {
-  "nativescript": {
-    "id": "com.flyingbricksoftware.MapboxAngularDemo",
-    "tns-ios": {
-      "version": "6.1.0"
-    },
-    "tns-android": {
-      "version": "6.5.0"
-    }
-  },
   "description": "NativeScript Mapbox Plugin Angular Demo",
   "license": "SEE LICENSE IN LICENSE",
   "repository": "<fill-your-repository-here>",
@@ -17,28 +8,30 @@
     "e2e-watch": "tsc -p e2e --watch"
   },
   "dependencies": {
-    "@angular/animations": "~8.2.0",
-    "@angular/common": "~8.2.0",
-    "@angular/compiler": "~8.2.0",
-    "@angular/core": "~8.2.0",
-    "@angular/forms": "~8.2.0",
-    "@angular/platform-browser": "~8.2.0",
-    "@angular/platform-browser-dynamic": "~8.2.0",
-    "@angular/router": "~8.2.0",
+    "@angular/animations": "~10.1.0",
+    "@angular/common": "~10.1.0",
+    "@angular/compiler": "~10.1.0",
+    "@angular/core": "~10.1.0",
+    "@angular/forms": "~10.1.0",
+    "@angular/platform-browser": "~10.1.0",
+    "@angular/platform-browser-dynamic": "~10.1.0",
+    "@angular/router": "~10.1.0",
+    "@nativescript/angular": "^10.0.3",
+    "@nativescript/core": "^7.0.3",
+    "@nativescript/theme": "^2.3.3",
+    "@nativescript/webpack": "^3.0.4",
     "nativescript-advanced-permissions": "^1.2.0",
-    "nativescript-angular": "~8.2.0",
     "nativescript-mapbox": "file:../publish/dist/package",
-    "nativescript-theme-core": "~1.0.6",
-    "nativescript-ui-sidedrawer": "~7.0.0",
+    "nativescript-ui-sidedrawer": "~9.0.0",
     "reflect-metadata": "~0.1.12",
     "rxjs": "^6.4.0",
     "rxjs-compat": "^6.5.3",
-    "tns-core-modules": "^6.5.1",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
-    "@angular/compiler-cli": "~8.2.0",
-    "@ngtools/webpack": "~8.2.0",
+    "@angular/compiler-cli": "~10.1.0",
+    "@nativescript/android": "7.0.0",
+    "@ngtools/webpack": "~10.1.0",
     "@types/chai": "~4.1.7",
     "@types/mocha": "~5.2.5",
     "@types/node": "~10.12.18",
@@ -49,11 +42,11 @@
     "mocha-multi": "~1.0.1",
     "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "^6.1.2",
-    "nativescript-dev-webpack": "^1.5.1",
     "node-sass": "^4.7.1",
     "tslint": "~5.19.0",
-    "typescript": "~3.5.3"
+    "typescript": "~3.9.0"
   },
   "gitHead": "12284faf57b80a564bca5377e12c149c89d282c3",
-  "readme": "NativeScript Application"
+  "readme": "NativeScript Application",
+  "main": "main.js"
 }
