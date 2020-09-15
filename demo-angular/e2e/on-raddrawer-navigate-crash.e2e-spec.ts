@@ -1,7 +1,5 @@
 
-import { AppiumDriver, createDriver, SearchOptions, nsCapabilities } from "nativescript-dev-appium";
-import { assert } from "chai";
-const addContext = require('mochawesome/addContext');
+import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 
 /**
 * Iterate navigation between the home and test crash pages
@@ -14,7 +12,7 @@ async function HomeToTestCrashNavigation( driver : any, group : number, iteratio
   for ( let i = 0; i < iterations; i++ ) {
 
     timestamp = Date.now();
-       
+
     let btn = await driver.findElementByClassName('android.widget.ImageButton');
     await btn.click();
 
@@ -53,7 +51,7 @@ describe( "Rad Drawer View Navigation Crash", async () => {
     let driver: AppiumDriver;
 
     before(async function(){
-        nsCapabilities.testReporter.context = this; 
+        nsCapabilities.testReporter.context = this;
         driver = await createDriver();
     });
 
