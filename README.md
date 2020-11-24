@@ -2,6 +2,11 @@
   <img src="/screenshots/mapbox_logo.png" width="400"/>
 </a>
 
+# This project has moved: 
+
+This project is now being maintained here: https://github.com/nativescript-community/ui-mapbox
+as it's become clear contrary to what I thought, I don't actually have enough time to maintain it myself. 
+
 # NativeScript Mapbox plugin
 
 [![NPM version][npm-image]][npm-url]
