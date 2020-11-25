@@ -129,8 +129,11 @@
             <Button row="5" colSpan="2" text="get user location" tap="{{ doGetUserLocation }}" class="button" />
             <Button row="5" col="2" colSpan="2" text="track user" tap="{{ doTrackUser }}" class="button" />
 
+            <Button row="6" col="0" text="minZoom" tap="{{ doSetMinZoom }}" class="button"/>
+            <Button row="6" col="1" text="maxZoom" tap="{{ doSetMaxZoom }}" class="button"/>
+
             <Android>
-              <Button row="6" colSpan="4" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />
+              <Button row="6" col="2" colSpan="2" text="Clustered GeoJSON" tap="{{ doAddAndClusterGeoJSON }}" class="button" />
             </Android>
 
             <Button row="7" col="0" text="+polyline" tap="{{ doAddPolyline }}" class="button" />

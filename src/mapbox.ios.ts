@@ -73,6 +73,14 @@ const _setMapboxMapOptions = (mapView: MGLMapView, settings) => {
     mapView.setZoomLevelAnimated(settings.zoomLevel, false);
   }
 
+  if(settings.minZoomLevel) {
+    mapView.minimumZoomLevel = settings.minZoomLevel;
+  }
+
+  if(settings.maxZoomLevel) {
+    mapView.maximumZoomLevel = settings.maxZoomLevel;
+  }
+
   mapView.showsUserLocation = settings.showUserLocation;
 
   mapView.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
@@ -964,6 +972,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     });
   }
 
+
   // ----------------------------------------
   // Life Cycle Hooks - Required on Android
   // ----------------------------------------
@@ -1166,6 +1175,22 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         reject(ex);
       }
     });
+  }
+
+  setMinZoom(minZoom: number) : void {
+    this._mapboxViewInstance.minimumZoomLevel = minZoom;
+  }
+
+  getMinZoom(): number {
+    return this._mapboxViewInstance.minimumZoomLevel;
+  }
+
+  setMaxZoom(maxZoom: number) : void {
+    this._mapboxViewInstance.maximumZoomLevel = maxZoom;
+  }
+
+  getMaxZoom(): number {
+    return this._mapboxViewInstance.maximumZoomLevel;
   }
 
   setTilt(options: SetTiltOptions, nativeMap?): Promise<any> {

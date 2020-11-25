@@ -392,6 +392,35 @@ export class HelloWorldModel extends Observable {
 
   // -------------------------------------------------------------------------------
 
+  public doSetMinZoom(): void {
+      let alertOptions: AlertOptions = {
+          title: "Information",
+          message: "Minimum zoom level will be set to 13.",
+          okButtonText: "Got it"
+      };
+
+      alert(alertOptions).then(() => {
+          this.mapbox.setMinZoom(13);
+      });
+  }
+
+  // -------------------------------------------------------------------------------
+
+  public doSetMaxZoom(): void {
+      let alertOptions: AlertOptions = {
+          title: "Information",
+          message: "Maximum zoom level will be set to 15.",
+          okButtonText: "Got it"
+      };
+
+      alert(alertOptions).then(() => {
+          this.mapbox.setMaxZoom(15);
+      });
+  }
+
+
+  // -------------------------------------------------------------------------------
+
   public doAddAndClusterGeoJSON(): void {
     this.mapbox.addGeoJsonClustered(
         {

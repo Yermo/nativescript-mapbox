@@ -785,6 +785,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   */
 
   setMapboxViewInstance( mapboxViewInstance : any ) : void {
+    this._mapboxViewInstance = mapboxViewInstance;
   }
 
   /**
@@ -792,6 +793,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
   */
 
   setMapboxMapInstance( mapboxMapInstance : any ) : void {
+    this._mapboxMapInstance = mapboxMapInstance;
   }
 
   // ---------------------------------------------------------------------------------
@@ -960,7 +962,6 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
                 });
 
               });
-
             }
           }); // end of onReady callback.
 
@@ -1132,6 +1133,7 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
 
   }
 
+
   // ----------------------------------------------------------------------------------
 
   /**
@@ -1202,6 +1204,8 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
     }
 
   }
+
+
 
   // ------------------------------------------------
   // Life Cycle Hooks
@@ -2088,6 +2092,30 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
         reject(ex);
       }
     });
+  }
+
+  // ----------------------------------------------------------------------------------
+
+  setMinZoom(minZoom: number) : void {
+    this._mapboxMapInstance.setMinZoomPreference(minZoom);
+  }
+
+  // ----------------------------------------------------------------------------------
+
+  getMinZoom() : number {
+    return this._mapboxMapInstance.getMinZoomLevel();
+  }
+
+  // ----------------------------------------------------------------------------------
+
+  setMaxZoom(maxZoom: number) : void {
+    this._mapboxMapInstance.setMaxZoomPreference(maxZoom);
+  }
+
+  // ----------------------------------------------------------------------------------
+
+  getMaxZoom() : number {
+    return this._mapboxMapInstance.getMaxZoomLevel();
   }
 
   // ----------------------------------------------------------------------------------
@@ -3942,6 +3970,14 @@ export class Mapbox extends MapboxCommon implements MapboxApi {
           .zoom(settings.zoomLevel)
           .target(new com.mapbox.mapboxsdk.geometry.LatLng(settings.center.lat, settings.center.lng));
       mapboxMapOptions.camera(cameraPositionBuilder.build());
+    }
+
+    if(settings.minZoomLevel) {
+      mapboxMapOptions.minZoomPreference(settings.minZoomLevel);
+    }
+
+    if(settings.maxZoomLevel) {
+      mapboxMapOptions.maxZoomPreference(settings.maxZoomLevel);
     }
 
     return mapboxMapOptions;
