@@ -4,8 +4,8 @@
 * @author Yermo Lamers, Flying Brick Software, LLC
 */
 
-import { 
-  Component, 
+import {
+  Component,
   OnInit,
   OnDestroy
 } from "@angular/core";
@@ -13,26 +13,24 @@ import {
 // for the side drawer
 
 import { RadSideDrawer } from "nativescript-ui-sidedrawer";
-import * as app from "tns-core-modules/application";
+import * as app from "@nativescript/core/application";
 
 // for the alerts
 
-import * as dialogs from "tns-core-modules/ui/dialogs";
+import { RouterExtensions } from "@nativescript/angular";
 
-import { RouterExtensions } from "nativescript-angular/router";
+import { openAppSettings } from "nativescript-advanced-permissions/core";
 
-import { openAppSettings } from 'nativescript-advanced-permissions/core';
-
-import { 
-  hasLocationPermissions, 
-  requestLocationPermissions, 
-  isLocationEnabled 
-} from 'nativescript-advanced-permissions/location';
+import {
+  hasLocationPermissions,
+  requestLocationPermissions,
+  isLocationEnabled
+} from "nativescript-advanced-permissions/location";
 
 // the Mapbox access token and the Mapbox map style to use are set
 // in the config.ts file.
 
-import { SETTINGS } from '../../../../../mapbox_config';
+import { SETTINGS } from "../../../../../mapbox_config";
 
 // ------------------------------------------------------------------------------
 
@@ -49,11 +47,11 @@ import { SETTINGS } from '../../../../../mapbox_config';
 })
 export class HomePageComponent implements OnInit, OnDestroy {
 
-  settings : any = SETTINGS;
+  settings: any = SETTINGS;
 
-  locationPermission : boolean = false;
+  locationPermission: boolean = false;
 
-  eventHandlersRegistered : boolean = false;
+  eventHandlersRegistered: boolean = false;
 
   distanceSubscription: any;
 
@@ -62,14 +60,14 @@ export class HomePageComponent implements OnInit, OnDestroy {
   constructor(
     private routerExtensions: RouterExtensions
   ) {
-    console.log( "HomePageComponent:constructor()")
+    console.log("HomePageComponent:constructor()");
   } // end of constructor
 
   // -----------------------------------------------------
 
   ngOnInit(): void {
 
-    console.log( "HomePageComponent:ngOnInit(): checking for location services." );
+    console.log("HomePageComponent:ngOnInit(): checking for location services.");
 
 /** ----------------------------------------------------------------
 * temporarily disabled
@@ -93,7 +91,7 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
       return;
 
-    } 
+    }
 
     // it seems the hasPermission return value here is always true under Android.
 
@@ -118,7 +116,7 @@ export class HomePageComponent implements OnInit, OnDestroy {
       }
     });
 
----------------------------------------------- */ 
+---------------------------------------------- */
   }
 
   // -------------------------------------------------
@@ -131,7 +129,6 @@ export class HomePageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
   }
-
 
   // -----------------------------------------------------
 

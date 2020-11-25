@@ -1,15 +1,11 @@
-import { Observable } from "tns-core-modules/data/observable";
-import { Color } from "tns-core-modules/color";
-import { alert, AlertOptions } from "tns-core-modules/ui/dialogs";
+import { Observable } from "@nativescript/core";
+import { Color } from "@nativescript/core";
+import { alert, AlertOptions } from "@nativescript/core/ui/dialogs";
+import { Button } from "@nativescript/core";
+import { Page } from "@nativescript/core";
+import { ContentView } from "@nativescript/core/ui/content-view";
 
-import { Frame, topmost } from "tns-core-modules/ui/frame";
-
-import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label";
-import { ContentView } from "tns-core-modules/ui/content-view";
-
-import * as platform from "tns-core-modules/platform";
+import * as platform from "@nativescript/core/platform";
 import { MapboxView, Mapbox, MapStyle, OfflineRegion, LatLng, Viewport, DownloadProgress, MapboxMarker } from "nativescript-mapbox";
 
 import { SETTINGS } from '../../mapbox_config';
@@ -42,15 +38,15 @@ export class HelloWorldModel extends Observable {
 
     // the idea is to get a reference to a container component,
     // in this case the StackLayout, and then to add a programmatically created
-    // MapboxView as a child of that container. 
+    // MapboxView as a child of that container.
     //
     // A button click got us here. From that we can get the Button object and that then
     // gives us a reference to the current page from which we can look up components by id.
 
-    const button : Button = args.object;
-    const page : Page = button.page;
+    const button: Button = args.object;
+    const page: Page = button.page;
 
-    const contentView : ContentView = <ContentView>page.getViewById( 'mapContainer' );
+    const contentView: ContentView = <ContentView>page.getViewById( 'mapContainer' );
 
     const settings = {
 
@@ -99,9 +95,9 @@ export class HelloWorldModel extends Observable {
 
     mapView.setConfig( settings );
 
-    // Bind some event handlers onto our newly created map view. 
+    // Bind some event handlers onto our newly created map view.
 
-    mapView.on( 'mapReady', ( args : any ) => {
+    mapView.on( 'mapReady', ( args: any ) => {
 
       console.log( "main-view-model: onMapReady fired." );
 
@@ -433,8 +429,8 @@ export class HelloWorldModel extends Observable {
 
 // ===================================================================================
 /**
-* 
-* @todo INTEGRATE THIS 
+*
+* @todo INTEGRATE THIS
 *
   public doAddLayerAndSource(): void {
     this.mapbox.addSource(

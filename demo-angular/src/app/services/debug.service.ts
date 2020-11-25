@@ -15,7 +15,7 @@ import { Injectable } from "@angular/core";
 @Injectable()
 export class DebugService {
 
-  counters : any = {};
+  counters: any = {};
 
   /**
   * constructor
@@ -27,18 +27,18 @@ export class DebugService {
 
   // --------------------------------------------
 
-  getCounter( key ) {
+  getCounter(key) {
     return this.counters[ key ];
   }
 
   // --------------------------------------------
 
-  incrementCounter( key ) {
+  incrementCounter(key) {
 
-    if ( typeof this.counters[ key ] == 'undefined' ) {
+    if (typeof this.counters[ key ] == "undefined") {
       this.counters[ key ] = 1;
     } else {
-      this.counters[ key ]++
+      this.counters[ key ]++;
     }
 
     return this.counters[ key ];

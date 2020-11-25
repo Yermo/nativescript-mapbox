@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "es2017",
+    "module": "esnext",
     "declaration": true,
     "removeComments": true,
     "noLib": false,
@@ -9,6 +9,7 @@
     "experimentalDecorators": true,
     "lib": [
       "es6",
+      "es2017",
       "dom"
     ],
     "sourceMap": false,
@@ -20,7 +21,9 @@
     "noImplicitAny": false,
     "noImplicitReturns": true,
     "noImplicitUseStrict": false,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "removeComments": false
   },
   "exclude": [
     "node_modules",

@@ -72,10 +72,10 @@
   "homepage": "https://github.com/Yermo/nativescript-mapbox",
   "readmeFilename": "README.md",
   "devDependencies": {
-    "tns-core-modules": "~5.3.1",
+    "@nativescript/core": "^7.0.3",
     "tns-platform-declarations": "~5.3.1",
     "tslint": "^5.14.0",
-    "typescript": "~3.3.4000"
+    "typescript": "~3.9.0"
   },
   "dependencies": {
     "nativescript-advanced-permissions": "^1.2.0"

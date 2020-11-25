@@ -6,16 +6,14 @@
 
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
-import { RouterExtensions } from "nativescript-angular/router";
+import { RouterExtensions } from "@nativescript/angular";
 import { DrawerTransitionBase, RadSideDrawer, SlideInOnTopTransition } from "nativescript-ui-sidedrawer";
 import { filter } from "rxjs/operators";
 
-import * as app from "tns-core-modules/application";
+import * as app from "@nativescript/core/application";
 
-import { isAndroid, isIOS } from "tns-core-modules/platform";
-
-import { EventsService } from './services/events.service';
-import { DebugService } from './services/debug.service';
+import { EventsService } from "./services/events.service";
+import { DebugService } from "./services/debug.service";
 
 // ---------------------------------------------------------------------------
 
@@ -29,7 +27,7 @@ export class AppComponent implements OnInit {
     private _sideDrawerTransition: DrawerTransitionBase;
 
     constructor(
-      private router: Router, 
+      private router: Router,
       private routerExtensions: RouterExtensions,
       private eventsService: EventsService,
       private debugService: DebugService
@@ -77,7 +75,7 @@ export class AppComponent implements OnInit {
 
     onNavItemTap(navItemRoute: string): void {
 
-        console.log( "AppComponent::onNavItemTap(): '" + navItemRoute + "' ---- '" + this.debugService.incrementCounter( navItemRoute ) );
+        console.log("AppComponent::onNavItemTap(): '" + navItemRoute + "' ---- '" + this.debugService.incrementCounter(navItemRoute));
 
         this.routerExtensions.navigate([navItemRoute], {
           transition: {
@@ -90,5 +88,3 @@ export class AppComponent implements OnInit {
     }
 
 } // END
-
-

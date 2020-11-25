@@ -4,28 +4,28 @@
 
 import { Injectable } from "@angular/core";
 
-import { 
+import {
   ios,
   android,
-  displayedEvent, 
-  exitEvent, 
-  launchEvent,  
-  lowMemoryEvent, 
-  orientationChangedEvent, 
-  resumeEvent, 
-  suspendEvent, 
-  uncaughtErrorEvent, 
-  ApplicationEventData, 
-  LaunchEventData, 
-  OrientationChangedEventData, 
+  displayedEvent,
+  exitEvent,
+  launchEvent,
+  lowMemoryEvent,
+  orientationChangedEvent,
+  resumeEvent,
+  suspendEvent,
+  uncaughtErrorEvent,
+  ApplicationEventData,
+  LaunchEventData,
+  OrientationChangedEventData,
   UnhandledErrorEventData,
-  on as applicationOn, 
-  run as applicationRun 
-} from "tns-core-modules/application";
+  on as applicationOn,
+  run as applicationRun
+} from "@nativescript/core/application";
 
-import { EventsService } from './events.service';
+import { EventsService } from "./events.service";
 
-import { Subject } from 'rxjs/Subject';
+import { Subject } from "rxjs/Subject";
 
 // ----------------------------------------------------------------------------------------------
 
@@ -41,15 +41,15 @@ import { Subject } from 'rxjs/Subject';
 @Injectable()
 export class PlatformService {
 
-  public paused: boolean;
+  paused: boolean;
 
   /**
   * platform service ready promise
   */
 
-  public readyPromise:Promise<any>;
+  readyPromise: Promise<any>;
 
-  public readyPromiseResolver:any;
+  readyPromiseResolver: any;
 
   // ----------------------------------------------------------------------
 
@@ -63,13 +63,13 @@ export class PlatformService {
     private events: EventsService
   ) {
 
-    this.readyPromise = new Promise( ( resolve, reject ) => {
+    this.readyPromise = new Promise((resolve, reject) => {
       this.readyPromiseResolver = resolve;
     });
 
-    // on application launch. 
+    // on application launch.
 
-    applicationOn( launchEvent, (args: LaunchEventData ) => {
+    applicationOn(launchEvent, (args: LaunchEventData) => {
       if (args.android) {
 
         // For Android applications, args.android is an android.content.Intent class.
@@ -80,17 +80,17 @@ export class PlatformService {
 
         // For iOS applications, args.ios is NSDictionary (launchOptions).
 
-        console.log( "PlatformService:constructor(): Launched iOS application with options: " + args.ios);
+        console.log("PlatformService:constructor(): Launched iOS application with options: " + args.ios);
 
       }
 
-      this.events.publish( 'platform:launched', {} );
+      this.events.publish("platform:launched", {});
 
     });
 
     // on application suspend.
 
-    applicationOn( suspendEvent, (args: ApplicationEventData ) => {
+    applicationOn(suspendEvent, (args: ApplicationEventData) => {
 
       if (args.android) {
 
@@ -107,7 +107,7 @@ export class PlatformService {
 
       this.paused = true;
 
-      this.events.publish( 'platform:pause', {} );
+      this.events.publish("platform:pause", {});
 
     });
 
@@ -118,29 +118,29 @@ export class PlatformService {
       if (args.android) {
 
         // For Android applications, args.android is an android activity class.
-        console.log( "PlatformService:constructor(): Activity resume: " + args.android );
+        console.log("PlatformService:constructor(): Activity resume: " + args.android);
 
       } else if (args.ios) {
 
         // For iOS applications, args.ios is UIApplication.
-        console.log( "PlatformService:constructor(): UIApplication resume: " + args.ios);
+        console.log("PlatformService:constructor(): UIApplication resume: " + args.ios);
 
       }
 
       this.paused = false;
 
-      this.events.publish( 'platform:resume', {} );
+      this.events.publish("platform:resume", {});
 
     });
 
     applicationOn(displayedEvent, (args: ApplicationEventData) => {
-      console.log( "PlatformService:constructor(): displayedEvent" );
-      this.events.publish( 'platform:displayed', {} );
+      console.log("PlatformService:constructor(): displayedEvent");
+      this.events.publish("platform:displayed", {});
     });
 
     applicationOn(orientationChangedEvent, (args: OrientationChangedEventData) => {
       // "portrait", "landscape", "unknown"
-      console.log(args.newValue)
+      console.log(args.newValue);
     });
 
     applicationOn(exitEvent, (args: ApplicationEventData) => {
@@ -152,7 +152,7 @@ export class PlatformService {
         console.log("PlatformService:constructor(): UIApplication exit: " + args.ios);
       }
 
-      this.events.publish( 'platform:exit', {} );
+      this.events.publish("platform:exit", {});
 
     });
 
@@ -165,11 +165,11 @@ export class PlatformService {
         console.log("PlatformService:constructor(): UIApplication low memory: " + args.ios);
       }
 
-      this.events.publish( 'platform:lowmemory', {} );
+      this.events.publish("platform:lowmemory", {});
 
     });
 
-    applicationOn(uncaughtErrorEvent, function (args: UnhandledErrorEventData) {
+    applicationOn(uncaughtErrorEvent, function(args: UnhandledErrorEventData) {
       console.log("PlatformService:constructor(): Error: " + args.error);
     });
 
@@ -186,9 +186,9 @@ export class PlatformService {
 
   declareReady() {
 
-    this.readyPromiseResolver( true );
+    this.readyPromiseResolver(true);
 
-    this.events.publish( 'platform:ready', {} );
+    this.events.publish("platform:ready", {});
 
   }
 
@@ -198,7 +198,7 @@ export class PlatformService {
   * return the platform ready promise
   */
 
-  ready() { 
+  ready() {
     return this.readyPromise;
   }
 
@@ -208,21 +208,21 @@ export class PlatformService {
   * whether we are android or ios
   */
 
-  is( platformName : string ) {
+  is(platformName: string) {
 
-    switch ( platformName ) {
+    switch (platformName) {
 
-      case 'ios' :
+      case "ios" :
         return ios;
-      break;
+        break;
 
-      case 'android':
+      case "android":
         return android;
-      break;
+        break;
 
       default:
-        throw new Error( 'unsupported platform' );
-      break;
+        throw new Error("unsupported platform");
+        break;
     }
   }
   // ------------------------------------------------------------------
