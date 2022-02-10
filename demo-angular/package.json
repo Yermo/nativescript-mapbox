@@ -50,7 +50,7 @@
     "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "^6.1.2",
     "nativescript-dev-webpack": "^1.5.1",
-    "node-sass": "^4.7.1",
+    "node-sass": "^7.0.0",
     "tslint": "~5.19.0",
     "typescript": "~3.5.3"
   },
